@@ -12,7 +12,7 @@ import { h, modal, toast } from './ui/dom.js';
 import { createStage, createShell } from './ui/shell.js';
 import { openSaveDialog } from './ui/save.js';
 import { S, save, resetAll } from './lib/store.js';
-import { isDone, blockers, TEACHER_CODE } from './lib/progress.js';
+import { isDone, blockers, teacherCodeOk } from './lib/progress.js';
 import { renderWhy, renderLayers, renderSort, renderAnatomy, renderWhere } from './screens/concept.js';
 import { renderForms, renderPkgForms, renderFix, renderQuiz } from './screens/imports.js';
 import { renderMission } from './screens/build.js';
@@ -54,7 +54,8 @@ function showBlocked(tabId, list, go) {
     h('div', { class: 'row', style: { marginTop: '10px', justifyContent: 'flex-end' } },
       h('span', { class: 'tiny muted' }, '수업 시연용 — '), code,
       h('button', { class: 'btn small', onClick: () => {
-        if (code.value.trim() !== TEACHER_CODE) { toast('코드가 맞지 않아요', 'bad'); return; }
+        // 코드 원문은 앱에 없다 — 넣은 글자의 지문(해시)이 맞는지만 본다 (대소문자는 가리지 않는다)
+        if (!teacherCodeOk(code.value)) { toast('코드가 맞지 않아요', 'bad'); return; }
         S.unlock = true; save(); closeModal(); toast('🔓 모든 탭을 열었어요 (「내 기록 지우기」 를 누르면 다시 잠겨요)', 'good'); app.refreshNav();
       } }, '🔓 모두 열기')));
   modal('🔒 아직 열 수 없어요', body, { ok: null, cancel: '닫기' });

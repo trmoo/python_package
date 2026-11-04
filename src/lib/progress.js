@@ -56,5 +56,13 @@ export function progressOf(S) {
   return { done: req.filter(([, a]) => a.done(S)).length, total: req.length };
 }
 
-/** 선생님이 수업 시연용으로 모든 탭을 여는 코드 (부정행위 방지가 아니라 학습 장치 — 화면 코드에 그대로 보인다) */
-export const TEACHER_CODE = '1105';
+/* 선생님이 수업 시연용으로 모든 탭을 여는 코드 — 2026-11-05 사용자 지시로 원문 대신 해시(SHA-256)만 둔다.
+ * 깃허브가 공개 저장소라 원문을 적으면 학생이 읽을 수 있기 때문이다. 코드가 필요한 선생님은 README 의 이메일로 문의한다.
+ * 바꾸려면 `node tools/hash-code.mjs 새코드` 로 나온 줄을 아래에 붙인다. ⚠ 원문은 어디에도 적지 말 것.
+ * (짧은 코드는 해시를 하나하나 맞춰 볼 수 있으므로 부정행위 방지가 아니라 학습 장치다) */
+import { sha256hex } from './sha256.js';
+const SALT = 'pkgws-teacher:';
+/** 대문자 잠금이 켜져 있어도 열리게 앞뒤 빈칸을 떼고 소문자로 맞춘 뒤 지문을 만든다 */
+export const teacherHash = (code) => sha256hex(SALT + String(code).trim().toLowerCase());
+export const TEACHER_HASH = '1d57748176a0718cee7dfff7302868400f96aab17cca49e369b9d405166402b3';
+export const teacherCodeOk = (code) => teacherHash(code) === TEACHER_HASH;
