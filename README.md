@@ -73,7 +73,7 @@
 ```bash
 npm install
 npm start            # 개발 서버
-npm test             # 시험 — 진짜 파이썬 대조 150개 프로젝트 포함
+npm test             # 시험 — 진짜 파이썬 대조 122개 프로젝트 포함 (수행평가 정답이 든 시험은 이 저장소에 없어 건너뜀)
 npm run check:syntax # 소스 전수 검사 (문법·저작권·화면 규칙)
 npm run build        # dist/index.html 한 파일 + 빌드 결과 점검
 ```
