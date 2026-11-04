@@ -31,7 +31,7 @@ export function createStage() {
  *   gate(tabId) → 그 탭을 열기 전에 끝내야 할 활동 목록 (비어 있으면 열린다)
  *   onBlocked(tabId, 목록, go) → 잠긴 탭으로 가려 할 때 (알림창을 띄운다)
  */
-export function createShell(stage, { tabs, screens, tools, logo, gate, onBlocked, subNote }) {
+export function createShell(stage, { tabs, screens, tools, logo, gate, onBlocked }) {
   const top = h('header', { class: 'top' });
   const sub = h('nav', { class: 'sub', 'aria-label': '화면' });
   const body = h('main', { class: 'body' });
@@ -66,7 +66,7 @@ export function createShell(stage, { tabs, screens, tools, logo, gate, onBlocked
       const done = x.done && x.done();
       return h('button', { class: 'pill' + (k === cur ? ' on' : ''), style: { '--c': tab.color }, onClick: () => show(k) },
         `${i + 1}. ${x.short || x.title}`, done ? h('span', { class: 'done' }, ' ✔') : null);
-    }), subNote ? h('span', { class: 'sub-note' }, subNote) : null);
+    }));
     fill(foot,
       h('button', { class: 'nav prev', disabled: cur === 0, onClick: () => show(cur - 1) }, '◀ 이전'),
       h('div', { class: 'where' }, `${tabs.indexOf(tab) + 1}. ${tab.label} — ${s.title}`),
