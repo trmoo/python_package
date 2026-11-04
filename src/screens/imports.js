@@ -75,7 +75,7 @@ export function renderPkgForms(body, api) {
     key: 'pkgforms', data: PKGFORMS, title: '패키지 속 모듈 부르기',
     lead: '점(.)은 「폴더 안으로 들어간다」 는 뜻이에요. mypackage 폴더 안 module1.py 의 hello( ) 를 불러 봐요.',
     side: () => [treeBlock([['d', 'mypackage/'], ['i', '├── __init__.py', '빈 파일'], ['f', '├── module1.py', 'def hello()'], ['f', '└── module2.py', 'def bye()']]),
-      h('div', { class: 'note small', html: '교과서 209쪽 Tip — 다른 모듈에서 패키지 안의 모듈을 쓰려면 <code>패키지명.모듈명</code> 꼴로 import 한다.' }),
+      h('div', { class: 'note small', html: '씨마스 교과서 209쪽 Tip — 다른 모듈에서 패키지 안의 모듈을 쓰려면 <code>패키지명.모듈명</code> 꼴로 import 한다.' }),
       h('div', { class: 'note warn small', html: '마지막 줄 <code>import mypackage</code> 는 함정이에요. 폴더(패키지)만 불러오면 그 안의 파일도 따라올까요?' }),
       h('details', { class: 'more' }, h('summary', {}, '정리 (확인한 다음 열어 보세요)'),
         h('table', { class: 't small' }, h('tr', {}, h('th', {}, 'import 꼴'), h('th', {}, '부르기')),

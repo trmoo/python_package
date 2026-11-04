@@ -66,6 +66,8 @@ document.body.append(holder);
 const app = createShell(stage, {
   tabs: TABS, screens: SCREENS,
   logo: ['📦 패키지 공작소', h('small', {}, '모듈 · 패키지 · 라이브러리')],
+  // 화면 곳곳의 「교과서 ○쪽」 이 어느 교과서인지 — 모든 화면 알약 줄 오른쪽에 (2026-11-05 사용자 지시)
+  subNote: '📘 교과서 쪽수는 씨마스커뮤니케이션 「프로그래밍」 기준',
   gate: (tabId) => blockers(tabId, S),
   onBlocked: showBlocked,
   tools: () => [

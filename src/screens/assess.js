@@ -81,7 +81,7 @@ export function renderVSCode(body) {
   const step = (n, title, desc, pic) => h('div', { class: 'card stepcard' }, h('div', {}, h('span', { class: 'num' }, n), h('b', {}, title)), h('div', { class: 'small', html: desc }), pic);
   fill(body, h('div', { class: 'cols' },
     h('div', { class: 'col grow' },
-      head('내 컴퓨터(VS Code)에서 만들기', '이 앱에서 한 그대로 하면 돼요. 교과서도 VS Code 로 패키지를 만들어요 (211·213쪽).'),
+      head('내 컴퓨터(VS Code)에서 만들기', '이 앱에서 한 그대로 하면 돼요. 씨마스 교과서도 VS Code 로 패키지를 만들어요 (211·213쪽).'),
       h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' } },
         step(1, '폴더 열기', '바탕 화면에 새 폴더(예: <code>my_project</code>)를 만들고, VS Code 메뉴 <b>파일 → 폴더 열기</b>로 그 폴더를 엽니다. <b>파일 하나만 열면 탐색기가 비어</b> 패키지를 만들 수 없어요.',
           shot('탐색기', '▾ MY_PROJECT <span style="float:right">📄 📁 ⟳</span><br><span style="opacity:.6">(아직 비어 있음)</span>')),

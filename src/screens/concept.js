@@ -60,7 +60,7 @@ export function renderWhy(body, api) {
     h('div', { class: 'col', style: { flex: 1.25 } }, head('왜 파일을 나눌까?', '친구가 「네 프로그램의 <b>평균 함수</b>만 빌려 줘」 라고 해요. 어떻게 나눠 줄까요?'), stage),
     h('div', { class: 'col', style: { width: '360px', flex: 'none' } },
       h('div', { class: 'card' }, h('h3', {}, '📄 모듈이란?'), h('p', { html: '변수·함수를 담아 둔 <b>.py 파일 하나</b>. 다른 파일에서 <code>import</code> 로 불러 쓴다.' }),
-        h('p', { class: 'small muted' }, '교과서 143쪽 「정보 더하기」 — 코드의 효율적인 관리와 재사용성을 높이려고 모듈·패키지·라이브러리를 쓴다.')),
+        h('p', { class: 'small muted' }, '씨마스 「프로그래밍」 교과서 143쪽 「정보 더하기」 — 코드의 효율적인 관리와 재사용성을 높이려고 모듈·패키지·라이브러리를 쓴다.')),
       ...[['♻️', '재사용', '한 번 만든 함수를 여러 프로그램이 import 해서 쓴다. 복사·붙이기가 필요 없다.'],
         ['🧹', '관리', '고칠 곳이 한 군데. 기능별로 파일이 나뉘어 있어 찾기도 쉽다.'],
         ['🤝', '협업', '큰 프로그램을 모듈로 나눠 팀원이 하나씩 맡아 만든다. (교과서 207쪽 「모듈화」)']]
@@ -82,7 +82,7 @@ export function renderLayers(body, api) {
     if (!st.lit) st.lit = 'lib';
     const lib = st.real ? NUMPY_REAL : NUMPY_BOOK;
     fill(left,
-      head('모듈 ⊂ 패키지 ⊂ 라이브러리', '상자를 눌러 보세요. 큰 상자가 작은 상자를 품고 있어요. (교과서 143쪽의 NumPy 예)'),
+      head('모듈 ⊂ 패키지 ⊂ 라이브러리', '상자를 눌러 보세요. 큰 상자가 작은 상자를 품고 있어요. (씨마스 교과서 143쪽의 NumPy 예)'),
       h('div', { class: 'row' },
         h('button', { class: 'btn small' + (!st.real ? ' primary' : ''), onClick: () => { st.real = false; paint(); } }, '📕 교과서 그림'),
         h('button', { class: 'btn small' + (st.real ? ' primary' : ''), onClick: () => { st.real = true; paint(); } }, '🔍 진짜 NumPy 2.4 를 열어 보면')),
@@ -183,7 +183,7 @@ export function renderWhere(body, api) {
         h('td', { style: { borderLeft: `5px solid ${s.color}`, whiteSpace: 'nowrap' } }, h('b', {}, `${s.icon} ${s.title}`), h('div', { class: 'tiny muted' }, s.body)),
         h('td', {}, h('code', {}, s.ex), h('div', { class: 'tiny' }, s.how))))),
       h('div', { class: 'card small', style: { padding: '8px 12px' } },
-        h('b', {}, '해 보기 — 교과서 141쪽의 gtts'),
+        h('b', {}, '해 보기 — 씨마스 교과서 141쪽의 gtts'),
         h('ol', { style: { margin: '4px 0 0', paddingLeft: '20px' } },
           h('li', { html: '▶ 를 눌러 보세요 → <code>ModuleNotFoundError</code>' }),
           h('li', { html: '터미널 아래 칸에 <code>pip install gtts</code> + <kbd>Enter</kbd>' }),

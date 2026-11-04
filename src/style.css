@@ -53,6 +53,7 @@ button { font: inherit; }
 .pill:hover { border-color: var(--c); }
 .pill.on { background: var(--c); border-color: var(--c); color: #fff; }
 .pill .done { color: var(--good); margin-left: 3px; }
+.sub-note { margin-left: auto; font-size: 13px; font-weight: 700; color: #1864ab; background: #e7f5ff; border: 1px solid #a5d8ff; border-radius: 999px; padding: 3px 11px; white-space: nowrap; }
 .pill.on .done { color: #fff; }
 .body { flex: 1; min-height: 0; position: relative; padding: 14px 18px; overflow: hidden; }
 .foot { height: 48px; flex: none; display: flex; align-items: center; gap: 10px; padding: 0 14px; border-top: 1px solid var(--line); background: var(--paper); }
