@@ -5,7 +5,7 @@ import { h, fill, toast } from '../ui/dom.js';
 import { codeBlock, quickRun, head } from './common.js';
 import { createIDE } from '../ui/ide.js';
 import { slot, save } from '../lib/store.js';
-import { WHY, LEVELS, NUMPY_BOOK, PANDAS, BINS, SORT_CARDS, ROLES, ANATOMY, SOURCES, PIP_PROJECT } from '../data/concept.js';
+import { WHY, LEVELS, INIT_INFO, NUMPY_BOOK, PANDAS, BINS, SORT_CARDS, ROLES, ANATOMY, SOURCES, PIP_PROJECT } from '../data/concept.js';
 
 /* ── 1. 왜 나눌까 ── */
 export function renderWhy(body, api) {
@@ -78,7 +78,8 @@ export function renderLayers(body, api) {
   const box = (cls, label, kids, id) => h('div', { class: `nest ${cls}` + (st.lit === id ? ' lit' : ''), onClick: pick(id) },
     h('div', { class: 'lab' }, label), kids ? h('div', { class: 'kids' }, kids) : null);
   const fnChip = (f) => h('div', { class: 'nest fn', onClick: pick('fn') }, `ƒ ${f}`);
-  const initChip = () => h('div', { class: 'nest ini', onClick: pick('pkg') }, '__init__.py');
+  // 점선 __init__.py 를 누르면 오른쪽에 그 역할을 설명한다 (네 가지 개념과 따로 — 완료 조건에는 넣지 않았다)
+  const initChip = () => h('div', { class: 'nest ini' + (st.lit === 'init' ? ' lit' : ''), onClick: pick('init') }, '__init__.py');
   const note = (t) => h('div', { class: 'tiny muted', style: { width: '100%' } }, t);
 
   /** pandas — 폴더 안에 폴더가 또 있는(하위 패키지) 짜임을 그대로 그린다. 아래층은 kids 로 따라 내려간다 */
@@ -112,14 +113,27 @@ export function renderLayers(body, api) {
           h('div', { class: 'note small', style: { flex: 1 }, html: '수업에서 쓰던 <code>pd.read_csv( )</code> 는 사실 <b>pandas/io/parsers/readers.py</b> 안의 함수예요. <code>pandas/__init__.py</code> 가 미리 불러 두어서 <code>pd.</code> 바로 뒤에 쓸 수 있어요 (미션 4 의 <code>__init__.py</code> 와 같은 원리).<br><span class="tiny muted">※ <code>random</code>·<code>math</code> 는 모듈 한 겹이라 이렇게 여러 층이 아니에요.</span>' }))
         : h('div', { class: 'note warn small', html: '교과서는 같은 짜임을 <b>외부 라이브러리</b> NumPy 로 보여 줘요(pip 로 설치). 그림은 구조를 보여 주려는 예시라, 실제 NumPy 2.4 는 폴더 이름이 소문자 <code>numpy</code> 이고 <code>array.py</code>·<code>solve.py</code> 같은 파일 이름도 달라요. 그래도 <b>「라이브러리 ⊃ 패키지(폴더 + __init__.py) ⊃ 모듈(파일)」</b> 짜임은 똑같아요.' }));
     const L = LEVELS.find((x) => x.id === st.lit);
+    const isInit = st.lit === 'init';
+    const chipStyle = (on) => ({ border: on ? '2px solid currentColor' : '2px solid transparent', cursor: 'pointer', fontSize: '15px', padding: '3px 10px' });
+    // 완료 조건은 네 가지 개념뿐이라 __init__.py 는 세지 않는다
+    const seenLevels = LEVELS.filter((l) => rec.seen.includes(l.id)).length;
+    const levelCard = () => h('div', { class: 'card col', style: { gap: '8px' } },
+      h('h3', {}, `${L.icon} ${L.name} `, h('span', { class: 'muted small' }, L.en)),
+      h('p', {}, L.def),
+      h('div', { class: 'small' }, h('b', {}, '예  '), L.ex));
+    const initCard = () => h('div', { class: 'card col', style: { gap: '5px' } },
+      h('h3', {}, h('code', {}, '__init__.py'), ' ', h('span', { class: 'muted small' }, INIT_INFO.sub)),
+      INIT_INFO.points.map(([k, v]) => h('div', { class: 'small' }, h('b', {}, k), '  ', v)),
+      Object.assign(codeBlock(INIT_INFO.code, true), { style: 'flex:none' }), // 카드가 좁아져도 코드 줄이 눌려 잘리지 않게
+      h('div', { class: 'small' }, '그래서 ', h('code', {}, INIT_INFO.long), ' 대신 ', h('code', {}, INIT_INFO.short), ' 로 바로 써요.'),
+      h('div', { class: 'tiny muted' }, `※ ${INIT_INFO.note}`));
     fill(right,
-      h('div', { class: 'row' }, LEVELS.map((x) => h('button', { class: `chip ${x.cls}`, style: { border: x.id === st.lit ? '2px solid currentColor' : '2px solid transparent', cursor: 'pointer', fontSize: '15px', padding: '3px 10px' }, onClick: () => { st.lit = x.id; paint(); } }, `${rec.seen.includes(x.id) ? '✔ ' : ''}${x.icon} ${x.name}`))),
-      h('div', { class: 'tiny muted' }, `네 가지를 모두 눌러 보세요 (${rec.seen.length}/${LEVELS.length})`),
-      h('div', { class: 'card col', style: { gap: '8px' } },
-        h('h3', {}, `${L.icon} ${L.name} `, h('span', { class: 'muted small' }, L.en)),
-        h('p', {}, L.def),
-        h('div', { class: 'small' }, h('b', {}, '예  '), L.ex)),
-      h('table', { class: 't small' },
+      h('div', { class: 'row' },
+        LEVELS.map((x) => h('button', { class: `chip ${x.cls}`, style: chipStyle(x.id === st.lit), onClick: () => { st.lit = x.id; paint(); } }, `${rec.seen.includes(x.id) ? '✔ ' : ''}${x.icon} ${x.name}`)),
+        h('button', { class: 'chip', style: { ...chipStyle(isInit), color: '#495057', background: '#f1f3f5', fontFamily: 'var(--mono)' }, onClick: () => { st.lit = 'init'; paint(); } }, `${rec.seen.includes('init') ? '✔ ' : ''}📝 __init__.py`)),
+      h('div', { class: 'tiny muted' }, `네 가지를 모두 눌러 보세요 (${seenLevels}/${LEVELS.length}) · 점선 상자 __init__.py 는 무슨 일을 할까요?`),
+      isInit ? initCard() : levelCard(),
+      isInit ? null : h('table', { class: 't small' },
         h('tr', {}, h('th', {}, '무엇'), h('th', {}, '실제로는'), h('th', {}, '불러오기')),
         h('tr', {}, h('td', {}, '📄 모듈'), h('td', {}, '.py 파일'), h('td', {}, h('code', {}, 'import random'))),
         h('tr', {}, h('td', {}, '📦 패키지'), h('td', {}, '폴더 (+ __init__.py)'), h('td', {}, h('code', {}, 'import mypackage.module1'))),

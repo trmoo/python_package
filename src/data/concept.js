@@ -30,6 +30,23 @@ export const LEVELS = [
     ex: 'pd.read_csv( ) · pd.DataFrame · random.randint( ) · math.pi' },
 ];
 
+/** __init__.py 설명 카드 (2026-11-05 사용자 요청) — 「꼭 있어야 하는 부품」이 아니라 「표지판」 으로 가르친다.
+ *  pandas/__init__.py 의 두 줄은 설치된 pandas 3.0.5 에서 확인했다(58·151행의 괄호 목록을 간추림).
+ *  pd.io.parsers.readers.read_csv is pd.read_csv → True */
+export const INIT_INFO = {
+  sub: '패키지의 표지판 · 안내 데스크',
+  points: [
+    ['🪧 표지판', '폴더 안에 이 파일이 있으면 「이 폴더는 패키지예요」 하고 알려요.'],
+    ['🚪 먼저 실행', 'import pandas 를 하면 pandas/__init__.py 가 먼저 한 번 실행돼요.'],
+    ['📭 비워 둬도 돼요', '내가 만드는 패키지는 빈 파일 하나면 충분해요.'],
+    ['🛎️ 안내 데스크', '깊숙한 곳의 이름을 여기서 미리 불러 두면 짧게 부를 수 있어요.'],
+  ],
+  code: '# pandas/__init__.py 안 (간추림)\nfrom pandas.core.api import DataFrame\nfrom pandas.io.api import read_csv',
+  long: 'pd.io.parsers.readers.read_csv( )',
+  short: 'pd.read_csv( )',
+  note: '파이썬 3.3 부터는 없어도 import 는 되지만, 넣어 두는 것이 약속이에요. 미션 4 에서 직접 만들어 봐요.',
+};
+
 /** pandas — 데이터 과학 수업에서 써 본 라이브러리로 짜임을 보여 준다 (2026-11-05 사용자 요청)
  *  설치된 pandas 3.0.5 를 열어 확인했다 (2.x 도 같은 짜임):
  *    pandas/__init__.py · core/frame.py(class DataFrame) · core/series.py(class Series)

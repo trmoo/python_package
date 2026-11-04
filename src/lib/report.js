@@ -47,7 +47,7 @@ export function buildReport(S, who, now = new Date()) {
   parts.push('<h2>① 개념 잡기</h2>');
   parts.push(section('concept/why', `<p>방법 A(복사해 붙이기) 고쳐 보기 ${mark(S0.why && S0.why.copy)} · 방법 B(모듈로 나누기) 고쳐 보기 ${mark(S0.why && S0.why.mod)}</p>`));
   const seen = (S0.layers && S0.layers.seen) || [];
-  parts.push(section('concept/layers', `<p>눌러 본 개념: ${seen.length ? esc(seen.map((x) => ({ lib: '라이브러리', pkg: '패키지', mod: '모듈', fn: '모듈 안의 이름' }[x])).join(' · ')) : '없음'}</p>`));
+  parts.push(section('concept/layers', `<p>눌러 본 개념: ${seen.length ? esc(seen.map((x) => ({ lib: '라이브러리', pkg: '패키지', mod: '모듈', fn: '모듈 안의 이름', init: '__init__.py' }[x] || x)).join(' · ')) : '없음'}</p>`));
   const sort = S0.sort || { put: {} };
   parts.push(section('concept/sort', `<table><tr><th>카드</th><th>내가 넣은 곳</th><th>정답</th><th></th></tr>${SORT_CARDS.map((c) => {
     const put = BINS.find((b) => b.id === sort.put[c.id]);
