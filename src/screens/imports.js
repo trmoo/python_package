@@ -69,7 +69,6 @@ export function renderForms(body, api) {
           FORMS.rule.map(([a, b, c]) => h('tr', {}, h('td', {}, h('code', {}, a)), h('td', {}, b), h('td', {}, h('code', {}, c))))))],
   });
 }
-export const formsDone = () => { const S = slot('forms', () => ({ guess: {}, shown: false })); return S.shown; };
 
 export function renderPkgForms(body, api) {
   predictGrid(body, api, {
@@ -84,7 +83,6 @@ export function renderPkgForms(body, api) {
         h('p', { class: 'small', style: { marginTop: '6px' }, html: '<code>import mypackage</code> 만으로는 안의 모듈이 따라오지 않아요 (__init__.py 가 불러 주지 않는 한).' }))],
   });
 }
-export const pkgFormsDone = () => { const S = slot('pkgforms', () => ({ guess: {}, shown: false })); return S.shown; };
 
 /* ── 오류 고치기 ── */
 export function fixPassed(fx, r, p) {
@@ -137,7 +135,6 @@ export function renderFix(body, api) {
     ideHost));
   mount();
 }
-export const fixDone = () => { const S = slot('fix', () => ({ cur: FIXES[0].id, done: {}, proj: {}, hint: {} })); return FIXES.every((f) => S.done[f.id]); };
 
 /* ── 확인 문제 ── */
 export function renderQuiz(body, api) {
@@ -172,4 +169,3 @@ export function renderQuiz(body, api) {
   fill(body, wrap);
   paint();
 }
-export const quizDone = () => { const S = slot('quiz', () => ({ ans: {}, cur: 0 })); return QUIZ.every((q, k) => S.ans[k] === q.ans); };

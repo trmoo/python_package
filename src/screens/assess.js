@@ -74,7 +74,6 @@ export function renderPractice(body, api) {
   });
   paint();
 }
-export const practiceDone = () => !!slot('practice', () => ({ project: null, topic: null })).passed;
 
 /* ── 3. 내 컴퓨터(VS Code)에서 만들기 ── */
 export function renderVSCode(body) {

@@ -28,14 +28,17 @@ export function createStage() {
  *   tabs:    [{ id, label, color }]
  *   screens: [{ id, tab, title, short, render(body, api), done?() }]
  *   tools:   위쪽 오른쪽에 붙일 단추
+ *   gate(tabId) → 그 탭을 열기 전에 끝내야 할 활동 목록 (비어 있으면 열린다)
+ *   onBlocked(tabId, 목록, go) → 잠긴 탭으로 가려 할 때 (알림창을 띄운다)
  */
-export function createShell(stage, { tabs, screens, tools, logo }) {
+export function createShell(stage, { tabs, screens, tools, logo, gate, onBlocked }) {
   const top = h('header', { class: 'top' });
   const sub = h('nav', { class: 'sub', 'aria-label': '화면' });
   const body = h('main', { class: 'body' });
   const foot = h('footer', { class: 'foot' });
   fill(stage, top, sub, body, foot);
-  let cur = 0;
+  let cur = -1;
+  const lockOf = (tabId) => (gate ? gate(tabId) : []);
 
   const api = {
     go: (id) => { const k = screens.findIndex((s) => s.id === id || `${s.tab}/${s.id}` === id); if (k >= 0) show(k); },
@@ -49,10 +52,14 @@ export function createShell(stage, { tabs, screens, tools, logo }) {
     const tab = tabs.find((t) => t.id === s.tab);
     fill(top,
       h('div', { class: 'logo' }, logo),
-      h('nav', { class: 'tabs', 'aria-label': '단원' }, tabs.map((t, i) => h('button', {
-        class: 'tab' + (t.id === s.tab ? ' on' : ''), style: { '--c': t.color },
-        onClick: () => show(screens.findIndex((x) => x.tab === t.id)),
-      }, h('span', { class: 'n' }, `${i + 1}`), t.label))),
+      h('nav', { class: 'tabs', 'aria-label': '단원' }, tabs.map((t, i) => {
+        const locked = lockOf(t.id).length > 0;
+        return h('button', {
+          class: 'tab' + (t.id === s.tab ? ' on' : '') + (locked ? ' locked' : ''), style: { '--c': t.color },
+          title: locked ? '앞 탭의 활동을 모두 끝내야 열려요' : null,
+          onClick: () => show(screens.findIndex((x) => x.tab === t.id)),
+        }, h('span', { class: 'n' }, locked ? '🔒' : `${i + 1}`), t.label);
+      })),
       tools ? tools() : null);
     fill(sub, screens.filter((x) => x.tab === s.tab).map((x, i) => {
       const k = screens.indexOf(x);
@@ -69,6 +76,14 @@ export function createShell(stage, { tabs, screens, tools, logo }) {
 
   function show(k) {
     if (k < 0 || k >= screens.length) return;
+    // 잠긴 탭 — 앞에서 끝내지 않은 활동이 있으면 넘어가지 않는다
+    const blocked = lockOf(screens[k].tab);
+    if (blocked.length) {
+      const goTo = (key) => { const j = screens.findIndex((x) => `${x.tab}/${x.id}` === key); if (j >= 0) show(j); };
+      if (cur < 0) { goTo(blocked[0].key); return; } // 주소로 바로 들어오려 하면 — 끝내지 않은 첫 활동으로
+      if (onBlocked) onBlocked(screens[k].tab, blocked, goTo);
+      return;
+    }
     cur = k;
     beginScreen();
     const s = screens[cur];

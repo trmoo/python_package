@@ -7,12 +7,9 @@ import { codeBlock, treeBlock, projectTree } from './common.js';
 import { createIDE } from '../ui/ide.js';
 import { slot, save } from '../lib/store.js';
 import { clone } from '../lib/project.js';
-import { MISSIONS } from '../data/missions.js';
+import { MISSIONS, stepsDone } from '../data/missions.js';
 
 const stateOf = (id) => slot(`mission:${id}`, () => ({ project: null, runs: {}, hint: 0, done: false }));
-/** 단계 판정 — 앞 단계가 안 됐어도 뒤 단계가 되면 켠다(순서대로 안 해도 된다) */
-export function stepsDone(m, p, runs) { return m.steps.map((s) => { try { return !!s.check(p, runs); } catch (e) { return false; } }); }
-export const missionDone = (id) => stateOf(id).done;
 
 export function renderMission(id) {
   return (body, api) => {

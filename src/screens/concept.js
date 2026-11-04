@@ -8,8 +8,10 @@ import { slot, save } from '../lib/store.js';
 import { WHY, LEVELS, NUMPY_BOOK, NUMPY_REAL, BINS, SORT_CARDS, ROLES, ANATOMY, SOURCES, PIP_PROJECT } from '../data/concept.js';
 
 /* ── 1. 왜 나눌까 ── */
-export function renderWhy(body) {
+export function renderWhy(body, api) {
   const st = { way: 'copy', fixed: false };
+  const rec = slot('why', () => ({ copy: false, mod: false }));
+  const markFixed = () => { rec[st.way === 'copy' ? 'copy' : 'mod'] = true; save(); api.refreshNav(); };
   const stage = h('div', { class: 'col grow' });
   const resultOf = (files) => quickRun(files);
   const want = { mine: '85.0', friend: '8.5' };
@@ -44,14 +46,15 @@ export function renderWhy(body) {
         h('button', { class: 'btn' + (st.way === 'copy' ? ' primary' : ''), onClick: () => { st.way = 'copy'; st.fixed = false; paint(); } }, '방법 A · 함수를 복사해 붙이기'),
         h('button', { class: 'btn' + (st.way === 'mod' ? ' primary' : ''), onClick: () => { st.way = 'mod'; st.fixed = false; paint(); } }, '방법 B · 모듈로 나눠 import'),
         h('span', { class: 'grow' }),
-        h('button', { class: 'btn good', disabled: st.fixed, onClick: () => { st.fixed = true; paint(); } }, st.way === 'copy' ? '🐞 내 프로그램의 평균 함수 고치기' : '🐞 score.py 의 평균 함수 고치기')),
+        h('button', { class: 'btn good', disabled: st.fixed, onClick: () => { st.fixed = true; markFixed(); paint(); } }, st.way === 'copy' ? '🐞 내 프로그램의 평균 함수 고치기' : '🐞 score.py 의 평균 함수 고치기')),
       top,
       h('div', { class: 'row', style: { alignItems: 'stretch' } }, mine, friend),
       h('div', { class: 'note' + (st.fixed ? (st.way === 'copy' ? ' bad' : ' good') : ''), html: !st.fixed
         ? '평균 함수에 실수가 숨어 있어요 — 점수가 몇 개든 언제나 <b>3</b> 으로 나눠요. 위의 🐞 단추로 고쳐 보세요.'
         : st.way === 'copy'
           ? '내 프로그램은 고쳐졌지만 <b>친구 프로그램은 여전히 틀려요.</b> 복사해 간 곳마다 찾아가 다시 고쳐야 해요. 복사본이 열 군데라면?'
-          : '<b>score.py 한 곳만 고쳤는데 두 프로그램이 모두 맞아졌어요.</b> 이것이 모듈로 나누는 까닭이에요.' }));
+          : '<b>score.py 한 곳만 고쳤는데 두 프로그램이 모두 맞아졌어요.</b> 이것이 모듈로 나누는 까닭이에요.' }),
+      h('div', { class: 'small muted' }, `해 본 것: 방법 A ${rec.copy ? '✔' : '—'} · 방법 B ${rec.mod ? '✔' : '—'}  (두 방법 모두 🐞 고치기를 눌러 견줘 보면 이 활동이 끝나요)`));
   }
   fill(body, h('div', { class: 'cols' },
     h('div', { class: 'col', style: { flex: 1.25 } }, head('왜 파일을 나눌까?', '친구가 「네 프로그램의 <b>평균 함수</b>만 빌려 줘」 라고 해요. 어떻게 나눠 줄까요?'), stage),
@@ -66,13 +69,17 @@ export function renderWhy(body) {
 }
 
 /* ── 2. 모듈 ⊂ 패키지 ⊂ 라이브러리 ── */
-export function renderLayers(body) {
-  const st = { lit: 'lib', real: false };
+export function renderLayers(body, api) {
+  const st = { lit: null, real: false };
+  const rec = slot('layers', () => ({ seen: [] }));
   const left = h('div', { class: 'col grow' });
   const right = h('div', { class: 'col', style: { width: '400px', flex: 'none' } });
   const box = (cls, label, kids, id) => h('div', { class: `nest ${cls}` + (st.lit === id ? ' lit' : ''), onClick: (e) => { e.stopPropagation(); st.lit = id; paint(); } },
     h('div', { class: 'lab' }, label), kids ? h('div', { class: 'kids' }, kids) : null);
   function paint() {
+    // 눌러 본 개념을 적어 둔다 — 네 가지를 모두 눌러 보면 이 활동이 끝난다
+    if (st.lit && !rec.seen.includes(st.lit)) { rec.seen.push(st.lit); save(); api.refreshNav(); }
+    if (!st.lit) st.lit = 'lib';
     const lib = st.real ? NUMPY_REAL : NUMPY_BOOK;
     fill(left,
       head('모듈 ⊂ 패키지 ⊂ 라이브러리', '상자를 눌러 보세요. 큰 상자가 작은 상자를 품고 있어요. (교과서 143쪽의 NumPy 예)'),
@@ -88,7 +95,8 @@ export function renderLayers(body) {
         : h('div', { class: 'note small', html: '예) <code>from matplotlib import pyplot</code> — matplotlib 은 라이브러리, pyplot 은 그 안의 모듈 <code>pyplot.py</code> 예요. (교과서 143쪽 · 실제로도 그렇게 생겼어요)' }));
     const L = LEVELS.find((x) => x.id === st.lit);
     fill(right,
-      h('div', { class: 'row' }, LEVELS.map((x) => h('button', { class: `chip ${x.cls}`, style: { border: x.id === st.lit ? '2px solid currentColor' : '2px solid transparent', cursor: 'pointer', fontSize: '15px', padding: '3px 10px' }, onClick: () => { st.lit = x.id; paint(); } }, `${x.icon} ${x.name}`))),
+      h('div', { class: 'row' }, LEVELS.map((x) => h('button', { class: `chip ${x.cls}`, style: { border: x.id === st.lit ? '2px solid currentColor' : '2px solid transparent', cursor: 'pointer', fontSize: '15px', padding: '3px 10px' }, onClick: () => { st.lit = x.id; paint(); } }, `${rec.seen.includes(x.id) ? '✔ ' : ''}${x.icon} ${x.name}`))),
+      h('div', { class: 'tiny muted' }, `네 가지를 모두 눌러 보세요 (${rec.seen.length}/${LEVELS.length})`),
       h('div', { class: 'card col', style: { gap: '8px' } },
         h('h3', {}, `${L.icon} ${L.name} `, h('span', { class: 'muted small' }, L.en)),
         h('p', {}, L.def),
@@ -142,7 +150,6 @@ export function renderSort(body, api) {
   fill(body, wrap);
   paint();
 }
-export const sortDone = () => { const S = slot('sort', () => ({ put: {}, graded: false })); return S.graded && SORT_CARDS.every((c) => S.put[c.id] === c.ans); };
 
 /* ── 4. import 문 읽기 ── */
 export function renderAnatomy(body, api) {
@@ -164,11 +171,10 @@ export function renderAnatomy(body, api) {
     head('import 문 읽기', '노랗게 밑줄 친 것은 무엇일까요? 알맞은 것을 고르세요.'), grid));
   paint();
 }
-export const anatomyDone = () => { const S = slot('anatomy', () => ({})); return ANATOMY.every((it, i) => S[i] === it.ans); };
 
 /* ── 5. 모듈은 어디서 올까 — pip ── */
-export function renderWhere(body) {
-  const S = slot('pip', () => ({ installed: [], project: null }));
+export function renderWhere(body, api) {
+  const S = slot('pip', () => ({ installed: [], project: null, ok: false }));
   const ideHost = h('div', { style: { flex: 1, minWidth: 0, height: '100%' } });
   fill(body, h('div', { class: 'cols' },
     h('div', { class: 'col', style: { width: '430px', flex: 'none', gap: '8px' } },
@@ -190,5 +196,9 @@ export function renderWhere(body) {
     project: S.project || PIP_PROJECT, commands: true, installed: S.installed, termHeight: 230,
     onChange: (p) => { S.project = p; save(); },
     onInstall: (list) => { S.installed = list; save(); toast(list.includes('gtts') ? '설치 완료! 다시 ▶ 를 눌러 보세요' : '지웠어요'); },
+    // 설치한 gtts 로 소리 파일을 실제로 만들어 내면 이 활동이 끝난다
+    onRun: (r) => {
+      if (!S.ok && r.ok && (r.written || []).length && r.events.some((e) => e.name === 'gtts')) { S.ok = true; save(); toast('✅ 외부 라이브러리를 설치해서 써 봤어요!', 'good'); api.refreshNav(); }
+    },
   });
 }

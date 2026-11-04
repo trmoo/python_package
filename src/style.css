@@ -35,6 +35,17 @@ button { font: inherit; }
 .tab:hover { background: var(--soft); color: var(--ink); }
 .tab.on { background: var(--c); color: #fff; }
 .tab .n { opacity: .7; margin-right: 3px; }
+.tab.locked { color: #9aa3b5; }
+.tab.locked:hover { background: var(--soft); color: var(--muted); }
+.save-btn { border: 1px solid var(--brand); background: var(--brand-bg); color: var(--brand); font-weight: 800; font-size: 13px; padding: 5px 11px; border-radius: 999px; cursor: pointer; white-space: nowrap; }
+.save-btn:hover { background: var(--brand); color: #fff; }
+.field { display: flex; flex-direction: column; gap: 3px; font-size: 14px; font-weight: 700; }
+.field input { font: inherit; font-size: 18px; font-weight: 600; padding: 7px 11px; border: 2px solid var(--line); border-radius: 10px; }
+.field input:focus { outline: none; border-color: var(--brand); }
+.lock-list { display: flex; flex-direction: column; gap: 6px; margin: 4px 0; }
+.lock-item { display: flex; gap: 10px; align-items: center; text-align: left; border: 1px solid var(--line); background: var(--paper); border-radius: 10px; padding: 7px 11px; cursor: pointer; }
+.lock-item:hover { border-color: var(--brand); background: var(--brand-bg); }
+.lock-item .t { font-weight: 800; } .lock-item .w { font-size: 13px; color: var(--muted); }
 .reset-btn { border: 1px solid var(--line); background: var(--paper); color: var(--muted); font-weight: 700; font-size: 13px; padding: 5px 10px; border-radius: 999px; cursor: pointer; white-space: nowrap; }
 .reset-btn:hover { color: var(--bad); border-color: var(--bad); background: var(--bad-bg); }
 .sub { height: 44px; flex: none; display: flex; align-items: center; gap: 6px; padding: 0 16px; border-bottom: 1px solid var(--line); background: #fafbfe; }
