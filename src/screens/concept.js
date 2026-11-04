@@ -5,7 +5,7 @@ import { h, fill, toast } from '../ui/dom.js';
 import { codeBlock, quickRun, head } from './common.js';
 import { createIDE } from '../ui/ide.js';
 import { slot, save } from '../lib/store.js';
-import { WHY, LEVELS, INIT_INFO, NUMPY_BOOK, PANDAS, BINS, SORT_CARDS, ROLES, ANATOMY, SOURCES, PIP_PROJECT } from '../data/concept.js';
+import { WHY, LEVELS, INIT_INFO, NUMPY_BOOK, PANDAS, treeLines, numpyBookAsNode, BINS, SORT_CARDS, ROLES, ANATOMY, SOURCES, PIP_PROJECT } from '../data/concept.js';
 
 /* ── 1. 왜 나눌까 ── */
 export function renderWhy(body, api) {
@@ -70,7 +70,7 @@ export function renderWhy(body, api) {
 
 /* ── 2. 모듈 ⊂ 패키지 ⊂ 라이브러리 ── */
 export function renderLayers(body, api) {
-  const st = { lit: null, view: 'std' };
+  const st = { lit: null, view: 'std', shape: 'box' };
   const rec = slot('layers', () => ({ seen: [] }));
   const left = h('div', { class: 'col grow' });
   const right = h('div', { class: 'col', style: { width: '400px', flex: 'none' } });
@@ -96,17 +96,35 @@ export function renderLayers(body, api) {
     return box('', `📚 ${NUMPY_BOOK.name}  — 라이브러리`, NUMPY_BOOK.pkgs.map((pk) => box('pkg', `📦 ${pk.name}`, [
       initChip(), ...pk.mods.map((m) => box('mod', `📄 ${m.name}`, m.fns.map(fnChip), 'mod')), note(pk.note)], 'pkg')), 'lib');
   }
+  /** 폴더 나무 그림 — 미션 화면의 mypackage/ 그림과 같은 꼴. 이름을 누르면 그 개념이 켜지고,
+   *  모듈 줄의 「# def … / # class …」 를 누르면 「모듈 안의 이름」 이 켜진다 */
+  function folderTree(root) {
+    const on = (id) => (st.lit === id ? { background: 'color-mix(in srgb, currentColor 16%, transparent)', borderRadius: '4px', boxShadow: '0 0 0 2px color-mix(in srgb, currentColor 16%, transparent)' } : {});
+    // 두 칸 격자 — 왼쪽은 나무, 오른쪽은 # 설명. 설명 칸이 줄마다 같은 자리에서 시작한다
+    return h('div', { class: 'tree', style: { display: 'grid', gridTemplateColumns: 'max-content 1fr', columnGap: '36px', fontSize: '16px', lineHeight: '1.8', padding: '12px 18px' } },
+      treeLines(root).map(([k, text, cmt, id]) => {
+        const name = text.replace(/^[│├└─ ]+/, '');
+        const fnLine = k === 'f';
+        return [
+          h('span', {}, h('span', { style: { color: '#adb5bd' } }, text.slice(0, text.length - name.length)),
+            h('span', { class: k, style: { cursor: 'pointer', ...(id === 'lib' ? { color: 'var(--lib)' } : {}), ...on(id) }, onClick: pick(id) }, name)),
+          h('span', {}, cmt ? h('span', { class: 'c', style: { cursor: 'pointer', ...(fnLine ? { color: 'var(--nm)', ...on('fn') } : {}) }, onClick: pick(fnLine ? 'fn' : id) }, `# ${cmt}`) : null)];
+      }));
+  }
 
   function paint() {
     // 눌러 본 개념을 적어 둔다 — 네 가지를 모두 눌러 보면 이 활동이 끝난다
     if (st.lit && !rec.seen.includes(st.lit)) { rec.seen.push(st.lit); save(); api.refreshNav(); }
     if (!st.lit) st.lit = 'lib';
+    const tree = st.shape === 'tree';
+    const shapeBtn = (id, label) => h('button', { class: 'btn small' + (st.shape === id ? ' primary' : ''), onClick: () => { st.shape = id; paint(); } }, label);
     fill(left,
-      h('h2', {}, '모듈 ⊂ 패키지 ⊂ 라이브러리'),
-      h('div', { class: 'row' }, h('span', { class: 'muted small' }, '상자를 눌러 보세요 — 큰 상자가 작은 상자를 품고 있어요.'), h('span', { class: 'grow' }),
+      h('div', { class: 'row' }, h('h2', { style: { margin: 0 } }, '모듈 ⊂ 패키지 ⊂ 라이브러리'), h('span', { class: 'grow' }),
+        h('span', { class: 'muted small' }, '그림 꼴'), shapeBtn('box', '🧱 상자 그림'), shapeBtn('tree', '🌳 폴더 나무 그림')),
+      h('div', { class: 'row' }, h('span', { class: 'muted small' }, tree ? '이름을 눌러 보세요 — 들여 쓴 줄은 바로 위 폴더 안에 있어요.' : '상자를 눌러 보세요 — 큰 상자가 작은 상자를 품고 있어요.'), h('span', { class: 'grow' }),
         h('button', { class: 'btn small' + (st.view === 'std' ? ' primary' : ''), onClick: () => { st.view = 'std'; paint(); } }, '🐼 pandas 로 보기'),
         h('button', { class: 'btn small' + (st.view === 'book' ? ' primary' : ''), onClick: () => { st.view = 'book'; paint(); } }, '📕 교과서 143쪽 그림 (NumPy)')),
-      st.view === 'std' ? node(PANDAS) : bookTree(),
+      tree ? folderTree(st.view === 'std' ? PANDAS : numpyBookAsNode()) : st.view === 'std' ? node(PANDAS) : bookTree(),
       st.view === 'std'
         ? h('div', { class: 'row', style: { alignItems: 'stretch', flexWrap: 'nowrap' } },
           codeBlock('import pandas as pd\ndf = pd.read_csv("score.csv")\nprint(df.head())', true),

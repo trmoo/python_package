@@ -3,7 +3,7 @@
  */
 import { 묶음, 확인, 참 } from './harness.mjs';
 import { runProject } from '../src/lib/pymini.js';
-import { WHY, SORT_CARDS, BINS, ANATOMY, ROLES, LEVELS } from '../src/data/concept.js';
+import { WHY, SORT_CARDS, BINS, ANATOMY, ROLES, LEVELS, PANDAS, NUMPY_BOOK, INIT_INFO, treeLines, numpyBookAsNode } from '../src/data/concept.js';
 import { FORMS, PKGFORMS, FIXES, QUIZ } from '../src/data/imports.js';
 import { MISSIONS } from '../src/data/missions.js';
 import { fixPassedForTest } from './helpers.mjs';
@@ -30,6 +30,22 @@ for (const [i, a] of ANATOMY.entries()) {
   참(`import 문 ${i + 1} 「${src}」 — 문법 오류가 아니다`, !['SyntaxError', 'IndentationError'].includes(r.errorType));
 }
 확인('개념 네 가지', LEVELS.map((l) => l.id), ['lib', 'pkg', 'mod', 'fn']);
+
+묶음('폴더 나무 그림 — 상자 그림과 같은 자료에서 나온다');
+{
+  const pd = treeLines(PANDAS);
+  확인('pandas 나무 — 11줄', pd.length, 11);
+  확인('pandas 나무 — 맨 윗줄은 라이브러리', pd[0].slice(0, 2), ['d', 'pandas/']);
+  참('pandas 나무 — 폴더(패키지) 줄 바로 다음은 언제나 __init__.py', pd.every(([k, , , id], i) => id !== 'pkg' || /__init__\.py$/.test(pd[i + 1][1])));
+  확인('pandas 나무 — 맨 깊은 줄', pd.at(-1).slice(0, 3), ['f', '        └── readers.py', 'def read_csv()']);
+  확인('pandas 나무 — class 와 def 를 가른다', pd.filter((r) => r[0] === 'f').map((r) => r[2]), ['class DataFrame', 'class Series', 'def read_csv()']);
+  확인('pandas 나무 — 맨 위 __init__.py 에 설명이 붙는다', pd[1][2], PANDAS.init);
+  const np = treeLines(numpyBookAsNode());
+  확인('NumPy 나무 — 교과서 그림처럼 맨 위에 __init__.py 가 없다', np[1].slice(0, 2), ['d', '├── core/']);
+  확인('NumPy 나무 — 모듈 셋', np.filter((r) => r[0] === 'f').map((r) => r[1].trim().split(' ').pop()), NUMPY_BOOK.pkgs.flatMap((p) => p.mods.map((m) => m.name)));
+  참('나무 글자에 빈칸 맞춤이 없다 (설명 칸은 화면 격자가 맞춘다)', [...pd, ...np].every((r) => r[1] === r[1].trimEnd()));
+  참('__init__.py 설명 — pandas 두 줄이 있다', INIT_INFO.code.includes('from pandas.io.api import read_csv') && INIT_INFO.code.includes('from pandas.core.api import DataFrame'));
+}
 
 묶음('예측 표 — 칸마다 결과가 수업 의도와 같다');
 {

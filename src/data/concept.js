@@ -65,6 +65,35 @@ export const PANDAS = {
   ],
 };
 
+/** 폴더 나무 그림 (2026-11-05 사용자 요청 — 미션 화면의 mypackage/ 그림과 같은 꼴로 pandas·NumPy 도 보여 준다)
+ *  상자 그림과 같은 자료(PANDAS · NUMPY_BOOK)에서 줄을 뽑으므로 두 그림이 어긋날 수 없다.
+ *  돌려주는 줄: [갈래 d·i·f, 나무 글자, # 설명, 누르면 켜질 개념(lib·pkg·init·mod)]
+ *  ⚠ 설명 칸을 빈칸으로 맞추지 않는다 — │├└─ 가 글꼴에 따라 한 칸 너비가 아니라 줄마다 어긋난다. 화면이 두 칸 격자로 맞춘다 */
+export function treeLines(root) {
+  const sig = (f) => (f.endsWith('( )') ? `def ${f.replace('( )', '()')}` : `class ${f}`);
+  const rows = [['d', root.name, root.note || '', 'lib']];
+  const walk = (n, prefix) => {
+    const kids = [];
+    if (n.kind === 'pkg' || n.init) kids.push({ kind: 'init', note: n.kind === 'lib' ? n.init : '' });
+    kids.push(...(n.kids || []));
+    kids.forEach((k, i) => {
+      const last = i === kids.length - 1;
+      const branch = prefix + (last ? '└── ' : '├── ');
+      if (k.kind === 'init') rows.push(['i', `${branch}__init__.py`, k.note, 'init']);
+      else if (k.kind === 'mod') rows.push(['f', branch + k.name, k.fns.map(sig).join(' · '), 'mod']);
+      else { rows.push(['d', branch + k.name, k.note || '', 'pkg']); walk(k, prefix + (last ? '    ' : '│   ')); }
+    });
+  };
+  walk(root, '');
+  return rows;
+}
+
+/** 교과서 143쪽 그림의 NumPy 를 PANDAS 와 같은 꼴로 (폴더 나무 그림용) */
+export const numpyBookAsNode = () => ({
+  kind: 'lib', name: NUMPY_BOOK.name, note: '교과서 그림 · pip install numpy',
+  kids: NUMPY_BOOK.pkgs.map((pk) => ({ kind: 'pkg', name: pk.name, note: pk.note, kids: pk.mods.map((m) => ({ kind: 'mod', ...m })) })),
+});
+
 /** 교과서 143쪽 그림의 NumPy (구조를 보여 주려는 예시) */
 export const NUMPY_BOOK = {
   name: 'NumPy/',
