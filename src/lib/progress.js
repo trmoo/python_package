@@ -11,7 +11,8 @@ export const TAB_ORDER = ['concept', 'import', 'build', 'assess'];
 /**
  * 화면 열쇠('탭/화면') → { title, how(완료 조건 설명), optional?, done(S) }
  * optional 은 잠금에 쓰지 않는다 — ⭐ 심화(미션 4)는 빨리 끝낸 학생용이라 막지 않는다.
- * 설명만 읽는 화면(평가 기준·VS Code 따라 하기)은 여기에 없다.
+ * 설명만 읽는 화면(수행평가 문항·IDLE 따라 하기)은 여기에 없다.
+ * ④ 연습 과제의 기록 칸은 'exam' — 2026-11-05 문항을 바꾸면서 예전 'practice'(mytools 연습) 기록은 쓰지 않는다.
  */
 export const ACTIVITIES = {
   'concept/why': { title: '왜 파일을 나눌까?', how: '방법 A·B 에서 각각 🐞 고치기 단추를 눌러 결과를 견줘 보기',
@@ -36,7 +37,7 @@ export const ACTIVITIES = {
   'build/m2': { title: '미션 2 · 패키지로 묶기', how: '체크리스트를 모두 채우기', done: (S) => !!(S['mission:m2'] && S['mission:m2'].done) },
   'build/m3': { title: '미션 3 · 모듈 하나 더, import 두 가지 꼴', how: '체크리스트를 모두 채우기', done: (S) => !!(S['mission:m3'] && S['mission:m3'].done) },
   'build/m4': { title: '미션 4 · ⭐ 심화', how: '체크리스트를 모두 채우기 (선택)', optional: true, done: (S) => !!(S['mission:m4'] && S['mission:m4'].done) },
-  'assess/practice': { title: '연습 과제 · 조건 점검기', how: '조건 여섯 가지를 모두 ✅ (5점 수준)', done: (S) => !!(S.practice && S.practice.passed) },
+  'assess/practice': { title: '연습 과제 · 조건 점검기', how: '수행평가 문항 2번의 조건 여섯 가지를 모두 ✅', done: (S) => !!(S.exam && S.exam.passed) },
 };
 
 export const isDone = (key, S) => !!(ACTIVITIES[key] && ACTIVITIES[key].done(S));

@@ -1,57 +1,76 @@
 /*! 📦 패키지 공작소 — © 2026 티쳐무 · 모든 권리 보유
- *  수행평가 조건 점검기 — 여러 모습의 프로젝트를 넣어 칸마다 ✅ / 🟨 / ⬜ 가 맞게 켜지는지.
+ *  ④ 수행평가 문항(foods 패키지 + start.py) 조건 점검기 — 학생이 흔히 하는 실수를 넣어 칸마다 ✅ / 🟨 / ⬜ 가 맞게 켜지는지.
+ *  모범 답·실수 사례는 정답이 들어 있어 깃허브에 올리지 않는 test/local/exam-projects.mjs 에 있다(2026-11-05 사용자 지시).
+ *  그 파일이 없는 곳(깃허브 Actions)에서는 그 부분만 건너뛴다.
  */
 import { readFileSync } from 'node:fs';
 import { 묶음, 확인, 참 } from './harness.mjs';
-import { check, importForms } from '../src/lib/checker.js';
+import { check, importForms, CONDITIONS, EXPECTED, MODULES } from '../src/lib/checker.js';
 import { fixPassedForTest } from './helpers.mjs';
-import { MISSIONS } from '../src/data/missions.js';
-import { PRACTICE_START } from '../src/data/assess.js';
+import { PRACTICE_START, QUESTION, GOAL_TREE } from '../src/data/assess.js';
+import { EXAM } from './golden-cases.mjs';
 
-const states = (p) => check(p).items.map((x) => (x.state === 'ok' ? 'O' : x.state === 'part' ? 'P' : '.')).join('');
-const M = (id) => MISSIONS.find((m) => m.id === id).answer;
+const mark = (x) => (x.state === 'ok' ? 'O' : x.state === 'part' ? 'P' : '.');
+const states = (p) => check(p).items.map(mark).join('');
 
-묶음('조건 점검기 — 대표 모습');
-확인('처음(빈 main.py) — 1점 수준', check(PRACTICE_START).level, 1);
-확인('처음 — 칸 모두 비어 있음', states(PRACTICE_START), '......');
-확인('미션 3 답 — 여섯 칸 모두 ✅', states(M('m3')), 'OOOOOO');
-확인('미션 3 답 — 5점 수준', check(M('m3')).level, 5);
-확인('미션 2 답 — 모듈이 하나·꼴이 하나', states(M('m2')), 'OOPOPO');
-확인('미션 2 답 — 3점 수준', check(M('m2')).level, 3);
-{
-  const p = { files: { ...M('m3').files } }; delete p.files['mytools/__init__.py'];
-  확인('__init__.py 를 빼면 ② 만 ⬜ — 실행은 그대로 된다', states(p), 'O.OOOO');
-  확인('__init__.py 를 빼면 3점 수준 (조건 일부)', check(p).level, 3);
-  p.files['mytools/_init_.py'] = '';
-  확인('밑줄을 하나씩만 쓴 _init_.py 는 🟨 로 알려 준다', states(p).slice(1, 2), 'P');
-}
-{
-  const p = { files: { ...M('m3').files, 'main.py': 'from mytools import greet\nfrom mytools.calc import add\n\ngreet.hello("민지")\n' } };
-  확인('calc 모듈 함수를 안 부르면 ⑥ 🟨', states(p), 'OOOOOP');
-  확인('그때는 4점 수준', check(p).level, 4);
-}
-{
-  const p = { files: { ...M('m3').files, 'main.py': 'from mytools import greet\nfrom mytools.calc import add\n\ngreet.hello("민지")\nprint(add(2, "3"))\n' } };
-  확인('실행 중간에 오류 — ⑥ 🟨, 4점 수준', [states(p), check(p).level], ['OOOOOP', 4]);
-}
-{
-  const files = {};
-  for (const [k, v] of Object.entries(M('m3').files)) files[k.replace(/^mytools\//, 'MyTools/')] = v;
-  files['main.py'] = files['main.py'].replace(/mytools/g, 'MyTools');
-  확인('대문자 패키지 이름은 ① 🟨', states({ files }).slice(0, 1), 'P');
-}
-{
-  const p = { files: { ...M('m3').files } };
-  p.files['mytools/main.py'] = p.files['main.py']; delete p.files['main.py'];
-  확인('main.py 가 패키지 안에 있으면 ④ 🟨', states(p).slice(3, 4), 'P');
-}
-{
-  const p = { files: { ...M('m3').files, 'mytools/empty.py': '# 아직 비어 있음\n' } };
-  확인('함수 없는 모듈이 섞이면 ③ 🟨', states(p).slice(2, 3), 'P');
-}
-확인('폴더만 만들면 2점 수준', check({ files: { 'main.py': '' }, dirs: ['mytools'] }).level, 2);
+묶음('조건 점검기 — 처음 모습');
+확인('조건은 여섯 칸', CONDITIONS.length, 6);
+확인('처음(빈 start.py) — 칸 모두 비어 있음', states(PRACTICE_START), '......');
+참('처음 — 「아직 시작하지 않았어요」', check(PRACTICE_START).summary.startsWith('아직 시작하지'));
+확인('빈 폴더만 — ① ✅ 나머지 ⬜', states({ files: { 'start.py': PRACTICE_START.files['start.py'] }, dirs: ['foods', 'foods/drinks', 'foods/fruits'] }), 'O.....');
+참('빈 폴더만 — 「⬜ · 🟨 칸을 채워」', check({ files: { 'start.py': '' }, dirs: ['foods'] }).summary.includes('칸을 채워'));
+확인('출력 예 여섯 줄 (문항 그대로)', EXPECTED, ['신선한 우유', '상쾌한 콜라', '깨끗한 생수', '맛있는 오렌지', '시원한 수박', '새콤한 사과']);
 
-묶음('import 꼴 가려내기');
+if (EXAM) {
+  const { EXAM_CASES, ANSWER, START } = EXAM;
+
+  묶음('조건 점검기 — 모범 답 (이 컴퓨터에만)');
+  {
+    const r = check(ANSWER);
+    확인('모범 답 — 여섯 칸 모두 ✅', states(ANSWER), 'OOOOOO');
+    참('모범 답 — allOk', r.allOk && r.okCount === 6 && r.total === 6);
+    확인('모범 답 — start.py 출력이 출력 예와 같다', r.run.stdout, EXPECTED.join('\n'));
+  }
+
+  묶음('조건 점검기 — 흔한 실수 (이 컴퓨터에만)');
+  for (const [name, proj, , want, wantX] of EXAM_CASES) {
+    const r = check(proj);
+    확인(`${name} — 칸`, r.items.map(mark).join('') + ' ' + mark(r.extra), `${want} ${wantX}`);
+    참(`${name} — 🟨 · ⬜ 칸마다 설명이 있다`, [...r.items, r.extra].every((it) => it.state === 'ok' || (it.detail && it.detail.length > 4)));
+  }
+  {
+    const find = (n) => check(EXAM_CASES.find((c) => c[0] === n)[1]);
+    참('덮어쓰기 — 같은 문구가 세 번이라고 짚는다', /깨끗한 생수」 — 3번/.test(find('함수만 세 번 불러와 덮어씀').items[5].detail));
+    참('모듈 맨 아래에서도 부름 — 「두 번씩」', /두 번씩/.test(find('모듈 맨 아래에서도 부름').items[5].detail));
+    참('print 로 감쌈 — None 을 짚는다', /None/.test(find('print( ) 로 한 번 더 감쌈').items[5].detail));
+    참('문구를 직접 print — 「부르지 않은 함수」', /부르지 않은 함수/.test(find('문구를 직접 print').items[5].detail));
+    참('start.py 를 foods 안에 — 옮기라고 한다', /맨 위\(다운로드\)로 옮겨/.test(find('start.py 를 foods 안에').items[5].detail));
+    참('Foods — 소문자로', /소문자 foods/.test(find('폴더 이름 Foods').items[0].detail));
+    참('milk.py.txt — .txt 를 짚는다', /\.txt/.test(find('milk.py.txt').items[1].detail));
+    참('Drink — 대소문자', /Drink → drink/.test(find('함수 이름 Drink').items[3].detail));
+    참('return — print 로', /return 이 아니라 print/.test(find('print 대신 return').items[4].detail));
+    참('foods.py 가림 — 그 파일을 짚는다', /foods\.py 가 foods 폴더를 가렸어요/.test(find('다운로드에 foods.py · __init__ 없음').items[5].detail));
+  }
+  {
+    const p = { files: { ...ANSWER.files, 'foods/drinks/milk.py': "def drink():\n    print('신선한 우유 ')\n" } };
+    확인('줄 끝 빈칸은 같은 것으로 본다', states(p), 'OOOOOO');
+    const q = { files: { ...ANSWER.files, 'foods/fruits/apple.py': "def say(t):\n    print(t)\n\ndef eat():\n    say('새콤한 사과')\n" } };
+    확인('함수 안에서 다른 함수를 거쳐도 된다', states(q), 'OOOOOO');
+  }
+  {
+    // ⚠ 앱 번들에 정답이 들어가면 학생이 읽을 수 있다 — 모범 답 start.py 의 줄이 앱 소스 어디에도 없어야 한다
+    const srcs = ['../src/data/assess.js', '../src/lib/checker.js', '../src/screens/assess.js'].map((f) => readFileSync(new URL(f, import.meta.url), 'utf-8'));
+    const answerLines = START.split('\n').map((x) => x.trim()).filter((x) => x && !x.startsWith('#'));
+    참('⚠ 앱 소스에 모범 답 start.py 의 줄이 들어 있지 않다', answerLines.every((ln) => srcs.every((s) => !s.includes(ln))));
+  }
+} else console.log('  (test/local/ 이 없어 모범 답·흔한 실수 시험은 건너뜁니다)');
+
+묶음('문항 자료');
+확인('문항 두 부분 — 5점 · 10점', QUESTION.parts.map((x) => x.points), [5, 10]);
+참('압축 파일 이름 예가 그대로 있다', QUESTION.parts[0].lines.join(' ').includes('모듈패키지30101홍길동.zip'));
+참('폴더 그림에 모듈 여섯 개가 다 있다', MODULES.every((m) => GOAL_TREE.some(([, t]) => t.includes(`${m.mod}.py`))));
+
+묶음('import 꼴 가려내기 (③ 탭 미션 3 이 쓴다)');
 확인('세 가지 꼴', importForms('import p.a\nfrom p import b\nfrom p.c import f\n', 'p').forms, ['A', 'B', 'C']);
 확인('as 를 붙여도 같은 꼴', importForms('import p.a as x\n', 'p').forms, ['A']);
 확인('import 패키지 만은 꼴로 세지 않는다', importForms('import p\n', 'p'), { forms: [], usesPkg: true });

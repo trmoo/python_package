@@ -7,6 +7,11 @@ import { buildReport, reportFileName, safeName } from '../src/lib/report.js';
 import { SORT_CARDS, ANATOMY, LEVELS } from '../src/data/concept.js';
 import { FIXES, QUIZ } from '../src/data/imports.js';
 import { MISSIONS } from '../src/data/missions.js';
+import { EXAM } from './golden-cases.mjs';
+import { PRACTICE_START } from '../src/data/assess.js';
+
+/* ④ 연습 과제의 모범 답은 정답이라 test/local/ 에만 있다(깃허브에 안 올림). 없으면 처음 모습으로 대신한다 */
+const EXAM_PROJECT = EXAM ? EXAM.ANSWER : PRACTICE_START;
 
 /** 모든 필수 활동을 끝낸 기록 */
 function fullState() {
@@ -23,12 +28,13 @@ function fullState() {
     'mission:m1': { done: true, project: MISSIONS[0].answer, runs: {} },
     'mission:m2': { done: true, project: MISSIONS[1].answer, runs: {} },
     'mission:m3': { done: true, project: MISSIONS[2].answer, runs: {} },
-    practice: { passed: true, project: MISSIONS[2].answer },
+    exam: { passed: true, project: EXAM_PROJECT },
   };
 }
 
 묶음('탭 잠금');
 {
+  참('예전 mytools 연습을 통과한 기록(practice)으로는 ④ 연습 과제가 끝난 것이 아니다', !isDone('assess/practice', { practice: { passed: true } }));
   const keys = (l) => l.map((x) => x.key);
   확인('첫 탭은 언제나 열려 있다', blockers('concept', {}), []);
   확인('처음에는 ② 탭이 ① 의 활동 다섯 가지에 막힌다', keys(blockers('import', {})), ['concept/why', 'concept/layers', 'concept/sort', 'concept/anatomy', 'concept/where']);
@@ -55,11 +61,14 @@ function fullState() {
   참('저장한 때', html.includes('2026-11-05 09:30'));
   참('진행 13 / 13', html.includes('<b>13 / 13</b>'));
   참('네 탭이 모두 있다', ['① 개념 잡기', '② 불러오기', '③ 패키지 만들기', '④ 수행평가 준비'].every((t) => html.includes(t)));
-  참('연습 과제 자기 점검 5점 수준', html.includes('자기 점검: 5점 수준'));
+  참('연습 과제 자기 점검 칸이 있다', html.includes(EXAM ? '자기 점검: 6 / 6' : '자기 점검: 0 / 6'));
+  참('start.py 실행 결과 칸이 있다', html.includes('python start.py 실행 결과'));
+  if (EXAM) 참('(이 컴퓨터에만) 모범 답의 실행 결과가 들어 있다', html.includes('새콤한 사과') && html.includes('foods/drinks/milk.py'));
+  참('예전 mytools 연습 기록(practice)은 ④ 에 쓰지 않는다', !buildReport({ practice: { passed: true, project: MISSIONS[2].answer } }, { id: '1', name: 'x' }).includes('자기 점검:'));
   참('만든 코드가 들어 있다', html.includes('from mytools.calc import add'));
   참('저작권 표시', html.includes('© 2026 티쳐무'));
   const empty = buildReport({}, { id: '20102', name: '김철수' });
   참('빈 기록도 만들어진다', empty.includes('<b>0 / 13</b>') && empty.includes('아직 시작하지 않았어요'));
-  const evil = buildReport({ practice: { project: { files: { 'main.py': '</pre><script>alert(1)</script>' } } } }, { id: '1', name: 'x' });
+  const evil = buildReport({ exam: { project: { files: { 'start.py': '</pre><script>alert(1)</script>' } } } }, { id: '1', name: 'x' });
   참('학생 코드 속 태그도 글자 그대로', !evil.includes('<script>alert(1)</script>'));
 }

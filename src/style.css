@@ -248,6 +248,25 @@ pre.code mark { background: rgba(255, 212, 59, .28); color: inherit; border-radi
 .nest.fn { --c: var(--nm); padding: 2px 8px; border-style: dashed; font-family: var(--mono); font-size: 13px; font-weight: 700; color: var(--nm); }
 .nest.ini { --c: #868e96; padding: 2px 8px; border-style: dotted; font-family: var(--mono); font-size: 13px; color: #555; }
 
+/* ① ⭐ 내 꾸러미도 pip 로 — 택배 네 걸음 */
+.pub-steps { display: flex; align-items: stretch; gap: 6px; flex: none; }
+.pub-arrow { align-self: center; color: #adb5bd; font-weight: 900; font-size: 22px; }
+.pub-step { flex: 1; display: flex; gap: 10px; align-items: center; text-align: left; border: 2px solid var(--line); background: var(--paper); color: var(--ink); border-radius: 14px; padding: 8px 12px; cursor: pointer; position: relative; }
+.pub-step:hover { border-color: var(--lib); }
+.pub-step .ic { font-size: 32px; line-height: 1; }
+.pub-step .n { font-size: 12px; font-weight: 900; color: var(--lib); }
+.pub-step .t { font-weight: 900; font-size: 18px; line-height: 1.25; }
+.pub-step .c { font-size: 12.5px; color: var(--muted); font-family: var(--mono); }
+.pub-step.on { border-color: var(--lib); background: var(--lib-bg); box-shadow: 0 0 0 3px color-mix(in srgb, var(--lib) 22%, transparent); }
+.pub-step .seen { position: absolute; top: 5px; right: 9px; color: var(--good); font-weight: 900; }
+.pub-detail { flex: 1; min-height: 0; display: flex; gap: 18px; }
+.pub-say { font-size: 18px; font-weight: 700; line-height: 1.45; }
+.pub-tip { display: flex; gap: 8px; align-items: flex-start; font-size: 14.5px; line-height: 1.45; background: var(--soft); border-radius: 10px; padding: 6px 10px; }
+.pub-tip .ic { flex: none; font-size: 17px; }
+.pub-list { margin: 0; padding-left: 22px; font-size: 15.5px; line-height: 1.7; }
+.pub .shot { font-size: 14.5px; flex: none; }
+.pub .tree { font-size: 14.5px; flex: none; }
+
 /* 퀴즈 */
 .quiz-q { font-weight: 800; font-size: 17px; margin-bottom: 8px; }
 .choices { display: flex; flex-direction: column; gap: 6px; }
@@ -286,5 +305,18 @@ table.t td.c { text-align: center; font-weight: 900; }
 .shot .bar { background: #323233; padding: 3px 8px; font-size: 11.5px; color: #bbb; }
 .shot .in { padding: 7px 10px; font-family: var(--mono); line-height: 1.6; }
 .shot .hl { background: #04395e; outline: 1px solid #007acc; border-radius: 3px; padding: 0 3px; color: #fff; }
+/* IDLE 창은 밝은 창이라 따로 */
+.shot.light { background: #fff; color: #1d2433; border-color: #c9d0dc; }
+.shot.light .bar { background: #e9ecf2; color: #495057; }
 .stepcard { display: flex; flex-direction: column; gap: 6px; }
+
+/* ④ 수행평가 문항 */
+.qpart { display: flex; flex-direction: column; gap: 4px; padding: 10px 14px; }
+.qpart ul { margin: 0; padding-left: 20px; font-size: 14.5px; line-height: 1.5; }
+.qpart li + li { margin-top: 3px; }
+.qhead { display: flex; align-items: center; gap: 8px; font-size: 17px; }
+.qno { display: inline-flex; width: 26px; height: 26px; border-radius: 50%; background: var(--brand); color: #fff; font-weight: 900; align-items: center; justify-content: center; }
+.qpts { margin-left: auto; font-weight: 900; color: var(--brand); }
+.qouts { display: flex; flex-wrap: wrap; gap: 2px 12px; font-size: 13.5px; color: var(--muted); }
+.outbox { margin: 0; font-family: var(--mono); font-size: 14.5px; line-height: 1.6; background: #1f2433; color: #e9ecf5; border-radius: 10px; padding: 8px 14px; }
 .stepcard .num { display: inline-flex; width: 26px; height: 26px; border-radius: 50%; background: var(--brand); color: #fff; font-weight: 900; align-items: center; justify-content: center; margin-right: 6px; }

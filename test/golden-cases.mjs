@@ -4,7 +4,13 @@
  *
  *  사례 = { name, files: {경로: 내용}, dirs?: [빈 폴더], entry?: 실행할 파일 }
  */
+import { existsSync } from 'node:fs';
 import { goldenFromData } from '../src/data/golden-from-data.js';
+
+/* ④ 수행평가 문항의 모범 답·흔한 실수 — 정답이 들어 있어 깃허브에 올리지 않는 test/local/ 에 있다(2026-11-05 사용자 지시).
+ * 이 컴퓨터에만 있으므로, 없으면(깃허브 Actions 등) null 이 되고 그 시험은 건너뛴다. */
+const LOCAL = new URL('./local/exam-projects.mjs', import.meta.url);
+export const EXAM = existsSync(LOCAL) ? await import(LOCAL.href) : null;
 
 const calc = 'def add(a, b):\n    return a + b\n\ndef sub(a, b):\n    return a - b\n';
 const pkg = {
@@ -92,4 +98,11 @@ const SNIPPETS = [
 export function cases() {
   const out = SNIPPETS.map(([name, files, dirs, entry]) => ({ name, files, dirs: dirs || [], entry: entry || 'main.py' }));
   return out.concat(goldenFromData());
+}
+
+/** ④ 수행평가 문항(foods 패키지 + start.py)의 모범 답과 흔한 실수 — 조건 점검기가 기대는 출력·오류가 진짜 파이썬과 같은지.
+ *  test/local/golden-exam.json 과 견준다 (test/local 이 없으면 빈 목록) */
+export function examCases() {
+  if (!EXAM) return [];
+  return EXAM.EXAM_CASES.map(([name, p, entry]) => ({ name: `수행평가 · ${name}`, files: p.files, dirs: p.dirs || [], entry }));
 }

@@ -16,7 +16,7 @@ import { isDone, blockers, teacherCodeOk } from './lib/progress.js';
 import { renderWhy, renderLayers, renderSort, renderAnatomy, renderWhere } from './screens/concept.js';
 import { renderForms, renderPkgForms, renderFix, renderQuiz } from './screens/imports.js';
 import { renderMission } from './screens/build.js';
-import { renderRubric, renderPractice, renderVSCode } from './screens/assess.js';
+import { renderQuestion, renderPractice, renderIDLE } from './screens/assess.js';
 import { MISSIONS } from './data/missions.js';
 
 const TABS = [
@@ -36,9 +36,9 @@ const SCREENS = [
   { tab: 'import', id: 'fix', title: '오류 고치기', short: '오류 고치기', render: renderFix },
   { tab: 'import', id: 'quiz', title: '확인 문제', short: '확인 문제', render: renderQuiz },
   ...MISSIONS.map((m) => ({ tab: 'build', id: m.id, title: m.title, short: m.short, render: renderMission(m.id) })),
-  { tab: 'assess', id: 'rubric', title: '평가 기준과 조건', short: '평가 기준과 조건', render: renderRubric },
+  { tab: 'assess', id: 'question', title: '수행평가 문항', short: '수행평가 문항', render: renderQuestion },
   { tab: 'assess', id: 'practice', title: '연습 과제 · 조건 점검기', short: '연습 과제', render: renderPractice },
-  { tab: 'assess', id: 'vscode', title: '내 컴퓨터(VS Code)에서 만들기', short: 'VS Code 에서', render: renderVSCode },
+  { tab: 'assess', id: 'idle', title: 'IDLE 에서 만들고 제출하기', short: 'IDLE 에서', render: renderIDLE },
 ].map((s) => ({ ...s, done: () => isDone(`${s.tab}/${s.id}`, S) }));
 
 /** 잠긴 탭을 누르면 — 끝내지 않은 활동 목록(누르면 그리로 간다) + 선생님 열기 */

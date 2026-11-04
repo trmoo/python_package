@@ -1,39 +1,45 @@
 /*! 📦 패키지 공작소 — © 2026 티쳐무 · 모든 권리 보유
  *  ④ 수행평가 준비 — 자료.
- *  평가 기준표는 선생님이 주신 것을 그대로 옮겼다(2026-11-04). 조건 여섯 가지는 lib/checker.js 의 CONDITIONS.
+ *  문항은 선생님이 주신 것을 그대로 옮겼다(2026-11-05, 「1. IDLE·압축 제출 5점 / 2. 사용자 정의 패키지 제작 10점」).
+ *  2026-11-04 의 「조건 여섯 가지 + 5단계 루브릭(5점)」 은 이 문항으로 바꾸면서 뺐다.
+ *  앱이 확인하는 조건은 lib/checker.js 의 CONDITIONS · SPEC.
+ *  ⚠ 정답 코드(start.py 의 답)는 두지 않는다 — 앱 번들에 들어가 학생이 읽을 수 있다.
  *  ⚠ node 로 불러다 시험하므로 DOM 을 만들지 말 것.
  */
+import { SPEC } from '../lib/checker.js';
 
-export const RUBRIC = {
-  title: '사용자 정의 패키지 제작 (5점)',
-  rows: [
-    [5, '조건을 모두 준수하여 패키지를 제작하고, 모듈을 올바르게 실행시킴.'],
-    [4, '조건을 모두 준수하여 패키지를 제작하였으나, 모듈을 부분적으로 올바르게 실행시킴.'],
-    [3, '조건을 부분적으로 준수하여 패키지를 제작함.'],
-    [2, '폴더 및 파일 생성을 시도함.'],
-    [1, '패키지 제작을 시도하지 않음.'],
+/** 문항 — 화면에 그대로 싣는다 */
+export const QUESTION = {
+  title: '모듈과 패키지',
+  lead: '제시된 조건에 따른 프로그래밍 코드를 작성하여 제출하시오.',
+  parts: [
+    {
+      no: 1, points: 5, title: 'IDLE 프로그램 사용 환경',
+      lines: ['IDLE 프로그램 사용 환경을 설정하고, 작성된 소스 코드의 모든 파일은 하나의 파일로 압축해서 제출합니다.',
+        '압축 파일명 예: <b>모듈패키지30101홍길동.zip</b> 와 같은 형식으로 저장하여 제출합니다.'],
+    },
+    {
+      no: 2, points: 10, title: '사용자 정의 패키지 제작',
+      lines: ['<b>다운로드</b> 폴더에 <code>foods</code> 폴더를 만들고, <code>foods</code> 하위에 <code>drinks</code>, <code>fruits</code> 폴더를 만든다.',
+        ...SPEC.map((s) => `<code>${s.sub}</code> 폴더에 ${s.mods.map(([m]) => `<code>${m}.py</code>`).join(', ')} 파일을 생성한다. 각각의 파일은 사용자 정의 함수(함수명 <code>${s.fn}</code>)를 사용하며, 각각 아래와 같이 출력하도록 프로그래밍한다.`),
+        '<b>다운로드</b> 폴더에 <code>start.py</code> 파일을 만들고, 위 패키지를 import 하고, 함수 호출로 결과를 아래와 같이 출력하도록 프로그래밍한다.'],
+    },
   ],
 };
 
-/** 조건을 다 지킨 예 (이 앱의 미션 3 답과 같은 꼴) */
-export const EXAMPLE_TREE = [
-  ['d', '내프로젝트/', ''],
-  ['f', '├── main.py', '④ 여기서 실행'],
-  ['d', '└── mytools/', '① 패키지'],
-  ['i', '    ├── __init__.py', '② 표지판'],
-  ['f', '    ├── greet.py', '③ def hello'],
-  ['f', '    └── calc.py', '③ def add'],
-];
-export const EXAMPLE_MAIN = 'from mytools import greet     # ⑤\nfrom mytools.calc import add  # ⑤\n\ngreet.hello("민지")           # ⑥\nprint("2 + 3 =", add(2, 3))   # ⑥';
-
-/** 연습 주제 — 코드는 주지 않고 「무엇을 나눌지」 만 귀띔한다 */
-export const TOPICS = [
-  { icon: '🍚', name: '급식 도우미', pkg: 'lunch', mods: ['menu.py — 요일별 메뉴 알려 주기', 'kcal.py — 칼로리 더하기'], note: '교과서 144쪽 「급식 메뉴 알림」 을 떠올려 보세요.' },
-  { icon: '🎲', name: '게임 도우미', pkg: 'gametools', mods: ['dice.py — 주사위 굴리기 (random)', 'score.py — 점수 더하기·등급 매기기'], note: '⚠ 파일 이름을 random.py 로 지으면 파이썬의 random 이 가려져요!' },
-  { icon: '🧮', name: '계산 도우미', pkg: 'mathtools', mods: ['shape.py — 넓이·둘레', 'convert.py — 단위 바꾸기 (cm ↔ m)'], note: '⚠ 패키지 이름을 math 로 지으면 내장 모듈 math 에 가려져요.' },
+/** 완성했을 때의 폴더 모습 — 문항에 적힌 것을 그림으로 옮긴 것 (코드는 없다) */
+export const GOAL_TREE = [
+  ['d', '다운로드/', '실제 경로 C:\\Users\\(내 이름)\\Downloads'],
+  ['f', '├── start.py', 'foods 와 나란히'],
+  ['d', '└── foods/', ''],
+  ['d', '    ├── drinks/', 'def drink( )'],
+  ...SPEC[0].mods.map(([m, t], i, a) => ['f', `    │   ${i === a.length - 1 ? '└──' : '├──'} ${m}.py`, t]),
+  ['d', '    └── fruits/', 'def eat( )'],
+  ...SPEC[1].mods.map(([m, t], i, a) => ['f', `        ${i === a.length - 1 ? '└──' : '├──'} ${m}.py`, t]),
 ];
 
+/** 연습 과제의 처음 모습 — 다운로드 폴더에 빈 start.py 하나 */
 export const PRACTICE_START = {
-  files: { 'main.py': '# 수행평가 연습 — 조건 여섯 가지를 모두 채워 보세요.\n# 왼쪽 「조건 점검기」 가 실시간으로 알려 줍니다.\n' },
+  files: { 'start.py': '# start.py — 다운로드 폴더(맨 위)에 둡니다.\n# foods 패키지를 import 하고, 함수를 불러 여섯 줄을 출력해 보세요.\n' },
   dirs: [],
 };

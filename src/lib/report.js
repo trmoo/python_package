@@ -5,7 +5,7 @@
  *  ⚠ node 로 불러다 시험하므로 DOM 을 만지지 말 것. 돌려주는 것은 HTML 글자다.
  */
 import { ACTIVITIES, isDone, progressOf } from './progress.js';
-import { check, CONDITIONS } from './checker.js';
+import { check, CONDITIONS, EXTRA } from './checker.js';
 import { SORT_CARDS, BINS, ANATOMY, ROLES } from '../data/concept.js';
 import { FORMS, PKGFORMS, FIXES, QUIZ } from '../data/imports.js';
 import { MISSIONS, stepsDone } from '../data/missions.js';
@@ -94,12 +94,15 @@ export function buildReport(S, who, now = new Date()) {
 
   // ── ④ 수행평가 연습 ──
   parts.push('<h2>④ 수행평가 준비</h2>');
-  const pr = S0.practice || {};
+  const pr = S0.exam || {};
   if (pr.project) {
     const res = check(pr.project);
-    parts.push(section('assess/practice', `<table><tr><th>조건</th><th>상태</th><th>설명</th></tr>${res.items.map((it, i) => `<tr><td>${'①②③④⑤⑥'[i]} ${esc(CONDITIONS[i].title)}</td><td>${it.state === 'ok' ? '✅' : it.state === 'part' ? '🟨' : '⬜'}</td><td>${esc(it.detail)}</td></tr>`).join('')}</table>
-<p><b>자기 점검: ${res.level}점 수준</b> — ${esc(res.levelText)} <span class="muted">(채점이 아니라 앱의 자기 점검이에요)</span></p>
-${res.run ? `<div class="file"><div class="fname">▶ python main.py 실행 결과</div><pre>${esc(res.run.stdout)}${res.run.stderr ? `\n${esc(res.run.stderr)}` : ''}</pre></div>` : ''}
+    const mark = (st) => (st === 'ok' ? '✅' : st === 'part' ? '🟨' : '⬜');
+    const rows = res.items.map((it, i) => `<tr><td>${'①②③④⑤⑥'[i]} ${esc(CONDITIONS[i].title)}</td><td>${mark(it.state)}</td><td>${esc(it.detail)}</td></tr>`).join('')
+      + `<tr><td>${esc(EXTRA.title)}</td><td>${mark(res.extra.state)}</td><td>${esc(res.extra.detail)}</td></tr>`;
+    parts.push(section('assess/practice', `<p class="muted">수행평가 문항 2번(foods 패키지 + start.py)을 앱에서 연습한 것</p><table><tr><th>조건</th><th>상태</th><th>설명</th></tr>${rows}</table>
+<p><b>자기 점검: ${res.okCount} / ${res.total}</b> — ${esc(res.summary)} <span class="muted">(채점이 아니라 앱의 자기 점검이에요. 1번 IDLE·압축은 앱이 볼 수 없어요)</span></p>
+${res.run ? `<div class="file"><div class="fname">▶ python start.py 실행 결과</div><pre>${esc(res.run.stdout)}${res.run.stderr ? `\n${esc(res.run.stderr)}` : ''}</pre></div>` : ''}
 <details open><summary>내가 만든 프로젝트</summary>${projectHtml(pr.project)}</details>`));
   } else parts.push(section('assess/practice', '<p class="muted">아직 시작하지 않았어요.</p>'));
 
@@ -129,6 +132,6 @@ pre{font-family:'D2Coding',Consolas,monospace;background:#1f2433;color:#e9ecf5;p
 <p>필수 활동 <b>${prog.done} / ${prog.total}</b> 끝냄</p>
 <div class="bar"><i style="width:${Math.round((prog.done / prog.total) * 100)}%"></i></div>
 ${parts.join('\n')}
-<footer>📦 ${ACTIVITY_NAME} 에서 저장한 활동 기록입니다. 「○점 수준」 은 앱의 자기 점검이며 채점 결과가 아닙니다.<br>© 2026 티쳐무 · 모든 권리 보유</footer>
+<footer>📦 ${ACTIVITY_NAME} 에서 저장한 활동 기록입니다. 조건 점검 결과는 앱의 자기 점검이며 채점 결과가 아닙니다.<br>© 2026 티쳐무 · 모든 권리 보유</footer>
 </main></body></html>`;
 }

@@ -1358,7 +1358,19 @@ export class Interp {
         const m = this.importModule(full, st);
         if (st.names.includes('*')) {
           const all = m.members.get('__all__');
-          const keys = all && (all.k === 'list' || all.k === 'tuple') ? all.v.map((x) => x.v) : [...m.members.keys()].filter((k) => !k.startsWith('_'));
+          const listed = all && (all.k === 'list' || all.k === 'tuple');
+          const keys = listed ? all.v.map((x) => x.v) : [...m.members.keys()].filter((k) => !k.startsWith('_'));
+          // 패키지의 __all__ 에 적힌 이름이 아직 없으면 그 이름의 하위 모듈을 불러온다
+          // (진짜 파이썬의 _handle_fromlist — __init__.py 에 __all__ = ['milk', …] 를 적으면 * 로 모듈이 따라오는 까닭)
+          if (listed && m.isPkg) {
+            for (const k of keys) {
+              if (m.members.has(k)) continue;
+              const sub = `${full}.${k}`;
+              try { this.importModule(sub, st, false); } catch (e) {
+                if (!(e instanceof PyError && e.type === 'ModuleNotFoundError' && e.missingName === sub)) throw e;
+              }
+            }
+          }
           for (const k of keys) if (m.members.has(k)) env.set(k, m.members.get(k));
           return null;
         }
