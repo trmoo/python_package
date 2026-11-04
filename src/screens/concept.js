@@ -186,7 +186,7 @@ export function renderAnatomy(body, api) {
   }
   function paint() { fill(grid, ANATOMY.map(item)); }
   fill(body, h('div', { class: 'col', style: { height: '100%' } },
-    head('import 문 읽기', '노랗게 밑줄 친 것은 무엇일까요? 알맞은 것을 고르세요.'), grid));
+    h('div', { class: 'row', style: { marginBottom: '8px' } }, h('h2', { style: { margin: 0 } }, 'import 문 읽기'), h('span', { class: 'muted' }, '노랗게 밑줄 친 것은 무엇일까요? 알맞은 것을 고르세요.')), grid));
   paint();
 }
 
