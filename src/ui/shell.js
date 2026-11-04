@@ -70,7 +70,7 @@ export function createShell(stage, { tabs, screens, tools, logo, gate, onBlocked
     fill(foot,
       h('button', { class: 'nav prev', disabled: cur === 0, onClick: () => show(cur - 1) }, '◀ 이전'),
       h('div', { class: 'where' }, `${tabs.indexOf(tab) + 1}. ${tab.label} — ${s.title}`),
-      h('span', { class: 'copy' }, '© 2026 티쳐무 · 모든 권리 보유'),
+      h('span', { class: 'copy' }, h('span', { class: 'src' }, '교과서 쪽수는 「프로그래밍」(씨마스커뮤니케이션) 기준'), h('br'), '© 2026 티쳐무 · 모든 권리 보유'),
       h('button', { class: 'nav next', disabled: cur === screens.length - 1, onClick: () => show(cur + 1) }, '다음 ▶'));
   }
 
