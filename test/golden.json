@@ -1,0 +1,737 @@
+{
+ "python": "3.12.3",
+ "cases": [
+  {
+   "name": "import 모듈",
+   "stdout": "5\n4",
+   "stderr": "",
+   "code": 0
+  },
+  {
+   "name": "from 모듈 import 이름",
+   "stdout": "5",
+   "stderr": "",
+   "code": 0
+  },
+  {
+   "name": "import 모듈 as 별명",
+   "stdout": "5",
+   "stderr": "",
+   "code": 0
+  },
+  {
+   "name": "from 모듈 import *",
+   "stdout": "2 0",
+   "stderr": "",
+   "code": 0
+  },
+  {
+   "name": "별명 다음에 원래 이름",
+   "stdout": "",
+   "stderr": "Traceback (most recent call last):\n  File \"C:\\project\\main.py\", line 2, in <module>\n    print(calc.add(2, 3))\n          ^^^^\nNameError: name 'calc' is not defined",
+   "code": 1
+  },
+  {
+   "name": "from 다음에 모듈 이름",
+   "stdout": "",
+   "stderr": "Traceback (most recent call last):\n  File \"C:\\project\\main.py\", line 2, in <module>\n    print(calc.add(2, 3))\n          ^^^^\nNameError: name 'calc' is not defined",
+   "code": 1
+  },
+  {
+   "name": "import 다음에 함수만",
+   "stdout": "",
+   "stderr": "Traceback (most recent call last):\n  File \"C:\\project\\main.py\", line 2, in <module>\n    print(add(2, 3))\n          ^^^\nNameError: name 'add' is not defined",
+   "code": 1
+  },
+  {
+   "name": "모듈 이름 오타",
+   "stdout": "",
+   "stderr": "Traceback (most recent call last):\n  File \"C:\\project\\main.py\", line 1, in <module>\n    import clac\nModuleNotFoundError: No module named 'clac'",
+   "code": 1
+  },
+  {
+   "name": "함수 이름 오타 (점)",
+   "stdout": "",
+   "stderr": "Traceback (most recent call last):\n  File \"C:\\project\\main.py\", line 2, in <module>\n    print(calc.ad(2, 3))\n          ^^^^^^^\nAttributeError: module 'calc' has no attribute 'ad'. Did you mean: 'add'?",
+   "code": 1
+  },
+  {
+   "name": "함수 이름 오타 (from)",
+   "stdout": "",
+   "stderr": "Traceback (most recent call last):\n  File \"C:\\project\\main.py\", line 1, in <module>\n    from calc import ad\nImportError: cannot import name 'ad' from 'calc' (C:\\project\\calc.py). Did you mean: 'add'?",
+   "code": 1
+  },
+  {
+   "name": "import 에 .py",
+   "stdout": "",
+   "stderr": "Traceback (most recent call last):\n  File \"C:\\project\\main.py\", line 1, in <module>\n    import calc.py\nModuleNotFoundError: No module named 'calc.py'; 'calc' is not a package",
+   "code": 1
+  },
+  {
+   "name": "from 에 .py",
+   "stdout": "",
+   "stderr": "Traceback (most recent call last):\n  File \"C:\\project\\main.py\", line 1, in <module>\n    from calc.py import add\nModuleNotFoundError: No module named 'calc.py'; 'calc' is not a package",
+   "code": 1
+  },
+  {
+   "name": "붙임표 이름",
+   "stdout": "",
+   "stderr": "  File \"C:\\project\\main.py\", line 1\n    import my-calc\n             ^\nSyntaxError: invalid syntax",
+   "code": 1
+  },
+  {
+   "name": "따옴표 이름",
+   "stdout": "",
+   "stderr": "  File \"C:\\project\\main.py\", line 1\n    import \"calc\"\n           ^^^^^^\nSyntaxError: invalid syntax",
+   "code": 1
+  },
+  {
+   "name": "슬래시 경로",
+   "stdout": "",
+   "stderr": "  File \"C:\\project\\main.py\", line 1\n    import mypackage/module1\n                    ^\nSyntaxError: invalid syntax",
+   "code": 1
+  },
+  {
+   "name": "코드 속 pip",
+   "stdout": "",
+   "stderr": "  File \"C:\\project\\main.py\", line 1\n    pip install gtts\n        ^^^^^^^\nSyntaxError: invalid syntax",
+   "code": 1
+  },
+  {
+   "name": "math 가림 실패",
+   "stdout": "",
+   "stderr": "Traceback (most recent call last):\n  File \"C:\\project\\main.py\", line 2, in <module>\n    print(math.add(2, 3))\n          ^^^^^^^^\nAttributeError: module 'math' has no attribute 'add'",
+   "code": 1
+  },
+  {
+   "name": "random 가림",
+   "stdout": "",
+   "stderr": "Traceback (most recent call last):\n  File \"C:\\project\\main.py\", line 2, in <module>\n    print(random.randint(1, 6))\n          ^^^^^^^^^^^^^^\nAttributeError: module 'random' has no attribute 'randint'",
+   "code": 1
+  },
+  {
+   "name": "두 번 import",
+   "stdout": "hello.py 가 실행되었습니다\n끝",
+   "stderr": "",
+   "code": 0
+  },
+  {
+   "name": "__name__",
+   "stdout": "greet: greet\nmain: __main__\n안녕",
+   "stderr": "",
+   "code": 0
+  },
+  {
+   "name": "__name__ 직접 실행",
+   "stdout": "greet: __main__\n안녕",
+   "stderr": "",
+   "code": 0
+  },
+  {
+   "name": "모듈 출력",
+   "stdout": "<module 'calc' from 'C:\\\\project\\\\calc.py'>\n<module 'math' (built-in)>\n<module 'random' from 'C:\\\\Python312\\\\Lib\\\\random.py'>",
+   "stderr": "",
+   "code": 0
+  },
+  {
+   "name": "모듈 속 변수",
+   "stdout": "와우고 2026",
+   "stderr": "",
+   "code": 0
+  },
+  {
+   "name": "dir",
+   "stdout": "['__builtins__', '__cached__', '__doc__', '__file__', '__loader__', '__name__', '__package__', '__spec__', 'add', 'sub']",
+   "stderr": "",
+   "code": 0
+  },
+  {
+   "name": "NameError 제안",
+   "stdout": "",
+   "stderr": "Traceback (most recent call last):\n  File \"C:\\project\\main.py\", line 1, in <module>\n    print(ad(1,2))\n          ^^\nNameError: name 'ad' is not defined. Did you mean: 'id'?",
+   "code": 1
+  },
+  {
+   "name": "import 잊음",
+   "stdout": "",
+   "stderr": "Traceback (most recent call last):\n  File \"C:\\project\\main.py\", line 1, in <module>\n    print(math.pi)\n          ^^^^\nNameError: name 'math' is not defined. Did you forget to import 'math'?",
+   "code": 1
+  },
+  {
+   "name": "한글 오타",
+   "stdout": "",
+   "stderr": "Traceback (most recent call last):\n  File \"C:\\project\\main.py\", line 4, in <module>\n    f()\n  File \"C:\\project\\main.py\", line 3, in f\n    print(합게)\n          ^^^^\nNameError: name '합게' is not defined. Did you mean: '합계'?",
+   "code": 1
+  },
+  {
+   "name": "모듈 함수 속 오류",
+   "stdout": "",
+   "stderr": "Traceback (most recent call last):\n  File \"C:\\project\\main.py\", line 2, in <module>\n    print(calc.add(1, 'a'))\n          ^^^^^^^^^^^^^^^^\n  File \"C:\\project\\calc.py\", line 2, in add\n    return a + b\n           ~~^~~\nTypeError: unsupported operand type(s) for +: 'int' and 'str'",
+   "code": 1
+  },
+  {
+   "name": "여러 줄 호출",
+   "stdout": "",
+   "stderr": "Traceback (most recent call last):\n  File \"C:\\project\\main.py\", line 2, in <module>\n    x = calc.add(1,\n        ^^^^^^^^^^^\n  File \"C:\\project\\calc.py\", line 2, in add\n    return a + b\n           ~~^~~\nTypeError: unsupported operand type(s) for +: 'int' and 'str'",
+   "code": 1
+  },
+  {
+   "name": "인수 부족",
+   "stdout": "",
+   "stderr": "Traceback (most recent call last):\n  File \"C:\\project\\main.py\", line 2, in <module>\n    calc.add(1)\nTypeError: add() missing 1 required positional argument: 'b'",
+   "code": 1
+  },
+  {
+   "name": "인수 넘침",
+   "stdout": "",
+   "stderr": "Traceback (most recent call last):\n  File \"C:\\project\\main.py\", line 2, in <module>\n    print(calc.add(1, 2, 3))\n          ^^^^^^^^^^^^^^^^^\nTypeError: add() takes 2 positional arguments but 3 were given",
+   "code": 1
+  },
+  {
+   "name": "모듈 실행 중 오류",
+   "stdout": "",
+   "stderr": "Traceback (most recent call last):\n  File \"C:\\project\\main.py\", line 1, in <module>\n    from mypackage import m2\n  File \"C:\\project\\mypackage\\m2.py\", line 2, in <module>\n    print(10 / 0)\n          ~~~^~~\nZeroDivisionError: division by zero",
+   "code": 1
+  },
+  {
+   "name": "모듈 문법 오류",
+   "stdout": "",
+   "stderr": "Traceback (most recent call last):\n  File \"C:\\project\\main.py\", line 1, in <module>\n    from bad import x\n  File \"C:\\project\\bad.py\", line 1\n    def f(:\n          ^\nSyntaxError: invalid syntax",
+   "code": 1
+  },
+  {
+   "name": "모듈 콜론 빠짐",
+   "stdout": "",
+   "stderr": "Traceback (most recent call last):\n  File \"C:\\project\\main.py\", line 1, in <module>\n    import bad\n  File \"C:\\project\\bad.py\", line 1\n    def hi()\n            ^\nSyntaxError: expected ':'",
+   "code": 1
+  },
+  {
+   "name": "모듈 들여쓰기",
+   "stdout": "",
+   "stderr": "Traceback (most recent call last):\n  File \"C:\\project\\main.py\", line 1, in <module>\n    import bad\n  File \"C:\\project\\bad.py\", line 2\n    print(1)\n    ^\nIndentationError: expected an indented block after function definition on line 1",
+   "code": 1
+  },
+  {
+   "name": "import 패키지.모듈",
+   "stdout": "module1 의 hello 입니다",
+   "stderr": "",
+   "code": 0
+  },
+  {
+   "name": "from 패키지 import 모듈",
+   "stdout": "module1 의 hello 입니다",
+   "stderr": "",
+   "code": 0
+  },
+  {
+   "name": "from 패키지.모듈 import 함수",
+   "stdout": "module1 의 hello 입니다",
+   "stderr": "",
+   "code": 0
+  },
+  {
+   "name": "import 패키지.모듈 as",
+   "stdout": "module1 의 hello 입니다",
+   "stderr": "",
+   "code": 0
+  },
+  {
+   "name": "패키지만 import",
+   "stdout": "",
+   "stderr": "Traceback (most recent call last):\n  File \"C:\\project\\main.py\", line 2, in <module>\n    mypackage.module1.hello()\n    ^^^^^^^^^^^^^^^^^\nAttributeError: module 'mypackage' has no attribute 'module1'",
+   "code": 1
+  },
+  {
+   "name": "패키지.모듈 다음에 모듈만",
+   "stdout": "",
+   "stderr": "Traceback (most recent call last):\n  File \"C:\\project\\main.py\", line 2, in <module>\n    module1.hello()\n    ^^^^^^^\nNameError: name 'module1' is not defined",
+   "code": 1
+  },
+  {
+   "name": "from 패키지 다음에 전체 경로",
+   "stdout": "",
+   "stderr": "Traceback (most recent call last):\n  File \"C:\\project\\main.py\", line 2, in <module>\n    mypackage.module1.hello()\n    ^^^^^^^^^\nNameError: name 'mypackage' is not defined",
+   "code": 1
+  },
+  {
+   "name": "from 패키지.모듈 다음에 모듈",
+   "stdout": "",
+   "stderr": "Traceback (most recent call last):\n  File \"C:\\project\\main.py\", line 2, in <module>\n    module1.hello()\n    ^^^^^^^\nNameError: name 'module1' is not defined",
+   "code": 1
+  },
+  {
+   "name": "없는 하위 모듈 import",
+   "stdout": "",
+   "stderr": "Traceback (most recent call last):\n  File \"C:\\project\\main.py\", line 1, in <module>\n    import mypackage.module3\nModuleNotFoundError: No module named 'mypackage.module3'",
+   "code": 1
+  },
+  {
+   "name": "없는 하위 모듈 from",
+   "stdout": "",
+   "stderr": "Traceback (most recent call last):\n  File \"C:\\project\\main.py\", line 1, in <module>\n    from mypackage import module3\nImportError: cannot import name 'module3' from 'mypackage' (C:\\project\\mypackage\\__init__.py)",
+   "code": 1
+  },
+  {
+   "name": "from 패키지 import 함수",
+   "stdout": "",
+   "stderr": "Traceback (most recent call last):\n  File \"C:\\project\\main.py\", line 1, in <module>\n    from mypackage import hello\nImportError: cannot import name 'hello' from 'mypackage' (C:\\project\\mypackage\\__init__.py)",
+   "code": 1
+  },
+  {
+   "name": "패키지 둘 다",
+   "stdout": "module1 의 hello 입니다\nmodule2 의 bye 입니다",
+   "stderr": "",
+   "code": 0
+  },
+  {
+   "name": "__init__ 은 한 번",
+   "stdout": "패키지를 불러왔어요\n끝",
+   "stderr": "",
+   "code": 0
+  },
+  {
+   "name": "__init__ 에서 불러 두기",
+   "stdout": "module1 의 hello 입니다\nmodule1 의 hello 입니다",
+   "stderr": "",
+   "code": 0
+  },
+  {
+   "name": "__init__ 없는 패키지",
+   "stdout": "module1 의 hello 입니다\n<module 'mypackage' (namespace) from ['C:\\\\project\\\\mypackage']>",
+   "stderr": "",
+   "code": 0
+  },
+  {
+   "name": "__init__ 없는 패키지 from 실패",
+   "stdout": "",
+   "stderr": "Traceback (most recent call last):\n  File \"C:\\project\\main.py\", line 1, in <module>\n    from mypackage import nothing\nImportError: cannot import name 'nothing' from 'mypackage' (unknown location)",
+   "code": 1
+  },
+  {
+   "name": "main 이 패키지 안",
+   "stdout": "",
+   "stderr": "Traceback (most recent call last):\n  File \"C:\\project\\mypackage\\main.py\", line 1, in <module>\n    from mypackage import module1\nModuleNotFoundError: No module named 'mypackage'",
+   "code": 1
+  },
+  {
+   "name": "모듈 파일을 직접 실행",
+   "stdout": "",
+   "stderr": "",
+   "code": 0
+  },
+  {
+   "name": "main.py 에서 점 import",
+   "stdout": "",
+   "stderr": "Traceback (most recent call last):\n  File \"C:\\project\\main.py\", line 1, in <module>\n    from . import calc\nImportError: attempted relative import with no known parent package",
+   "code": 1
+  },
+  {
+   "name": "패키지 안 모듈끼리",
+   "stdout": "떡볶이 3000원",
+   "stderr": "",
+   "code": 0
+  },
+  {
+   "name": "패키지 안 모듈끼리 점",
+   "stdout": "김밥 2500원",
+   "stderr": "",
+   "code": 0
+  },
+  {
+   "name": "패키지 안 키 오류",
+   "stdout": "",
+   "stderr": "Traceback (most recent call last):\n  File \"C:\\project\\main.py\", line 2, in <module>\n    order.buy(\"라면\")\n  File \"C:\\project\\shop\\order.py\", line 4, in buy\n    print(f\"{name} {menu.PRICE[name]}원\")\n                    ~~~~~~~~~~^^^^^^\nKeyError: '라면'",
+   "code": 1
+  },
+  {
+   "name": "하위 패키지",
+   "stdout": "휘익!\n휘익!",
+   "stderr": "",
+   "code": 0
+  },
+  {
+   "name": "클래스 모듈",
+   "stdout": "라면 선택\n없는 메뉴",
+   "stderr": "",
+   "code": 0
+  },
+  {
+   "name": "메소드 인수",
+   "stdout": "",
+   "stderr": "Traceback (most recent call last):\n  File \"C:\\project\\main.py\", line 3, in <module>\n    m.choose()\nTypeError: Menu.choose() missing 1 required positional argument: 'name'",
+   "code": 1
+  },
+  {
+   "name": "f-string 소수",
+   "stdout": "평균 2.33",
+   "stderr": "",
+   "code": 0
+  },
+  {
+   "name": "콜론 빠짐",
+   "stdout": "",
+   "stderr": "  File \"C:\\project\\main.py\", line 1\n    def hi()\n            ^\nSyntaxError: expected ':'",
+   "code": 1
+  },
+  {
+   "name": "들여쓰기 없음",
+   "stdout": "",
+   "stderr": "  File \"C:\\project\\main.py\", line 2\n    print(1)\n    ^\nIndentationError: expected an indented block after function definition on line 1",
+   "code": 1
+  },
+  {
+   "name": "들여쓰기 없음 if",
+   "stdout": "",
+   "stderr": "  File \"C:\\project\\main.py\", line 3\n    print(x)\n    ^\nIndentationError: expected an indented block after 'if' statement on line 2",
+   "code": 1
+  },
+  {
+   "name": "쓸데없는 들여쓰기",
+   "stdout": "",
+   "stderr": "  File \"C:\\project\\main.py\", line 2\n    print(2)\nIndentationError: unexpected indent",
+   "code": 1
+  },
+  {
+   "name": "들여쓰기 어긋남",
+   "stdout": "",
+   "stderr": "  File \"C:\\project\\main.py\", line 3\n    return x\n            ^\nIndentationError: unindent does not match any outer indentation level",
+   "code": 1
+  },
+  {
+   "name": "괄호 안 닫음",
+   "stdout": "",
+   "stderr": "  File \"C:\\project\\main.py\", line 1\n    print(\"안녕\"\n         ^\nSyntaxError: '(' was never closed",
+   "code": 1
+  },
+  {
+   "name": "쉼표 빠짐",
+   "stdout": "",
+   "stderr": "  File \"C:\\project\\main.py\", line 2\n    print(\"값\" x)\n          ^^^^^\nSyntaxError: invalid syntax. Perhaps you forgot a comma?",
+   "code": 1
+  },
+  {
+   "name": "따옴표 안 닫음",
+   "stdout": "",
+   "stderr": "  File \"C:\\project\\main.py\", line 1\n    print(\"안녕)\n          ^\nSyntaxError: unterminated string literal (detected at line 1)",
+   "code": 1
+  },
+  {
+   "name": "else 홀로",
+   "stdout": "",
+   "stderr": "  File \"C:\\project\\main.py\", line 1\n    else:\n    ^^^^\nSyntaxError: invalid syntax",
+   "code": 1
+  },
+  {
+   "name": "왜 나눌까 · 복사 · 버그 · 내 것",
+   "stdout": "113.33333333333333",
+   "stderr": "",
+   "code": 0
+  },
+  {
+   "name": "왜 나눌까 · 복사 · 버그 · 친구",
+   "stdout": "11.333333333333334",
+   "stderr": "",
+   "code": 0
+  },
+  {
+   "name": "왜 나눌까 · 모듈 · 버그 · 내 것",
+   "stdout": "113.33333333333333",
+   "stderr": "",
+   "code": 0
+  },
+  {
+   "name": "왜 나눌까 · 모듈 · 버그 · 친구",
+   "stdout": "11.333333333333334",
+   "stderr": "",
+   "code": 0
+  },
+  {
+   "name": "왜 나눌까 · 복사 · 고침 · 내 것",
+   "stdout": "85.0",
+   "stderr": "",
+   "code": 0
+  },
+  {
+   "name": "왜 나눌까 · 복사 · 고침 · 친구",
+   "stdout": "8.5",
+   "stderr": "",
+   "code": 0
+  },
+  {
+   "name": "왜 나눌까 · 모듈 · 고침 · 내 것",
+   "stdout": "85.0",
+   "stderr": "",
+   "code": 0
+  },
+  {
+   "name": "왜 나눌까 · 모듈 · 고침 · 친구",
+   "stdout": "8.5",
+   "stderr": "",
+   "code": 0
+  },
+  {
+   "name": "예측 표 꼴 1-1",
+   "stdout": "5",
+   "stderr": "",
+   "code": 0
+  },
+  {
+   "name": "예측 표 꼴 1-2",
+   "stdout": "",
+   "stderr": "Traceback (most recent call last):\n  File \"C:\\project\\main.py\", line 2, in <module>\n    print(add(2, 3))\n          ^^^\nNameError: name 'add' is not defined",
+   "code": 1
+  },
+  {
+   "name": "예측 표 꼴 1-3",
+   "stdout": "",
+   "stderr": "Traceback (most recent call last):\n  File \"C:\\project\\main.py\", line 2, in <module>\n    print(c.add(2, 3))\n          ^\nNameError: name 'c' is not defined",
+   "code": 1
+  },
+  {
+   "name": "예측 표 꼴 2-1",
+   "stdout": "",
+   "stderr": "Traceback (most recent call last):\n  File \"C:\\project\\main.py\", line 2, in <module>\n    print(calc.add(2, 3))\n          ^^^^\nNameError: name 'calc' is not defined",
+   "code": 1
+  },
+  {
+   "name": "예측 표 꼴 2-2",
+   "stdout": "5",
+   "stderr": "",
+   "code": 0
+  },
+  {
+   "name": "예측 표 꼴 2-3",
+   "stdout": "",
+   "stderr": "Traceback (most recent call last):\n  File \"C:\\project\\main.py\", line 2, in <module>\n    print(c.add(2, 3))\n          ^\nNameError: name 'c' is not defined",
+   "code": 1
+  },
+  {
+   "name": "예측 표 꼴 3-1",
+   "stdout": "",
+   "stderr": "Traceback (most recent call last):\n  File \"C:\\project\\main.py\", line 2, in <module>\n    print(calc.add(2, 3))\n          ^^^^\nNameError: name 'calc' is not defined",
+   "code": 1
+  },
+  {
+   "name": "예측 표 꼴 3-2",
+   "stdout": "",
+   "stderr": "Traceback (most recent call last):\n  File \"C:\\project\\main.py\", line 2, in <module>\n    print(add(2, 3))\n          ^^^\nNameError: name 'add' is not defined",
+   "code": 1
+  },
+  {
+   "name": "예측 표 꼴 3-3",
+   "stdout": "5",
+   "stderr": "",
+   "code": 0
+  },
+  {
+   "name": "예측 표 패키지 꼴 1-1",
+   "stdout": "안녕! module1 이에요",
+   "stderr": "",
+   "code": 0
+  },
+  {
+   "name": "예측 표 패키지 꼴 1-2",
+   "stdout": "",
+   "stderr": "Traceback (most recent call last):\n  File \"C:\\project\\main.py\", line 2, in <module>\n    module1.hello()\n    ^^^^^^^\nNameError: name 'module1' is not defined",
+   "code": 1
+  },
+  {
+   "name": "예측 표 패키지 꼴 1-3",
+   "stdout": "",
+   "stderr": "Traceback (most recent call last):\n  File \"C:\\project\\main.py\", line 2, in <module>\n    hello()\n    ^^^^^\nNameError: name 'hello' is not defined. Did you mean: 'help'?",
+   "code": 1
+  },
+  {
+   "name": "예측 표 패키지 꼴 2-1",
+   "stdout": "",
+   "stderr": "Traceback (most recent call last):\n  File \"C:\\project\\main.py\", line 2, in <module>\n    mypackage.module1.hello()\n    ^^^^^^^^^\nNameError: name 'mypackage' is not defined",
+   "code": 1
+  },
+  {
+   "name": "예측 표 패키지 꼴 2-2",
+   "stdout": "안녕! module1 이에요",
+   "stderr": "",
+   "code": 0
+  },
+  {
+   "name": "예측 표 패키지 꼴 2-3",
+   "stdout": "",
+   "stderr": "Traceback (most recent call last):\n  File \"C:\\project\\main.py\", line 2, in <module>\n    hello()\n    ^^^^^\nNameError: name 'hello' is not defined. Did you mean: 'help'?",
+   "code": 1
+  },
+  {
+   "name": "예측 표 패키지 꼴 3-1",
+   "stdout": "",
+   "stderr": "Traceback (most recent call last):\n  File \"C:\\project\\main.py\", line 2, in <module>\n    mypackage.module1.hello()\n    ^^^^^^^^^\nNameError: name 'mypackage' is not defined",
+   "code": 1
+  },
+  {
+   "name": "예측 표 패키지 꼴 3-2",
+   "stdout": "",
+   "stderr": "Traceback (most recent call last):\n  File \"C:\\project\\main.py\", line 2, in <module>\n    module1.hello()\n    ^^^^^^^\nNameError: name 'module1' is not defined",
+   "code": 1
+  },
+  {
+   "name": "예측 표 패키지 꼴 3-3",
+   "stdout": "안녕! module1 이에요",
+   "stderr": "",
+   "code": 0
+  },
+  {
+   "name": "예측 표 패키지 꼴 4-1",
+   "stdout": "",
+   "stderr": "Traceback (most recent call last):\n  File \"C:\\project\\main.py\", line 2, in <module>\n    mypackage.module1.hello()\n    ^^^^^^^^^^^^^^^^^\nAttributeError: module 'mypackage' has no attribute 'module1'",
+   "code": 1
+  },
+  {
+   "name": "예측 표 패키지 꼴 4-2",
+   "stdout": "",
+   "stderr": "Traceback (most recent call last):\n  File \"C:\\project\\main.py\", line 2, in <module>\n    module1.hello()\n    ^^^^^^^\nNameError: name 'module1' is not defined",
+   "code": 1
+  },
+  {
+   "name": "예측 표 패키지 꼴 4-3",
+   "stdout": "",
+   "stderr": "Traceback (most recent call last):\n  File \"C:\\project\\main.py\", line 2, in <module>\n    hello()\n    ^^^^^\nNameError: name 'hello' is not defined. Did you mean: 'help'?",
+   "code": 1
+  },
+  {
+   "name": "오류 고치기 typo · 처음",
+   "stdout": "",
+   "stderr": "Traceback (most recent call last):\n  File \"C:\\project\\main.py\", line 1, in <module>\n    import clac\nModuleNotFoundError: No module named 'clac'",
+   "code": 1
+  },
+  {
+   "name": "오류 고치기 typo · 고침",
+   "stdout": "5",
+   "stderr": "",
+   "code": 0
+  },
+  {
+   "name": "오류 고치기 prefix · 처음",
+   "stdout": "",
+   "stderr": "Traceback (most recent call last):\n  File \"C:\\project\\main.py\", line 2, in <module>\n    print(add(2, 3))\n          ^^^\nNameError: name 'add' is not defined",
+   "code": 1
+  },
+  {
+   "name": "오류 고치기 prefix · 고침",
+   "stdout": "5",
+   "stderr": "",
+   "code": 0
+  },
+  {
+   "name": "오류 고치기 dotpy · 처음",
+   "stdout": "",
+   "stderr": "Traceback (most recent call last):\n  File \"C:\\project\\main.py\", line 1, in <module>\n    import calc.py\nModuleNotFoundError: No module named 'calc.py'; 'calc' is not a package",
+   "code": 1
+  },
+  {
+   "name": "오류 고치기 dotpy · 고침",
+   "stdout": "5",
+   "stderr": "",
+   "code": 0
+  },
+  {
+   "name": "오류 고치기 hyphen · 처음",
+   "stdout": "",
+   "stderr": "  File \"C:\\project\\main.py\", line 1\n    import my-calc\n             ^\nSyntaxError: invalid syntax",
+   "code": 1
+  },
+  {
+   "name": "오류 고치기 hyphen · 고침",
+   "stdout": "5",
+   "stderr": "",
+   "code": 0
+  },
+  {
+   "name": "오류 고치기 shadow · 처음",
+   "stdout": "",
+   "stderr": "Traceback (most recent call last):\n  File \"C:\\project\\main.py\", line 2, in <module>\n    print(math.add(2, 3))\n          ^^^^^^^^\nAttributeError: module 'math' has no attribute 'add'",
+   "code": 1
+  },
+  {
+   "name": "오류 고치기 shadow · 고침",
+   "stdout": "5",
+   "stderr": "",
+   "code": 0
+  },
+  {
+   "name": "오류 고치기 where · 처음",
+   "stdout": "",
+   "stderr": "Traceback (most recent call last):\n  File \"C:\\project\\mypackage\\main.py\", line 1, in <module>\n    from mypackage import module1\nModuleNotFoundError: No module named 'mypackage'",
+   "code": 1
+  },
+  {
+   "name": "오류 고치기 where · 고침",
+   "stdout": "안녕! module1 이에요",
+   "stderr": "",
+   "code": 0
+  },
+  {
+   "name": "미션 m1 · 시작",
+   "stdout": "",
+   "stderr": "",
+   "code": 0
+  },
+  {
+   "name": "미션 m1 · 답",
+   "stdout": "민지님, 안녕하세요!",
+   "stderr": "",
+   "code": 0
+  },
+  {
+   "name": "미션 m2 · 시작",
+   "stdout": "민지님, 안녕하세요!",
+   "stderr": "",
+   "code": 0
+  },
+  {
+   "name": "미션 m2 · 답",
+   "stdout": "민지님, 안녕하세요!",
+   "stderr": "",
+   "code": 0
+  },
+  {
+   "name": "미션 m3 · 시작",
+   "stdout": "민지님, 안녕하세요!",
+   "stderr": "",
+   "code": 0
+  },
+  {
+   "name": "미션 m3 · 답",
+   "stdout": "민지님, 안녕하세요!\n2 + 3 = 5",
+   "stderr": "",
+   "code": 0
+  },
+  {
+   "name": "미션 m4 · 시작",
+   "stdout": "민지님, 안녕하세요!\n2 + 3 = 5",
+   "stderr": "",
+   "code": 0
+  },
+  {
+   "name": "미션 m4 · 답",
+   "stdout": "📦 mytools 패키지를 불러왔어요\n민지님, 안녕하세요!\n2 + 3 = 5",
+   "stderr": "",
+   "code": 0
+  },
+  {
+   "name": "미션 m4 · greet.py 직접 실행",
+   "stdout": "시험용님, 안녕하세요!",
+   "stderr": "",
+   "code": 0
+  },
+  {
+   "name": "확인 문제 6",
+   "stdout": "hello.py 실행!\n끝",
+   "stderr": "",
+   "code": 0
+  },
+  {
+   "name": "확인 문제 8",
+   "stdout": "greet\n__main__",
+   "stderr": "",
+   "code": 0
+  }
+ ]
+}

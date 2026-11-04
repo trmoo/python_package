@@ -1,0 +1,77 @@
+# 📦 패키지 공작소 — © 2026 티쳐무 · 모든 권리 보유
+# 푸시할 때마다 시험을 돌리고 빌드해 GitHub Pages 로 올린다. dist 는 커밋하지 않는다.
+# (저장소 Settings → Pages → Source 는 「GitHub Actions」. 「Deploy from a branch」 로 두면 흰 화면이 된다)
+name: deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - run: npm ci
+
+      # 진짜 파이썬 3.12 와 글자까지 대조한 기준(test/golden.json)을 함께 본다 — 파이썬은 필요 없다
+      - name: 시험 (진짜 파이썬 대조 포함)
+        run: npm test
+
+      # 시험은 화면 파일(DOM 을 만지는 곳)을 부르지 않는다.
+      # 그래서 이 단계를 빼면 화면 파일의 문법 오류가 빌드에서야 터진다. 빼지 말 것.
+      - name: 소스 전수 검사
+        run: npm run check:syntax
+
+      # npm run build 가 끝에 tools/check-dist.mjs 로 크기·저작권 3곳·바깥 자원(글꼴뿐)을 점검한다
+      - run: npm run build
+
+      # ⚠ 셸 변수 이름은 반드시 ASCII 로 쓴다. 한글로 쓰면 bash 가 command not found 로 죽는다.
+      - name: 빌드 결과 점검
+        run: |
+          FILE=dist/index.html
+          test -f "$FILE" || { echo "::error::$FILE 이 없습니다"; exit 1; }
+          SIZE=$(wc -c < "$FILE")
+          echo "빌드 크기: ${SIZE} 바이트"
+          if [ "$SIZE" -lt 100000 ]; then
+            echo "::error::빌드 결과가 너무 작습니다 (${SIZE} 바이트)."
+            exit 1
+          fi
+          COUNT=$(grep -o 티쳐무 "$FILE" | wc -l)
+          echo "저작권 표시: 티쳐무 ${COUNT}곳"
+          if [ "$COUNT" -lt 3 ]; then
+            echo "::error::저작권 표시가 사라졌습니다. esbuild.legalComments 가 'inline' 인지 보세요."
+            exit 1
+          fi
+          echo "✅ 점검 통과"
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v5

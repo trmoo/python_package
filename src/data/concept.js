@@ -1,0 +1,118 @@
+/*! 📦 패키지 공작소 — © 2026 티쳐무 · 모든 권리 보유
+ *  ① 개념 잡기 — 자료.
+ *  범위: 「프로그래밍」(씨마스) 교과서 141쪽 「모듈 사용 방법」 · 143쪽 「정보 더하기 — 모듈, 패키지, 라이브러리」 ·
+ *        209쪽 「모듈과 패키지」 Tip. 교과서 문장을 옮기지 않고 같은 내용을 새로 썼다.
+ *  ⚠ node 로 불러다 시험하므로 DOM 을 만들지 말 것.
+ */
+
+/* ── 1. 왜 나눌까 — 같은 함수를 두 프로그램에서 쓰기 ── */
+// 평균을 내는 함수에 「언제나 3으로 나누는」 실수가 숨어 있다. 점수가 4개면 틀린 값이 나온다.
+export const WHY = {
+  buggy: 'def 평균(점수들):\n    return sum(점수들) / 3',
+  fixed: 'def 평균(점수들):\n    return sum(점수들) / len(점수들)',
+  mine: { title: '내 프로그램 — 우리 반 성적', call: '평균([80, 90, 70, 100])' },
+  friend: { title: '친구 프로그램 — 동아리 출석 점수', call: '평균([10, 8, 9, 7])' },
+};
+
+/* ── 2. 모듈 ⊂ 패키지 ⊂ 라이브러리 ── */
+export const LEVELS = [
+  { id: 'lib', icon: '📚', name: '라이브러리', en: 'library', cls: 'c-lib',
+    def: '여러 패키지와 모듈을 모아 놓은 것. 남이 쓰라고 묶어 내놓은 「코드 꾸러미」 를 부르는 말이다.',
+    ex: 'numpy · matplotlib · gtts — pip 로 설치해서 쓴다' },
+  { id: 'pkg', icon: '📦', name: '패키지', en: 'package', cls: 'c-pkg',
+    def: '모듈들을 모아 체계적으로 관리하는 폴더. 안에 __init__.py 를 두어 「이 폴더는 패키지」 라고 밝힌다. 패키지 안에 또 패키지(하위 패키지)를 둘 수도 있다.',
+    ex: 'mypackage/ 폴더 — 안에 __init__.py, module1.py, module2.py' },
+  { id: 'mod', icon: '📄', name: '모듈', en: 'module', cls: 'c-mod',
+    def: '변수·함수(·클래스)를 담아 둔 .py 파일 하나. 특정 기능을 하는 코드의 묶음이다.',
+    ex: 'math.py · module1.py · calc.py' },
+  { id: 'fn', icon: 'ƒ', name: '모듈 안의 이름', en: 'name', cls: 'c-nm',
+    def: '모듈 안에 들어 있는 함수·클래스·변수. import 로 불러와 「모듈.이름」 으로 쓴다.',
+    ex: 'math.sqrt( ) · math.pi · gtts 의 gTTS 클래스' },
+];
+
+/** 교과서 143쪽 그림의 NumPy (구조를 보여 주려는 예시) */
+export const NUMPY_BOOK = {
+  name: 'NumPy/',
+  pkgs: [
+    { name: 'core/', note: '배열 처리', mods: [{ name: 'array.py', fns: ['array( )'] }] },
+    { name: 'linalg/', note: '선형 대수', mods: [{ name: 'solve.py', fns: ['solve( )'] }] },
+    { name: 'random/', note: '난수 생성', mods: [{ name: 'generator.py', fns: ['random( )'] }] },
+  ],
+};
+/** 진짜 NumPy 2.4.2 를 설치해 열어 본 모습 (2026-11-04 확인 — 파일 몇 개만 골랐다) */
+export const NUMPY_REAL = {
+  name: 'numpy/',
+  pkgs: [
+    { name: '_core/', note: '배열 처리 (NumPy 2 부터 core → _core)', mods: [{ name: 'numeric.py', fns: ['zeros_like( )'] }, { name: 'fromnumeric.py', fns: ['sum( )'] }] },
+    { name: 'linalg/', note: '선형 대수', mods: [{ name: '_linalg.py', fns: ['solve( )'] }] },
+    { name: 'random/', note: '난수 생성', mods: [{ name: '_generator….pyd', fns: ['default_rng( )'], compiled: true }] },
+  ],
+};
+
+/* ── 3. 분류해 보기 ── */
+export const BINS = [
+  { id: 'mod', icon: '📄', name: '모듈', hint: '.py 파일 하나', color: 'var(--mod)' },
+  { id: 'pkg', icon: '📦', name: '패키지', hint: '모듈을 담은 폴더', color: 'var(--pkg)' },
+  { id: 'lib', icon: '📚', name: '라이브러리', hint: '패키지·모듈 꾸러미', color: 'var(--lib)' },
+  { id: 'fn', icon: 'ƒ', name: '모듈 안의 이름', hint: '함수·클래스·변수', color: 'var(--nm)' },
+];
+export const SORT_CARDS = [
+  { id: 'calc', nm: 'calc.py', ctx: 'def add(a, b): 가 들어 있는 파일', ans: 'mod',
+    why: '함수를 담아 둔 .py 파일 하나 — 모듈이에요.' },
+  { id: 'mypkg', nm: 'mypackage/', ctx: '안에 __init__.py, module1.py, module2.py', ans: 'pkg',
+    why: '모듈 파일들을 담은 폴더이고 __init__.py 가 있어요 — 패키지예요.' },
+  { id: 'numpy', nm: 'numpy', ctx: 'pip install numpy 로 설치, 안에 여러 폴더', ans: 'lib',
+    why: '여러 패키지(_core, linalg, random …)를 묶어 내놓은 꾸러미 — 라이브러리예요.' },
+  { id: 'pyplot', nm: 'pyplot', ctx: 'from matplotlib import pyplot', ans: 'mod',
+    why: 'matplotlib 라이브러리 폴더 안의 pyplot.py 파일 — 모듈이에요. (교과서 143쪽)' },
+  { id: 'module1', nm: 'module1.py', ctx: 'mypackage 폴더 안의 파일', ans: 'mod',
+    why: '패키지 안에 들어 있어도 파일 하나는 모듈이에요.' },
+  { id: 'add', nm: 'add', ctx: 'calc.py 안의 def add(a, b):', ans: 'fn',
+    why: '모듈 안에 정의한 함수 — 모듈 안의 이름이에요. calc.add( ) 로 불러요.' },
+  { id: 'gtts', nm: 'gTTS', ctx: 'from gtts import gTTS', ans: 'fn',
+    why: 'gtts 안에 들어 있는 클래스예요(교과서 141쪽). from 으로 「이름」 을 꺼내 온 거예요.' },
+  { id: 'random', nm: 'random', ctx: 'import random — 설치 없이 바로', ans: 'mod',
+    why: '파이썬에 딸려 오는 random.py 파일 하나 — 모듈이에요. (표준 라이브러리 안의 모듈)' },
+  { id: 'linalg', nm: 'linalg/', ctx: 'numpy 폴더 안, __init__.py 가 있음', ans: 'pkg',
+    why: '라이브러리 안에 든 폴더 — 패키지(하위 패키지)예요.' },
+  { id: 'pi', nm: 'pi', ctx: 'math.pi → 3.141592…', ans: 'fn',
+    why: 'math 모듈 안에 담긴 변수 — 모듈 안의 이름이에요.' },
+];
+
+/* ── 4. import 문 읽기 — 밑줄 친 것은 무엇일까 ── */
+// parts: 문장을 조각으로. mark 가 붙은 조각이 물어보는 곳.
+export const ROLES = [
+  { id: 'lib', label: '📚 라이브러리' }, { id: 'pkg', label: '📦 패키지' }, { id: 'mod', label: '📄 모듈' },
+  { id: 'fn', label: 'ƒ 함수·클래스' }, { id: 'as', label: '🏷 별명' },
+];
+export const ANATOMY = [
+  { parts: ['import ', { t: 'math', mark: true }], ans: 'mod',
+    why: 'math 는 파이썬 안에 들어 있는 모듈이에요. 이제 math.sqrt(16) 처럼 「모듈.함수」 로 써요.' },
+  { parts: ['from ', { t: 'matplotlib', mark: true }, ' import pyplot'], ans: 'lib',
+    why: 'matplotlib 은 그래프를 그리는 라이브러리예요 (교과서 143쪽). 그 안에서 pyplot 모듈만 꺼내 와요.' },
+  { parts: ['from matplotlib import ', { t: 'pyplot', mark: true }], ans: 'mod',
+    why: 'pyplot 은 matplotlib 안의 pyplot.py — 모듈이에요. 이제 pyplot.plot( ) 처럼 써요.' },
+  { parts: ['from gtts import ', { t: 'gTTS', mark: true }], ans: 'fn',
+    why: 'gTTS 는 gtts 안의 클래스예요 (교과서 141쪽). from 으로 꺼내 왔으니 앞에 gtts. 없이 gTTS( ) 로 바로 써요.' },
+  { parts: ['import tkinter as ', { t: 'tk', mark: true }], ans: 'as',
+    why: 'as 뒤는 별명이에요 (교과서 214쪽). 이제부터 tkinter 대신 tk 로 불러요 — tk.Tk( ).' },
+  { parts: ['from ', { t: 'mypackage', mark: true }, ' import module1'], ans: 'pkg',
+    why: 'mypackage 는 모듈들을 담은 폴더 — 패키지예요. 그 안의 module1 모듈을 꺼내 와요.' },
+  { parts: ['from mypackage.module1 import ', { t: 'hello', mark: true }], ans: 'fn',
+    why: 'hello 는 module1.py 안의 함수예요. 이제 hello( ) 로 바로 불러요.' },
+  { parts: ['import mypackage.', { t: 'module2', mark: true }], ans: 'mod',
+    why: '점(.)은 「폴더 안으로 들어간다」 는 뜻 — mypackage 폴더 안의 module2.py 모듈이에요. mypackage.module2.함수( ) 로 불러요.' },
+];
+
+/* ── 5. 모듈은 어디서 올까 ── */
+export const SOURCES = [
+  { icon: '🏠', title: '내가 만든 모듈', color: 'var(--mod)', body: '내 프로젝트 폴더의 .py 파일', ex: 'import calc', how: '파일을 만들기만 하면 된다' },
+  { icon: '🐍', title: '표준 라이브러리', color: 'var(--brand)', body: '파이썬을 깔 때 함께 딸려 온다', ex: 'import random · math · tkinter', how: '설치 없이 바로 import' },
+  { icon: '🌐', title: '외부 라이브러리', color: 'var(--lib)', body: '다른 사람이 만들어 인터넷에 올려 둔 것', ex: 'gtts · numpy · pandas', how: '터미널에서 pip install 로 먼저 설치' },
+];
+export const PIP_PROJECT = {
+  files: {
+    'main.py': '# 교과서 141쪽의 TTS(글자 → 소리) 예제를 VS Code 꼴로 줄였어요\nfrom gtts import gTTS\n\ntts = gTTS("안녕하세요 저는 TTS입니다", lang="ko")\ntts.save("hello.mp3")\nprint("hello.mp3 를 만들었어요")\n',
+  },
+  dirs: [],
+};

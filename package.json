@@ -1,0 +1,22 @@
+{
+  "name": "python-package",
+  "version": "1.0.0",
+  "description": "📦 패키지 공작소 — 파이썬 모듈·패키지·라이브러리를 브라우저 속 가상 VS Code 에서 직접 만들어 보는 학습 웹앱",
+  "license": "UNLICENSED",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "vite",
+    "dev": "vite",
+    "build": "vite build && node tools/check-dist.mjs",
+    "preview": "vite preview",
+    "test": "node test/run.mjs",
+    "check:syntax": "node tools/check-syntax.mjs",
+    "golden": "python tools/golden.py",
+    "pyinfo": "python tools/pyinfo.py"
+  },
+  "devDependencies": {
+    "vite": "^8.3.5",
+    "vite-plugin-singlefile": "^2.3.4"
+  }
+}
