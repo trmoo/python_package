@@ -136,27 +136,78 @@ export const SORT_CARDS = [
 
 /* ── 4. import 문 읽기 — 밑줄 친 것은 무엇일까 ── */
 // parts: 문장을 조각으로. mark 가 붙은 조각이 물어보는 곳.
+/** import 문 읽기 — 문항마다 💡 힌트 그림 (2026-11-05 사용자 요청 「힌트는 mypackage/ 같은 그림으로」).
+ *  줄: [갈래, 나무 글자, # 설명, 노랗게 칠할 줄인가]
+ *  갈래 — r 묶음 이름 · d 폴더 · i __init__.py · f 파일 · n 파일 안의 이름 · a 별명 · c 줄임
+ *  답(라이브러리·패키지·모듈…)을 적지 않고, 이름 끝이 「/ 인가 .py 인가 ( ) 인가」 를 그림에서 스스로 읽게 한다.
+ *  2026-11-05 파이썬 3.12.3 에서 확인: math 는 __file__ 이 없는 내장 모듈 · matplotlib 3.11 에 pyplot.py · axes/ 가 있고 .py 가 248개 ·
+ *  pandas/plotting/__init__.py 가 _misc.py 의 scatter_matrix 를 꺼내 둔다 · tkinter/__init__.py 에 class Tk · tkinter/ttk.py */
+const HINT_MPL = (mark) => [
+  ['d', 'matplotlib/', 'pip install matplotlib · .py 파일이 200개 넘게', mark === 'matplotlib'],
+  ['i', '├── __init__.py', ''],
+  ['f', '├── pyplot.py', 'plot() · bar() · show() …', mark === 'pyplot'],
+  ['d', '├── axes/', '폴더 안에 또 폴더'],
+  ['c', '└── …', ''],
+];
+const HINT_MYPKG = (mark) => [
+  ['d', 'mypackage/', ''],
+  ['i', '├── __init__.py', '빈 파일'],
+  ['f', '├── module1.py', ''],
+  ['n', '│   └── hello()', '', mark === 'hello'],
+  ['f', '└── module2.py', '', mark === 'module2'],
+  ['n', '    └── bye()', ''],
+];
+
 export const ROLES = [
   { id: 'lib', label: '📚 라이브러리' }, { id: 'pkg', label: '📦 패키지' }, { id: 'mod', label: '📄 모듈' },
   { id: 'fn', label: 'ƒ 함수·클래스' }, { id: 'as', label: '🏷 별명' },
 ];
 export const ANATOMY = [
   { parts: ['import ', { t: 'math', mark: true }], ans: 'mod',
-    why: 'math 는 파이썬 안에 들어 있는 모듈이에요. 이제 math.sqrt(16) 처럼 「모듈.함수」 로 써요.' },
+    why: 'math 는 파이썬 안에 들어 있는 모듈이에요. 이제 math.sqrt(16) 처럼 「모듈.함수」 로 써요.',
+    hint: { ask: 'math 는 random.py 와 같은 갈래예요. random.py 는 무엇이었나요?', tree: [
+      ['r', '🐍 파이썬 (설치할 때 함께 들어옴)', ''],
+      ['f', '├── math', 'sqrt() · pi — 파일 없이 파이썬 안에 넣어 둠', true],
+      ['f', '├── random.py', 'randint() · choice()'],
+      ['d', '└── tkinter/', '창 만들기'],
+    ] } },
   { parts: ['from ', { t: 'matplotlib', mark: true }, ' import pyplot'], ans: 'lib',
-    why: 'matplotlib 은 그래프를 그리는 라이브러리예요 (교과서 143쪽). 그 안에서 pyplot 모듈만 꺼내 와요.' },
+    why: 'matplotlib 은 그래프를 그리는 라이브러리예요 (교과서 143쪽). 그 안에서 pyplot 모듈만 꺼내 와요.',
+    hint: { ask: 'matplotlib 은 파일 하나일까요? 안에 무엇이 얼마나 들어 있나요?', tree: HINT_MPL('matplotlib') } },
   { parts: ['from matplotlib import ', { t: 'pyplot', mark: true }], ans: 'mod',
-    why: 'pyplot 은 matplotlib 안의 pyplot.py — 모듈이에요. 이제 pyplot.plot( ) 처럼 써요.' },
+    why: 'pyplot 은 matplotlib 안의 pyplot.py — 모듈이에요. 이제 pyplot.plot( ) 처럼 써요.',
+    hint: { ask: 'pyplot 은 폴더(/)일까요, 파일(.py)일까요?', tree: HINT_MPL('pyplot') } },
   { parts: ['from random import ', { t: 'randint', mark: true }], ans: 'fn',
-    why: 'randint 는 random 모듈 안의 함수예요. from 으로 꺼내 왔으니 앞에 random. 없이 randint(1, 6) 으로 바로 써요.' },
+    why: 'randint 는 random 모듈 안의 함수예요. from 으로 꺼내 왔으니 앞에 random. 없이 randint(1, 6) 으로 바로 써요.',
+    hint: { ask: 'randint 는 random.py 파일 안에 있어요. 뒤에 ( ) 를 붙여 부르는 것은 무엇이었나요?', tree: [
+      ['f', 'random.py', ''],
+      ['n', '├── randint(a, b)', 'a 이상 b 이하 정수 하나', true],
+      ['n', '├── choice(seq)', '하나 골라 줌'],
+      ['n', '└── shuffle(x)', '섞어 줌'],
+    ] } },
   { parts: ['import tkinter as ', { t: 'tk', mark: true }], ans: 'as',
-    why: 'as 뒤는 별명이에요 (교과서 214쪽). 이제부터 tkinter 대신 tk 로 불러요 — tk.Tk( ).' },
+    why: 'as 뒤는 별명이에요 (교과서 214쪽). 이제부터 tkinter 대신 tk 로 불러요 — tk.Tk( ).',
+    hint: { ask: '그림 어디에 tk 라는 폴더나 파일이 있나요? 없다면 tk 는 무엇일까요?', tree: [
+      ['d', 'tkinter/', '파이썬에 들어 있음 · 창 만들기'],
+      ['i', '├── __init__.py', 'Tk · Button · Label 이 여기에'],
+      ['f', '└── ttk.py', ''],
+      ['a', 'tk', 'import tkinter as tk — 이 파일 안에서만 쓰는 짧은 이름', true],
+    ] } },
   { parts: ['from pandas.', { t: 'plotting', mark: true }, ' import scatter_matrix'], ans: 'pkg',
-    why: 'pandas 폴더 안의 plotting/ 폴더(__init__.py 있음) — 패키지예요. 그 안에서 scatter_matrix 함수를 꺼내 와요.' },
+    why: 'pandas 폴더 안의 plotting/ 폴더(__init__.py 있음) — 패키지예요. 그 안에서 scatter_matrix 함수를 꺼내 와요.',
+    hint: { ask: 'plotting 끝에는 / 가 붙었나요, .py 가 붙었나요? 그 안에 __init__.py 가 있나요?', tree: [
+      ['d', 'pandas/', ''],
+      ['i', '├── __init__.py', ''],
+      ['d', '└── plotting/', '', true],
+      ['i', '    ├── __init__.py', 'scatter_matrix 를 여기서 꺼내 둠'],
+      ['f', '    └── _misc.py', 'def scatter_matrix()'],
+    ] } },
   { parts: ['from mypackage.module1 import ', { t: 'hello', mark: true }], ans: 'fn',
-    why: 'hello 는 module1.py 안의 함수예요. 이제 hello( ) 로 바로 불러요.' },
+    why: 'hello 는 module1.py 안의 함수예요. 이제 hello( ) 로 바로 불러요.',
+    hint: { ask: 'hello 는 어느 파일 안에 들어 있나요? 끝에 ( ) 가 붙은 것은 무엇이었나요?', tree: HINT_MYPKG('hello') } },
   { parts: ['import mypackage.', { t: 'module2', mark: true }], ans: 'mod',
-    why: '점(.)은 「폴더 안으로 들어간다」 는 뜻 — mypackage 폴더 안의 module2.py 모듈이에요. mypackage.module2.함수( ) 로 불러요.' },
+    why: '점(.)은 「폴더 안으로 들어간다」 는 뜻 — mypackage 폴더 안의 module2.py 모듈이에요. mypackage.module2.함수( ) 로 불러요.',
+    hint: { ask: 'module2 끝에는 / 가 붙었나요, .py 가 붙었나요?', tree: HINT_MYPKG('module2') } },
 ];
 
 /* ── 5. 모듈은 어디서 올까 ── */

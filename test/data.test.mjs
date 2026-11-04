@@ -31,6 +31,19 @@ for (const [i, a] of ANATOMY.entries()) {
 }
 확인('개념 네 가지', LEVELS.map((l) => l.id), ['lib', 'pkg', 'mod', 'fn']);
 
+묶음('import 문 읽기 — 문항마다 💡 힌트 그림');
+for (const [i, a] of ANATOMY.entries()) {
+  const word = a.parts.find((p) => typeof p === 'object').t;
+  const rows = (a.hint && a.hint.tree) || [];
+  const marked = rows.filter((r) => r[3]);
+  확인(`힌트 ${i + 1} — 노랗게 칠한 줄은 하나`, marked.length, 1);
+  참(`힌트 ${i + 1} — 칠한 줄에 「${word}」 가 있다`, marked.length === 1 && marked[0][1].includes(word));
+  참(`힌트 ${i + 1} — 아는 갈래만 쓴다`, rows.every((r) => 'rdifnac'.includes(r[0])));
+  // 힌트가 답을 말해 버리면 안 된다 — 물음과 # 설명에 정답 이름(모듈·패키지…)이 없어야 한다
+  const answer = ROLES.find((r) => r.id === a.ans).label.split(' ').slice(1).join(' ');
+  참(`힌트 ${i + 1} — 정답 「${answer}」 를 적지 않는다`, !!a.hint.ask && ![a.hint.ask, ...rows.map((r) => r[2])].some((t) => t.includes(answer)));
+}
+
 묶음('폴더 나무 그림 — 상자 그림과 같은 자료에서 나온다');
 {
   const pd = treeLines(PANDAS);

@@ -1,7 +1,7 @@
 /*! 📦 패키지 공작소 — © 2026 티쳐무 · 모든 권리 보유
  *  ① 개념 잡기 — 왜 나눌까 · 모듈⊂패키지⊂라이브러리 · 분류 · import 문 읽기 · 어디서 올까
  */
-import { h, fill, toast } from '../ui/dom.js';
+import { h, fill, toast, modal } from '../ui/dom.js';
 import { codeBlock, quickRun, head } from './common.js';
 import { createIDE } from '../ui/ide.js';
 import { slot, save } from '../lib/store.js';
@@ -205,6 +205,29 @@ export function renderSort(body, api) {
 export function renderAnatomy(body, api) {
   const S = slot('anatomy', () => ({}));
   const grid = h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' } });
+  const MARK = { background: '#ffec99', borderBottom: '3px solid #f59f00', padding: '0 3px', borderRadius: '4px' };
+  /** 💡 힌트 그림 — 폴더 나무 꼴. 노란 줄이 밑줄 친 이름이고, 답은 적지 않는다 (/ · .py · ( ) 를 스스로 읽게) */
+  function hintTree(rows) {
+    const color = { r: 'var(--ink)', d: 'var(--pkg)', i: '#868e96', f: 'var(--mod)', n: 'var(--nm)', a: '#e8590c', c: '#adb5bd' };
+    return h('div', { class: 'tree', style: { display: 'grid', gridTemplateColumns: 'max-content 1fr', columnGap: '28px', fontSize: '17px', lineHeight: '1.9', padding: '10px 16px' } },
+      rows.map(([k, text, cmt, mark]) => {
+        const name = text.replace(/^[│├└─ ]+/, '');
+        const gap = k === 'a' ? { marginTop: '8px' } : null; // 별명 줄은 나무와 한 줄 띄운다 — 나무 안에 없는 이름이라서
+        return [
+          h('span', { style: gap }, h('span', { style: { color: '#adb5bd' } }, text.slice(0, text.length - name.length)),
+            h('span', { style: { color: color[k], fontWeight: k === 'i' || k === 'c' ? 400 : 800, ...(mark ? MARK : {}) } }, k === 'a' ? `🏷 ${name}` : name)),
+          h('span', { class: 'c', style: gap }, cmt ? `# ${cmt}` : '')];
+      }));
+  }
+  function showHint(it) {
+    const word = it.parts.find((p) => typeof p === 'object').t;
+    modal(`💡 힌트 — 「${word}」 는 어디에 있을까요?`, h('div', { class: 'col', style: { gap: '10px' } },
+      h('div', { class: 'code', style: { fontSize: '18px', fontWeight: 700 } }, it.parts.map((p) => (typeof p === 'string' ? p : h('span', { style: MARK }, p.t)))),
+      hintTree(it.hint.tree),
+      h('div', { style: { fontSize: '16px' } }, `🤔 ${it.hint.ask}`),
+      h('div', { class: 'small muted' }, '📁 이름/ — 폴더   ·   📄 이름.py — 파일 하나   ·   이름( ) — 파일 안에서 꺼내 쓰는 것')),
+    { ok: '닫기', wide: true });
+  }
   function item(it, i) {
     const pick = S[i];
     const ok = pick === it.ans;
@@ -213,7 +236,8 @@ export function renderAnatomy(body, api) {
       h('div', { class: 'row', style: { gap: '4px' } }, ROLES.map((r) => h('button', {
         class: 'btn small' + (pick === r.id ? (ok ? ' good' : '') : ''), style: pick === r.id && !ok ? { background: 'var(--bad)', color: '#fff', borderColor: 'var(--bad)' } : null,
         onClick: () => { S[i] = r.id; save(); paint(); api.refreshNav(); },
-      }, r.label))),
+      }, r.label)), h('span', { class: 'grow' }),
+      h('button', { class: 'btn small', title: '힌트 그림 보기', onClick: () => showHint(it) }, '💡 힌트')),
       pick ? h('div', { class: 'tiny', style: { color: ok ? 'var(--good)' : 'var(--bad)' } }, (ok ? '✔ ' : '✘ 다시 골라 보세요 — ') + (ok ? it.why : '밑줄 친 것이 파일인지, 폴더인지, 꾸러미인지, 그 안의 이름인지 생각해 봐요.')) : null);
   }
   function paint() { fill(grid, ANATOMY.map(item)); }
