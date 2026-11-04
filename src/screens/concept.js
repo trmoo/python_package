@@ -5,7 +5,7 @@ import { h, fill, toast } from '../ui/dom.js';
 import { codeBlock, quickRun, head } from './common.js';
 import { createIDE } from '../ui/ide.js';
 import { slot, save } from '../lib/store.js';
-import { WHY, LEVELS, NUMPY_BOOK, NUMPY_REAL, BINS, SORT_CARDS, ROLES, ANATOMY, SOURCES, PIP_PROJECT } from '../data/concept.js';
+import { WHY, LEVELS, NUMPY_BOOK, STDLIB, BINS, SORT_CARDS, ROLES, ANATOMY, SOURCES, PIP_PROJECT } from '../data/concept.js';
 
 /* ── 1. 왜 나눌까 ── */
 export function renderWhy(body, api) {
@@ -70,29 +70,45 @@ export function renderWhy(body, api) {
 
 /* ── 2. 모듈 ⊂ 패키지 ⊂ 라이브러리 ── */
 export function renderLayers(body, api) {
-  const st = { lit: null, real: false };
+  const st = { lit: null, view: 'std' };
   const rec = slot('layers', () => ({ seen: [] }));
   const left = h('div', { class: 'col grow' });
   const right = h('div', { class: 'col', style: { width: '400px', flex: 'none' } });
-  const box = (cls, label, kids, id) => h('div', { class: `nest ${cls}` + (st.lit === id ? ' lit' : ''), onClick: (e) => { e.stopPropagation(); st.lit = id; paint(); } },
+  const pick = (id) => (e) => { e.stopPropagation(); st.lit = id; paint(); };
+  const box = (cls, label, kids, id) => h('div', { class: `nest ${cls}` + (st.lit === id ? ' lit' : ''), onClick: pick(id) },
     h('div', { class: 'lab' }, label), kids ? h('div', { class: 'kids' }, kids) : null);
+  const fnChip = (f) => h('div', { class: 'nest fn', onClick: pick('fn') }, `ƒ ${f}`);
+  const initChip = () => h('div', { class: 'nest ini', onClick: pick('pkg') }, '__init__.py');
+  const note = (t) => h('div', { class: 'tiny muted', style: { width: '100%' } }, t);
+
+  /** 파이썬 표준 라이브러리 — 패키지(tkinter)와 모듈(random·math)이 함께 들어 있다 */
+  function stdTree() {
+    return box('', `📚 ${STDLIB.name}  — 라이브러리`, STDLIB.items.map((it) => (it.kind === 'pkg'
+      ? Object.assign(box('pkg', `📦 ${it.name}`, [initChip(), ...it.mods.map((m) => box('mod', `📄 ${m.name}`, m.fns.map(fnChip), 'mod')), note(it.note)], 'pkg'), { style: 'flex: 2.2' })
+      : h('div', { class: 'nest mod' + (st.lit === 'mod' ? ' lit' : ''), style: { flex: 1, minWidth: '150px' }, onClick: pick('mod') },
+        h('div', { class: 'lab' }, `📄 ${it.name}`), h('div', { class: 'kids' }, it.fns.map(fnChip), note(it.note))))), 'lib');
+  }
+  /** 교과서 143쪽의 NumPy 그림 (외부 라이브러리 예) */
+  function bookTree() {
+    return box('', `📚 ${NUMPY_BOOK.name}  — 라이브러리`, NUMPY_BOOK.pkgs.map((pk) => box('pkg', `📦 ${pk.name}`, [
+      initChip(), ...pk.mods.map((m) => box('mod', `📄 ${m.name}`, m.fns.map(fnChip), 'mod')), note(pk.note)], 'pkg')), 'lib');
+  }
+
   function paint() {
     // 눌러 본 개념을 적어 둔다 — 네 가지를 모두 눌러 보면 이 활동이 끝난다
     if (st.lit && !rec.seen.includes(st.lit)) { rec.seen.push(st.lit); save(); api.refreshNav(); }
     if (!st.lit) st.lit = 'lib';
-    const lib = st.real ? NUMPY_REAL : NUMPY_BOOK;
     fill(left,
-      head('모듈 ⊂ 패키지 ⊂ 라이브러리', '상자를 눌러 보세요. 큰 상자가 작은 상자를 품고 있어요. (씨마스 교과서 143쪽의 NumPy 예)'),
-      h('div', { class: 'row' },
-        h('button', { class: 'btn small' + (!st.real ? ' primary' : ''), onClick: () => { st.real = false; paint(); } }, '📕 교과서 그림'),
-        h('button', { class: 'btn small' + (st.real ? ' primary' : ''), onClick: () => { st.real = true; paint(); } }, '🔍 진짜 NumPy 2.4 를 열어 보면')),
-      box('', `📚 ${lib.name}  — 라이브러리`, lib.pkgs.map((pk) => box('pkg', `📦 ${pk.name}`, [
-        h('div', { class: 'nest ini', onClick: (e) => { e.stopPropagation(); st.lit = 'pkg'; paint(); } }, '__init__.py'),
-        ...pk.mods.map((m) => box('mod', `📄 ${m.name}`, m.fns.map((f) => h('div', { class: 'nest fn', onClick: (e) => { e.stopPropagation(); st.lit = 'fn'; paint(); } }, `ƒ ${f}`)), 'mod')),
-        h('div', { class: 'tiny muted', style: { width: '100%' } }, pk.note)], 'pkg')), 'lib'),
-      st.real
-        ? h('div', { class: 'note warn small', html: '교과서 그림은 <b>구조를 보여 주려는 예시</b>예요. 실제 NumPy 2.4.2 를 설치해 열어 보면 폴더 이름은 소문자 <code>numpy</code>, 배열 처리 폴더는 <code>_core</code>(NumPy 2 부터), <code>array.py</code>·<code>solve.py</code>·<code>generator.py</code> 같은 파일은 없고 그 대신 <code>_linalg.py</code> 처럼 이름이 달라요. 난수 생성기는 C 언어로 만들어 미리 번역한 <code>.pyd</code> 파일이에요. 그래도 <b>「라이브러리 ⊃ 패키지(폴더 + __init__.py) ⊃ 모듈(파일)」</b> 짜임은 똑같아요.' })
-        : h('div', { class: 'note small', html: '예) <code>from matplotlib import pyplot</code> — matplotlib 은 라이브러리, pyplot 은 그 안의 모듈 <code>pyplot.py</code> 예요. (교과서 143쪽 · 실제로도 그렇게 생겼어요)' }));
+      h('h2', {}, '모듈 ⊂ 패키지 ⊂ 라이브러리'),
+      h('div', { class: 'row' }, h('span', { class: 'muted small' }, '상자를 눌러 보세요 — 큰 상자가 작은 상자를 품고 있어요.'), h('span', { class: 'grow' }),
+        h('button', { class: 'btn small' + (st.view === 'std' ? ' primary' : ''), onClick: () => { st.view = 'std'; paint(); } }, '🐍 파이썬 표준 라이브러리로 보기'),
+        h('button', { class: 'btn small' + (st.view === 'book' ? ' primary' : ''), onClick: () => { st.view = 'book'; paint(); } }, '📕 교과서 143쪽 그림 (NumPy)')),
+      st.view === 'std' ? stdTree() : bookTree(),
+      st.view === 'std'
+        ? h('div', { class: 'row', style: { alignItems: 'stretch', flexWrap: 'nowrap' } },
+          codeBlock('import random\nprint(random.randint(1, 6))  # 주사위\nimport math\nprint(math.sqrt(16))        # 4.0', true),
+          h('div', { class: 'note small', style: { flex: 1 }, html: '평소 쓰던 <code>import random</code> · <code>import math</code> 도 사실 <b>표준 라이브러리 안의 모듈</b>을 불러온 거예요. 그래서 설치 없이 바로 쓸 수 있어요.<br><code>from tkinter import messagebox</code> 는 <b>tkinter 패키지 안의 messagebox 모듈</b>을 꺼내 오는 것이고요.' }))
+        : h('div', { class: 'note warn small', html: '교과서는 같은 짜임을 <b>외부 라이브러리</b> NumPy 로 보여 줘요(pip 로 설치). 그림은 구조를 보여 주려는 예시라, 실제 NumPy 2.4 는 폴더 이름이 소문자 <code>numpy</code> 이고 <code>array.py</code>·<code>solve.py</code> 같은 파일 이름도 달라요. 그래도 <b>「라이브러리 ⊃ 패키지(폴더 + __init__.py) ⊃ 모듈(파일)」</b> 짜임은 똑같아요.' }));
     const L = LEVELS.find((x) => x.id === st.lit);
     fill(right,
       h('div', { class: 'row' }, LEVELS.map((x) => h('button', { class: `chip ${x.cls}`, style: { border: x.id === st.lit ? '2px solid currentColor' : '2px solid transparent', cursor: 'pointer', fontSize: '15px', padding: '3px 10px' }, onClick: () => { st.lit = x.id; paint(); } }, `${rec.seen.includes(x.id) ? '✔ ' : ''}${x.icon} ${x.name}`))),
@@ -103,9 +119,9 @@ export function renderLayers(body, api) {
         h('div', { class: 'small' }, h('b', {}, '예  '), L.ex)),
       h('table', { class: 't small' },
         h('tr', {}, h('th', {}, '무엇'), h('th', {}, '실제로는'), h('th', {}, '불러오기')),
-        h('tr', {}, h('td', {}, '📄 모듈'), h('td', {}, '.py 파일'), h('td', {}, h('code', {}, 'import calc'))),
-        h('tr', {}, h('td', {}, '📦 패키지'), h('td', {}, '폴더 (+ __init__.py)'), h('td', {}, h('code', {}, 'import 폴더.모듈'))),
-        h('tr', {}, h('td', {}, '📚 라이브러리'), h('td', {}, '패키지·모듈 꾸러미'), h('td', {}, h('code', {}, 'pip install …')))),
+        h('tr', {}, h('td', {}, '📄 모듈'), h('td', {}, '.py 파일'), h('td', {}, h('code', {}, 'import random'))),
+        h('tr', {}, h('td', {}, '📦 패키지'), h('td', {}, '폴더 (+ __init__.py)'), h('td', {}, h('code', {}, 'from tkinter import messagebox'))),
+        h('tr', {}, h('td', {}, '📚 라이브러리'), h('td', {}, '패키지·모듈 꾸러미'), h('td', {}, '표준은 설치 없이 · 외부는 ', h('code', {}, 'pip install')))),
       h('details', { class: 'more' }, h('summary', {}, '🔬 「라이브러리」 는 문법 용어가 아니에요'),
         h('p', { class: 'small', html: '모듈·패키지는 파이썬이 정한 말이지만, 「라이브러리」 는 <b>남이 쓰라고 묶어 내놓은 코드</b>를 부르는 일상어예요. 그래서 random 모듈 하나를 「random 라이브러리」 라고 부르는 사람도 있어요. 이 앱은 교과서 정의(여러 패키지·모듈을 모아 놓은 것)를 따릅니다.' })));
   }
@@ -121,7 +137,7 @@ export function renderSort(body, api) {
   function paint() {
     const right = SORT_CARDS.filter((c) => S.put[c.id] === c.ans).length;
     fill(wrap,
-      head('분류해 보기', '카드를 누른 다음 아래 바구니를 누르세요. 다 넣으면 [채점]!'),
+      h('div', { class: 'row' }, h('h2', { style: { margin: 0 } }, '분류해 보기'), h('span', { class: 'muted' }, '카드를 누른 다음 아래 바구니를 누르세요. 다 넣으면 [채점]!')),
       h('div', { class: 'cards' }, SORT_CARDS.map((c) => {
         const put = S.put[c.id];
         const bin = BINS.find((b) => b.id === put);

@@ -18,17 +18,32 @@ export const WHY = {
 export const LEVELS = [
   { id: 'lib', icon: '📚', name: '라이브러리', en: 'library', cls: 'c-lib',
     def: '여러 패키지와 모듈을 모아 놓은 것. 남이 쓰라고 묶어 내놓은 「코드 꾸러미」 를 부르는 말이다.',
-    ex: 'numpy · matplotlib · gtts — pip 로 설치해서 쓴다' },
+    ex: '파이썬 표준 라이브러리(설치할 때 함께 옴) · numpy·gtts(pip 로 설치)' },
   { id: 'pkg', icon: '📦', name: '패키지', en: 'package', cls: 'c-pkg',
     def: '모듈들을 모아 체계적으로 관리하는 폴더. 안에 __init__.py 를 두어 「이 폴더는 패키지」 라고 밝힌다. 패키지 안에 또 패키지(하위 패키지)를 둘 수도 있다.',
-    ex: 'mypackage/ 폴더 — 안에 __init__.py, module1.py, module2.py' },
+    ex: 'tkinter/ 폴더 — 안에 __init__.py, messagebox.py … · 내가 만든 mypackage/' },
   { id: 'mod', icon: '📄', name: '모듈', en: 'module', cls: 'c-mod',
     def: '변수·함수(·클래스)를 담아 둔 .py 파일 하나. 특정 기능을 하는 코드의 묶음이다.',
-    ex: 'math.py · module1.py · calc.py' },
+    ex: 'random.py · 내가 만든 calc.py (math 는 파이썬 안에 들어 있는 「내장 모듈」)' },
   { id: 'fn', icon: 'ƒ', name: '모듈 안의 이름', en: 'name', cls: 'c-nm',
     def: '모듈 안에 들어 있는 함수·클래스·변수. import 로 불러와 「모듈.이름」 으로 쓴다.',
-    ex: 'math.sqrt( ) · math.pi · gtts 의 gTTS 클래스' },
+    ex: 'random.randint(1, 6) · math.sqrt(16) · math.pi' },
 ];
+
+/** 파이썬 표준 라이브러리 — 학생들이 이미 써 본 random·math·tkinter 로 짜임을 보여 준다 (2026-11-05 사용자 요청)
+ *  설치된 파이썬 3.12 의 Lib 폴더를 열어 확인했다: tkinter/ 는 __init__.py·messagebox.py·filedialog.py 가 든 패키지,
+ *  random.py 는 파일 하나짜리 모듈, math 는 파이썬 안에 컴파일되어 들어 있는 내장 모듈이라 .py 파일이 없다. */
+export const STDLIB = {
+  name: '파이썬 표준 라이브러리',
+  note: '파이썬을 설치하면 함께 깔린다 — 설치 없이 바로 import',
+  items: [
+    { kind: 'pkg', name: 'tkinter/', note: '창·단추 만들기 (GUI)', mods: [
+      { name: 'messagebox.py', fns: ['showinfo( )'] },
+      { name: 'filedialog.py', fns: ['askopenfilename( )'] }] },
+    { kind: 'mod', name: 'random.py', note: '무작위 수 · 주사위', fns: ['randint( )', 'choice( )', 'shuffle( )'] },
+    { kind: 'mod', name: 'math', note: '수학 계산 · 내장 모듈(.py 파일이 없다)', fns: ['sqrt( )', 'pi'] },
+  ],
+};
 
 /** 교과서 143쪽 그림의 NumPy (구조를 보여 주려는 예시) */
 export const NUMPY_BOOK = {
@@ -37,15 +52,6 @@ export const NUMPY_BOOK = {
     { name: 'core/', note: '배열 처리', mods: [{ name: 'array.py', fns: ['array( )'] }] },
     { name: 'linalg/', note: '선형 대수', mods: [{ name: 'solve.py', fns: ['solve( )'] }] },
     { name: 'random/', note: '난수 생성', mods: [{ name: 'generator.py', fns: ['random( )'] }] },
-  ],
-};
-/** 진짜 NumPy 2.4.2 를 설치해 열어 본 모습 (2026-11-04 확인 — 파일 몇 개만 골랐다) */
-export const NUMPY_REAL = {
-  name: 'numpy/',
-  pkgs: [
-    { name: '_core/', note: '배열 처리 (NumPy 2 부터 core → _core)', mods: [{ name: 'numeric.py', fns: ['zeros_like( )'] }, { name: 'fromnumeric.py', fns: ['sum( )'] }] },
-    { name: 'linalg/', note: '선형 대수', mods: [{ name: '_linalg.py', fns: ['solve( )'] }] },
-    { name: 'random/', note: '난수 생성', mods: [{ name: '_generator….pyd', fns: ['default_rng( )'], compiled: true }] },
   ],
 };
 
@@ -61,8 +67,8 @@ export const SORT_CARDS = [
     why: '함수를 담아 둔 .py 파일 하나 — 모듈이에요.' },
   { id: 'mypkg', nm: 'mypackage/', ctx: '안에 __init__.py, module1.py, module2.py', ans: 'pkg',
     why: '모듈 파일들을 담은 폴더이고 __init__.py 가 있어요 — 패키지예요.' },
-  { id: 'numpy', nm: 'numpy', ctx: 'pip install numpy 로 설치, 안에 여러 폴더', ans: 'lib',
-    why: '여러 패키지(_core, linalg, random …)를 묶어 내놓은 꾸러미 — 라이브러리예요.' },
+  { id: 'stdlib', nm: '표준 라이브러리', ctx: 'random·math·tkinter 를 묶어 파이썬과 함께 설치됨', ans: 'lib',
+    why: '모듈(random·math)과 패키지(tkinter)를 묶은 꾸러미 — 라이브러리예요.' },
   { id: 'pyplot', nm: 'pyplot', ctx: 'from matplotlib import pyplot', ans: 'mod',
     why: 'matplotlib 라이브러리 폴더 안의 pyplot.py 파일 — 모듈이에요. (교과서 143쪽)' },
   { id: 'module1', nm: 'module1.py', ctx: 'mypackage 폴더 안의 파일', ans: 'mod',
@@ -73,8 +79,8 @@ export const SORT_CARDS = [
     why: 'gtts 안에 들어 있는 클래스예요(교과서 141쪽). from 으로 「이름」 을 꺼내 온 거예요.' },
   { id: 'random', nm: 'random', ctx: 'import random — 설치 없이 바로', ans: 'mod',
     why: '파이썬에 딸려 오는 random.py 파일 하나 — 모듈이에요. (표준 라이브러리 안의 모듈)' },
-  { id: 'linalg', nm: 'linalg/', ctx: 'numpy 폴더 안, __init__.py 가 있음', ans: 'pkg',
-    why: '라이브러리 안에 든 폴더 — 패키지(하위 패키지)예요.' },
+  { id: 'tkinter', nm: 'tkinter/', ctx: '폴더 안에 __init__.py · messagebox.py …', ans: 'pkg',
+    why: '모듈을 담은 폴더 + __init__.py — 패키지예요. (교과서는 「표준 라이브러리」 라고도 불러요)' },
   { id: 'pi', nm: 'pi', ctx: 'math.pi → 3.141592…', ans: 'fn',
     why: 'math 모듈 안에 담긴 변수 — 모듈 안의 이름이에요.' },
 ];
