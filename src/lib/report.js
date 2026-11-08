@@ -6,7 +6,7 @@
  */
 import { ACTIVITIES, isDone, progressOf } from './progress.js';
 import { check, CONDITIONS, EXTRA } from './checker.js';
-import { SORT_CARDS, BINS, ANATOMY, ROLES } from '../data/concept.js';
+import { SORT_CARDS, BINS, ANATOMY, ROLES, PUBLISH } from '../data/concept.js';
 import { FORMS, PKGFORMS, FIXES, QUIZ } from '../data/imports.js';
 import { MISSIONS, stepsDone } from '../data/missions.js';
 import { runProject } from './pymini.js';
@@ -61,6 +61,13 @@ export function buildReport(S, who, now = new Date()) {
   }).join('')}</table>`));
   const pip = S0.pip || {};
   parts.push(section('concept/where', `<p>설치한 외부 라이브러리: ${pip.installed && pip.installed.length ? esc(pip.installed.join(', ')) : '없음'} · gtts 로 소리 파일 만들기 ${mark(pip.ok)}</p>`));
+  const pub = S0.publish || {};
+  const pubAns = pub.ans || {};
+  parts.push(section('concept/publish', `<p>넘겨 본 걸음: ${PUBLISH.steps.map((s) => `${(pub.seen || []).includes(s.id) ? '✔' : '—'} ${esc(s.icon)} ${esc(s.title)}`).join(' · ')}</p>
+<table><tr><th>확인 문제</th><th>내 답</th><th></th></tr>${PUBLISH.quiz.map((q, k) => {
+    const a = pubAns[k];
+    return `<tr><td>${k + 1}. ${esc(q.q.replace(/<[^>]+>/g, ''))}</td><td>${a === undefined ? '<span class="muted">안 풂</span>' : esc(q.choices[a])}</td><td>${a === undefined ? '' : mark(a === q.ans)}</td></tr>`;
+  }).join('')}</table>`));
 
   // ── ② 불러오기 ──
   parts.push('<h2>② 불러오기</h2>');

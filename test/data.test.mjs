@@ -3,8 +3,8 @@
  */
 import { 묶음, 확인, 참 } from './harness.mjs';
 import { runProject } from '../src/lib/pymini.js';
-import { WHY, SORT_CARDS, BINS, ANATOMY, ROLES, LEVELS, PANDAS, NUMPY_BOOK, INIT_INFO, treeLines, numpyBookAsNode } from '../src/data/concept.js';
-import { FORMS, PKGFORMS, FIXES, QUIZ } from '../src/data/imports.js';
+import { WHY, SORT_CARDS, BINS, ANATOMY, ROLES, LEVELS, PANDAS, NUMPY_BOOK, INIT_INFO, treeLines, numpyBookAsNode, PUBLISH } from '../src/data/concept.js';
+import { FORMS, PKGFORMS, FIXES, QUIZ, MODULE1 } from '../src/data/imports.js';
 import { MISSIONS } from '../src/data/missions.js';
 import { fixPassedForTest } from './helpers.mjs';
 
@@ -58,6 +58,37 @@ for (const [i, a] of ANATOMY.entries()) {
   확인('NumPy 나무 — 모듈 셋', np.filter((r) => r[0] === 'f').map((r) => r[1].trim().split(' ').pop()), NUMPY_BOOK.pkgs.flatMap((p) => p.mods.map((m) => m.name)));
   참('나무 글자에 빈칸 맞춤이 없다 (설명 칸은 화면 격자가 맞춘다)', [...pd, ...np].every((r) => r[1] === r[1].trimEnd()));
   참('__init__.py 설명 — pandas 두 줄이 있다', INIT_INFO.code.includes('from pandas.io.api import read_csv') && INIT_INFO.code.includes('from pandas.core.api import DataFrame'));
+}
+
+묶음('⭐ 내 꾸러미도 pip 로 — 네 걸음과 확인 문제가 앞뒤가 맞는다');
+{
+  const P = PUBLISH;
+  확인('네 걸음 — 꾸리기·포장·올리기·받기', P.steps.map((s) => s.id), ['pack', 'build', 'upload', 'get']);
+  for (const s of P.steps) 참(`「${s.title}」 — 한 줄 설명과 도움말이 있다`, !!s.say && s.tips.length > 0);
+  const step = (id) => P.steps.find((s) => s.id === id);
+  // 이름표의 name·version 이 화면 곳곳의 이름과 같아야 한다 (하나만 고치면 어긋난다)
+  참('이름표 — name 이 pip 이름', step('pack').code.includes(`name = "${P.pipName}"`) && step('pack').full.includes(`name = "${P.pipName}"`));
+  참('이름표 — version', step('pack').code.includes(`version = "${P.version}"`) && step('pack').full.includes(`version = "${P.version}"`));
+  참('상자 그림 — 맨 위 폴더가 pip 이름', step('pack').tree[0][1] === `${P.pipName}/`);
+  참('상자 그림 — 안의 폴더가 import 이름', step('pack').tree.some(([k, t]) => k === 'd' && t.endsWith(`${P.importName}/`)));
+  // 포장한 파일 이름 — 붙임표는 밑줄로 바뀐다 (2026-11-05 setuptools 83 으로 실제 포장해 확인한 이름)
+  const wheel = `${P.pipName.replace(/-/g, '_')}-${P.version}-py3-none-any.whl`;
+  참(`포장 — dist 에 ${wheel}`, step('build').tree.some(([, t]) => t.endsWith(wheel)));
+  참('포장 — 명령은 py -m build', step('build').term.some(([k, t]) => k === 'cmd' && t === 'py -m build'));
+  참('받기 — pip install 에 쓰는 이름', step('get').term.some(([k, t]) => k === 'cmd' && t === `pip install ${P.pipName}`));
+  참('받기 — 설치 문구의 판 번호', step('get').term.some(([, t]) => t === `Successfully installed ${P.pipName}-${P.version}`));
+  // 친구의 main.py — 설치된 꾸러미는 폴더와 똑같이 불린다 (화면이 이 결과를 그대로 보여 준다)
+  const files = { 'mypackage/__init__.py': '', 'mypackage/module1.py': MODULE1 };
+  확인('받기 — 친구의 main.py 실행 결과', runProject({ files: { ...files, 'main.py': step('get').code } }).stdout, '안녕! module1 이에요');
+  // 확인 문제
+  for (const [k, q] of P.quiz.entries()) {
+    참(`확인 문제 ${k + 1} — 정답 칸이 있다`, q.ans >= 0 && q.ans < q.choices.length);
+    확인(`확인 문제 ${k + 1} — 칸마다 풀이가 있다`, q.why.length, q.choices.length);
+  }
+  const q1 = P.quiz[0];
+  확인('확인 문제 1 — 붙임표 이름으로 import 하면 정말 SyntaxError', runProject({ files: { ...files, 'main.py': q1.choices[0] } }).errorType, 'SyntaxError');
+  참('확인 문제 1 — 정답(폴더 이름)은 정말 불린다', runProject({ files: { ...files, 'main.py': q1.choices[q1.ans] } }).ok);
+  확인('확인 문제 1 — 정답은 import 이름으로 시작한다', q1.choices[q1.ans].split(' ')[1].split('.')[0], P.importName);
 }
 
 묶음('예측 표 — 칸마다 결과가 수업 의도와 같다');

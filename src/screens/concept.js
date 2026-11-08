@@ -1,11 +1,14 @@
 /*! 📦 패키지 공작소 — © 2026 티쳐무 · 모든 권리 보유
- *  ① 개념 잡기 — 왜 나눌까 · 모듈⊂패키지⊂라이브러리 · 분류 · import 문 읽기 · 어디서 올까
+ *  ① 개념 잡기 — 왜 나눌까 · 모듈⊂패키지⊂라이브러리 · 분류 · import 문 읽기 · 어디서 올까 · ⭐ 내 꾸러미도 pip 로
  */
 import { h, fill, toast, modal } from '../ui/dom.js';
 import { codeBlock, quickRun, head } from './common.js';
 import { createIDE } from '../ui/ide.js';
 import { slot, save } from '../lib/store.js';
-import { WHY, LEVELS, INIT_INFO, NUMPY_BOOK, PANDAS, treeLines, numpyBookAsNode, BINS, SORT_CARDS, ROLES, ANATOMY, SOURCES, PIP_PROJECT } from '../data/concept.js';
+import { WHY, LEVELS, INIT_INFO, NUMPY_BOOK, PANDAS, treeLines, numpyBookAsNode, BINS, SORT_CARDS, ROLES, ANATOMY, SOURCES, PIP_PROJECT, PUBLISH } from '../data/concept.js';
+import { MODULE1 } from '../data/imports.js';
+import { isDone } from '../lib/progress.js';
+import { S } from '../lib/store.js';
 
 /* ── 1. 왜 나눌까 ── */
 export function renderWhy(body, api) {
@@ -275,4 +278,106 @@ export function renderWhere(body, api) {
       if (!S.ok && r.ok && (r.written || []).length && r.events.some((e) => e.name === 'gtts')) { S.ok = true; save(); toast('✅ 외부 라이브러리를 설치해서 써 봤어요!', 'good'); api.refreshNav(); }
     },
   });
+}
+
+/* ── 6. ⭐ 내 꾸러미도 pip 로 나눠 주기 — 택배 네 걸음 ── */
+export function renderPublish(body, api) {
+  const rec = slot('publish', () => ({ seen: [], ans: {} }));
+  const P = PUBLISH;
+  // 처음 열면 아직 안 본 첫 걸음부터
+  const st = { cur: (P.steps.find((s) => !rec.seen.includes(s.id)) || P.steps[0]).id, full: false };
+  const stepRow = h('div', { class: 'pub-steps' });
+  const detail = h('div', { class: 'card pub-detail' });
+  const quizBox = h('div', { class: 'col', style: { gap: '10px' } });
+  let wasDone = isDone('concept/publish', S);
+  const afterChange = () => {
+    save(); api.refreshNav();
+    const now = isDone('concept/publish', S);
+    if (now && !wasDone) toast('🎉 이제 내 꾸러미를 친구에게 나눠 줄 수 있어요!', 'good');
+    wasDone = now;
+  };
+
+  /** 폴더 나무 — 두 칸 격자라 # 설명이 줄마다 같은 자리에서 시작한다 */
+  const tree = (lines) => h('div', { class: 'tree', style: { display: 'grid', gridTemplateColumns: 'max-content 1fr', columnGap: '22px' } },
+    lines.map(([k, text, note]) => [h('span', { class: k }, text), h('span', { class: 'c' }, note ? `# ${note}` : '')]));
+  /** 터미널 흉내 — cmd 줄은 > 를 붙이고, 설명은 회색으로 */
+  const term = (lines) => h('div', { class: 'shot' }, h('div', { class: 'bar' }, '터미널'),
+    h('div', { class: 'in' }, lines.map(([k, text, note]) => h('div', {},
+      k === 'cmd' ? [h('span', { class: 't-ps' }, '> '), h('span', { class: 't-cmd' }, text)] : h('span', { class: 't-out' }, text),
+      note ? h('span', { class: 't-info' }, `   # ${note}`) : null))));
+
+  function paintSteps() {
+    fill(stepRow, P.steps.map((s, i) => [
+      i ? h('span', { class: 'pub-arrow' }, '→') : null,
+      h('button', { class: 'pub-step' + (st.cur === s.id ? ' on' : ''), onClick: () => show(s.id) },
+        h('span', { class: 'ic' }, s.icon),
+        h('span', {}, h('div', { class: 'n' }, `${i + 1}단계`), h('div', { class: 't' }, s.title), h('div', { class: 'c' }, s.cmd)),
+        rec.seen.includes(s.id) ? h('span', { class: 'seen' }, '✔') : null)]));
+  }
+  function paintDetail() {
+    const i = P.steps.findIndex((s) => s.id === st.cur);
+    const s = P.steps[i];
+    const left = [];
+    if (s.list) left.push(h('ol', { class: 'pub-list' }, s.list.map((t) => h('li', { html: t }))));
+    if (s.term) left.push(term(s.term));
+    if (s.tree) left.push(tree(s.tree));
+    if (s.code) {
+      // 이름표는 짧은 판(두 줄)으로 보여 주고, 단추로 실제 파일 전체와 바꿔 본다 — 펼침 상자로 아래에 덧붙이면 화면이 넘친다
+      const full = s.full && st.full;
+      left.push(h('div', { class: 'row', style: { flexWrap: 'nowrap' } }, h('b', { class: 'small' }, s.codeTitle), h('span', { class: 'grow' }),
+        s.full ? h('button', { class: 'btn small', onClick: () => { st.full = !st.full; paintDetail(); } }, full ? '↩ 짧게 보기' : '🔬 실제 파일 전체 보기') : null));
+      left.push(Object.assign(codeBlock(full ? s.full : s.code), { style: 'flex:none' }));
+    }
+    if (s.id === 'get') {
+      // 친구 컴퓨터에 설치된 꾸러미는 폴더와 똑같이 불린다 — 화면의 실행 결과를 진짜로 돌려서 보여 준다
+      const r = quickRun({ 'main.py': s.code, 'mypackage/__init__.py': '', 'mypackage/module1.py': MODULE1 });
+      left.push(h('div', { class: 'small' }, '실행 결과 ', h('code', {}, r.text)));
+    }
+    const right = [h('div', { class: 'pub-say', html: s.say })];
+    if (s.full && st.full) right.push(h('div', { class: 'pub-tip' }, h('span', { class: 'ic' }, '🔬'), h('span', {}, s.more)));
+    if (s.id === 'get') right.push(h('table', { class: 't small' },
+      h('tr', {}, h('th', {}, ''), h('th', {}, '쓰는 이름'), h('th', {}, '어디서 왔나')),
+      h('tr', {}, h('td', {}, '설치할 때'), h('td', {}, h('code', {}, P.pipName)), h('td', {}, '이름표의 name')),
+      h('tr', {}, h('td', {}, '부를 때'), h('td', {}, h('code', {}, P.importName)), h('td', {}, '폴더 이름'))));
+    right.push(...s.tips.map(([ic, t]) => h('div', { class: 'pub-tip' }, h('span', { class: 'ic' }, ic), h('span', { html: t }))));
+    right.push(h('span', { class: 'grow' }));
+    right.push(h('div', { class: 'row', style: { justifyContent: 'flex-end' } },
+      i < P.steps.length - 1
+        ? h('button', { class: 'btn primary', onClick: () => show(P.steps[i + 1].id) }, `다음 걸음 ▶ ${P.steps[i + 1].icon} ${P.steps[i + 1].title}`)
+        : h('span', { class: 'small muted' }, '네 걸음 끝! 오른쪽 확인 문제를 풀어 보세요 →')));
+    fill(detail,
+      h('div', { class: 'col', style: { flex: 1.15, gap: '8px' } }, ...left),
+      h('div', { class: 'col', style: { flex: 1, gap: '8px' } }, ...right));
+  }
+  function paintQuiz() {
+    fill(quizBox,
+      h('h3', { style: { margin: 0 } }, '✅ 확인해 봐요'),
+      P.quiz.map((q, k) => {
+        const pick = rec.ans[k];
+        return h('div', { class: 'card col', style: { gap: '6px', padding: '10px 12px' } },
+          h('div', { class: 'quiz-q', style: { fontSize: '15.5px', margin: 0 }, html: `${k + 1}. ${q.q}` }),
+          h('div', { class: 'choices' }, q.choices.map((c, j) => h('button', {
+            class: 'choice' + (pick === j ? (j === q.ans ? ' right' : ' wrong') : ''), style: { padding: '5px 10px', fontSize: '14.5px' },
+            onClick: () => { rec.ans[k] = j; paintQuiz(); afterChange(); },
+          }, k === 0 ? h('code', {}, c) : c))),
+          pick === undefined ? null : h('div', { class: 'tiny', style: { color: pick === q.ans ? 'var(--good)' : 'var(--bad)' },
+            html: (pick === q.ans ? '✔ ' : '✘ 다시 골라 보세요 — ') + q.why[pick] }));
+      }));
+  }
+  function show(id) {
+    st.cur = id;
+    if (!rec.seen.includes(id)) { rec.seen.push(id); afterChange(); }
+    paintSteps(); paintDetail();
+  }
+
+  fill(body, h('div', { class: 'cols pub' },
+    h('div', { class: 'col grow' },
+      h('div', { class: 'row', style: { flexWrap: 'nowrap' } },
+        h('h2', { style: { margin: 0 } }, '내 꾸러미도 pip 로!'),
+        h('span', { class: 'chip c-lib' }, '⭐ 더 알아보기 · 교과서 밖'),
+        h('span', { class: 'small muted', html: '내가 만든 패키지도 친구가 <code>pip install</code> 로 받게 — <b>택배 보내기</b>와 같아요.' })),
+      stepRow, detail),
+    h('div', { class: 'col', style: { width: '330px', flex: 'none' } }, quizBox)));
+  show(st.cur);
+  paintQuiz();
 }

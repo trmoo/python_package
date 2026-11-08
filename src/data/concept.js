@@ -222,3 +222,91 @@ export const PIP_PROJECT = {
   },
   dirs: [],
 };
+
+/* ── 6. ⭐ 내 꾸러미도 pip 로 나눠 주기 (2026-11-05 사용자 요청 — 「아주 쉽게, 최대한 간단하게」) ──
+ *  택배 보내기 비유로 네 걸음: 📦 꾸리기 → 🎁 포장 → 🚚 올리기 → 🙌 친구가 받기.
+ *  교과서 밖 내용이라 ⭐ 더 알아보기 — 탭 잠금에 쓰지 않는다(progress.js 의 optional).
+ *  2026-11-05 파이썬 3.12.3 · setuptools 83 · build 로 실제로 포장하고 다른 환경에 설치해 확인했다:
+ *    hong-mypackage/ (pyproject.toml + mypackage/) → py -m build
+ *    → dist/hong_mypackage-0.1.0-py3-none-any.whl · dist/hong_mypackage-0.1.0.tar.gz
+ *    → pip install ….whl → 다른 폴더에서 from mypackage.module1 import hello 가 되고, import hong-mypackage 는 SyntaxError.
+ *  mypackage 는 ① 분류·import 문 읽기와 ② 불러오기에서 쓰는 그 패키지다(module1.py 는 imports.js 의 MODULE1 과 같다).
+ *  ⚠ 바깥 주소(https 로 시작하는 링크)를 적지 말 것 — check:syntax 가 막는다. 사이트 이름은 pypi.org 처럼 글자로만. */
+export const PUBLISH = {
+  pipName: 'hong-mypackage', // pip install 할 때 쓰는 이름 (이름표의 name)
+  importName: 'mypackage', // import 할 때 쓰는 이름 (폴더 이름)
+  version: '0.1.0',
+  steps: [
+    { id: 'pack', icon: '📦', title: '상자 꾸리기', cmd: '이름표 한 장',
+      say: '지금까지 만든 패키지 폴더 옆에 <b>이름표 한 장</b>(<code>pyproject.toml</code>)만 더 두면 돼요.',
+      tree: [
+        ['d', 'hong-mypackage/', '꾸러미 상자'],
+        ['f', '├── pyproject.toml', '📛 이름표 — 새로 만드는 파일'],
+        ['d', '└── mypackage/', '지금까지 만든 패키지 그대로'],
+        ['i', '    ├── __init__.py', ''],
+        ['f', '    ├── module1.py', ''],
+        ['f', '    └── module2.py', ''],
+      ],
+      codeTitle: '📛 pyproject.toml — 이름표',
+      // 주석 자리를 빈칸으로 맞추지 않는다 — 코드 글꼴의 빈칸 너비가 글자와 달라 줄마다 어긋나 보인다
+      code: '[project]\nname = "hong-mypackage"  # pip install 할 때 쓸 이름\nversion = "0.1.0"  # 꾸러미 판 번호',
+      more: '맨 위 세 줄은 「무엇으로 포장할지」 예요. 늘 똑같으니 그대로 베껴 쓰면 돼요.',
+      full: '[build-system]\nrequires = ["setuptools>=61"]\nbuild-backend = "setuptools.build_meta"\n\n[project]\nname = "hong-mypackage"\nversion = "0.1.0"',
+      tips: [
+        ['🏷️', '이름은 <b>세상에 하나뿐</b>이어야 해요. 흔한 이름은 이미 있으니 앞에 내 이름을 붙였어요.'],
+        ['🔢', '판 번호는 고칠 때마다 <code>0.1.0 → 0.1.1</code> 처럼 올려요.'],
+      ] },
+    { id: 'build', icon: '🎁', title: '포장하기', cmd: 'py -m build',
+      say: '터미널에 <b>명령 한 줄</b>. <code>dist/</code> 폴더에 꾸러미 파일이 생겨요.',
+      term: [
+        ['cmd', 'py -m pip install build', '처음 한 번만'],
+        ['cmd', 'py -m build', ''],
+      ],
+      tree: [
+        ['d', 'hong-mypackage/', ''],
+        ['d', '└── dist/', '새로 생긴 폴더'],
+        ['f', '    ├── hong_mypackage-0.1.0-py3-none-any.whl', '🎁 pip 가 설치하는 파일'],
+        ['f', '    └── hong_mypackage-0.1.0.tar.gz', '원본 묶음'],
+      ],
+      tips: [
+        ['💡', '<code>.whl</code>(휠)은 이름만 다른 <b>압축 파일</b>이에요. 수행평가에서 만드는 zip 과 닮았어요.'],
+        ['🔤', '파일 이름에서는 붙임표(-)가 밑줄(_)로 바뀌어요.'],
+      ] },
+    { id: 'upload', icon: '🚚', title: '올리기', cmd: 'twine upload',
+      say: '<b>PyPI</b>(파이파이) — 전 세계 파이썬 꾸러미가 모인 <b>창고</b>에 올려요.',
+      list: [
+        '<b>pypi.org</b> 에 가입하기',
+        '<b>API 토큰</b>(올릴 때 쓰는 열쇠) 받기',
+        '터미널에 명령 한 줄 — 토큰을 물으면 붙여 넣기',
+      ],
+      term: [
+        ['cmd', 'py -m pip install twine', '처음 한 번만'],
+        ['cmd', 'py -m twine upload dist/*', ''],
+      ],
+      tips: [
+        ['🧪', '처음엔 연습용 창고 <b>test.pypi.org</b> 에 올려 보세요.'],
+        ['🔁', '같은 판 번호로는 <b>두 번 못 올려요</b>. 고쳤으면 판 번호부터 올려요.'],
+        ['👀', '올리면 <b>누구나</b> 내려받아 코드를 볼 수 있어요.'],
+      ] },
+    { id: 'get', icon: '🙌', title: '친구가 받기', cmd: 'pip install',
+      say: '친구는 <b>명령 한 줄</b>이면 끝! 5번에서 gtts 를 받은 것과 똑같아요.',
+      term: [
+        ['cmd', 'pip install hong-mypackage', ''],
+        ['out', 'Successfully installed hong-mypackage-0.1.0', ''],
+      ],
+      codeTitle: '📄 친구의 main.py',
+      code: 'from mypackage.module1 import hello\nhello()',
+      tips: [
+        ['📨', 'PyPI 에 안 올려도 돼요. <code>.whl</code> 파일을 직접 건네면 <code>pip install 파일이름.whl</code> 로 설치해요.'],
+      ] },
+  ],
+  /** 확인 문제 — ans 는 정답 칸 번호, why 는 고른 칸마다의 풀이 */
+  quiz: [
+    { q: '친구가 <code>pip install hong-mypackage</code> 로 설치했어요. 코드에서는 어떻게 불러올까요?',
+      choices: ['import hong-mypackage', 'import mypackage.module1', 'import pyproject'], ans: 1,
+      why: ['붙임표(-)는 빼기 기호라 이름에 못 써요 → SyntaxError.', '설치 이름과 상관없이 <b>폴더 이름</b>으로 불러요.', 'pyproject.toml 은 이름표일 뿐 모듈이 아니에요.'] },
+    { q: 'module1.py 를 고쳐서 다시 올리려고 해요. 이름표에서 무엇을 바꿀까요?',
+      choices: ['아무것도 안 바꾸고 그대로 올린다', 'version 을 "0.1.1" 로 올린다', 'name 을 새 이름으로 바꾼다'], ans: 1,
+      why: ['같은 판 번호(0.1.0)로는 두 번 올릴 수 없어요.', '판 번호를 올리면 친구는 <code>pip install --upgrade hong-mypackage</code> 로 새 판을 받아요.', '이름을 바꾸면 아예 다른 꾸러미가 되어 친구가 새로 찾아야 해요.'] },
+  ],
+};

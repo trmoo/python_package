@@ -4,7 +4,7 @@
 import { 묶음, 확인, 참 } from './harness.mjs';
 import { ACTIVITIES, blockers, progressOf, isDone, TAB_ORDER } from '../src/lib/progress.js';
 import { buildReport, reportFileName, safeName } from '../src/lib/report.js';
-import { SORT_CARDS, ANATOMY, LEVELS } from '../src/data/concept.js';
+import { SORT_CARDS, ANATOMY, LEVELS, PUBLISH } from '../src/data/concept.js';
 import { FIXES, QUIZ } from '../src/data/imports.js';
 import { MISSIONS } from '../src/data/missions.js';
 import { EXAM } from './golden-cases.mjs';
@@ -48,6 +48,14 @@ function fullState() {
   확인('선생님 코드로 열면 막지 않는다', blockers('assess', { unlock: true }), []);
   확인('진행 정도', [progressOf({}).done, progressOf(fullState()).done, progressOf(fullState()).total], [0, 13, 13]);
   for (const key of Object.keys(ACTIVITIES)) 참(`「${key}」 는 실재하는 탭에 있다`, TAB_ORDER.includes(key.split('/')[0]));
+  // ⭐ 내 꾸러미도 pip 로 — 선택이라 잠그지 않는다 (이미 ② 로 넘어간 학생이 다시 잠기지 않게)
+  참('⭐ 내 꾸러미도 pip 로 는 선택', ACTIVITIES['concept/publish'].optional === true);
+  참('⭐ 내 꾸러미도 pip 로 를 안 해도 ② 탭이 열린다', !blockers('import', fullState()).length && !isDone('concept/publish', fullState()));
+  const pubAll = { seen: PUBLISH.steps.map((s) => s.id), ans: Object.fromEntries(PUBLISH.quiz.map((q, k) => [k, q.ans])) };
+  참('⭐ 네 걸음을 다 보고 두 문제를 맞히면 끝', isDone('concept/publish', { publish: pubAll }));
+  참('⭐ 한 걸음이라도 안 보면 아직', !isDone('concept/publish', { publish: { ...pubAll, seen: pubAll.seen.slice(0, 3) } }));
+  참('⭐ 한 문제라도 틀리면 아직', !isDone('concept/publish', { publish: { ...pubAll, ans: { ...pubAll.ans, 1: 0 } } }));
+  참('⭐ 끝내도 필수 활동 수는 그대로', progressOf({ ...fullState(), publish: pubAll }).total === 13);
   참('빈 기록에서 아무 활동도 끝난 것이 아니다', Object.keys(ACTIVITIES).every((k) => !isDone(k, {})));
 }
 
@@ -61,6 +69,10 @@ function fullState() {
   참('저장한 때', html.includes('2026-11-05 09:30'));
   참('진행 13 / 13', html.includes('<b>13 / 13</b>'));
   참('네 탭이 모두 있다', ['① 개념 잡기', '② 불러오기', '③ 패키지 만들기', '④ 수행평가 준비'].every((t) => html.includes(t)));
+  참('⭐ 내 꾸러미도 pip 로 칸이 (선택) 으로 있다', html.includes('⭐ 내 꾸러미도 pip 로 <span class="muted">(선택)</span>'));
+  const pubHtml = buildReport({ publish: { seen: ['pack', 'build'], ans: { 0: 1 } } }, { id: '1', name: 'x' });
+  참('⭐ 넘겨 본 걸음과 고른 답이 들어간다', pubHtml.includes('✔ 📦 상자 꾸리기') && pubHtml.includes('— 🚚 올리기') && pubHtml.includes('import mypackage.module1'));
+  참('⭐ 확인 문제 글에서 태그를 걷어 낸다', pubHtml.includes('1. 친구가 pip install hong-mypackage 로 설치했어요'));
   참('연습 과제 자기 점검 칸이 있다', html.includes(EXAM ? '자기 점검: 6 / 6' : '자기 점검: 0 / 6'));
   참('start.py 실행 결과 칸이 있다', html.includes('python start.py 실행 결과'));
   if (EXAM) 참('(이 컴퓨터에만) 모범 답의 실행 결과가 들어 있다', html.includes('새콤한 사과') && html.includes('foods/drinks/milk.py'));

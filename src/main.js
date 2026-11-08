@@ -13,7 +13,7 @@ import { createStage, createShell } from './ui/shell.js';
 import { openSaveDialog } from './ui/save.js';
 import { S, save, resetAll } from './lib/store.js';
 import { isDone, blockers, teacherCodeOk } from './lib/progress.js';
-import { renderWhy, renderLayers, renderSort, renderAnatomy, renderWhere } from './screens/concept.js';
+import { renderWhy, renderLayers, renderSort, renderAnatomy, renderWhere, renderPublish } from './screens/concept.js';
 import { renderForms, renderPkgForms, renderFix, renderQuiz } from './screens/imports.js';
 import { renderMission } from './screens/build.js';
 import { renderQuestion, renderPractice, renderIDLE } from './screens/assess.js';
@@ -31,6 +31,7 @@ const SCREENS = [
   { tab: 'concept', id: 'sort', title: '분류해 보기', short: '분류해 보기', render: renderSort },
   { tab: 'concept', id: 'anatomy', title: 'import 문 읽기', short: 'import 문 읽기', render: renderAnatomy },
   { tab: 'concept', id: 'where', title: '모듈은 어디서 올까? (pip)', short: '어디서 올까 · pip', render: renderWhere },
+  { tab: 'concept', id: 'publish', title: '⭐ 내 꾸러미도 pip 로 나눠 주기', short: '⭐ 내 꾸러미도 pip 로', render: renderPublish },
   { tab: 'import', id: 'forms', title: 'import 세 가지 꼴', short: 'import 세 가지 꼴', render: renderForms },
   { tab: 'import', id: 'pkgforms', title: '패키지 속 모듈 부르기', short: '패키지 속 모듈', render: renderPkgForms },
   { tab: 'import', id: 'fix', title: '오류 고치기', short: '오류 고치기', render: renderFix },
@@ -66,7 +67,6 @@ document.body.append(holder);
 const app = createShell(stage, {
   tabs: TABS, screens: SCREENS,
   logo: ['📦 패키지 공작소', h('small', {}, '모듈 · 패키지 · 라이브러리')],
-  // 화면 곳곳의 「교과서 ○쪽」 이 어느 교과서인지 — 모든 화면 알약 줄 오른쪽에 (2026-11-05 사용자 지시)
   gate: (tabId) => blockers(tabId, S),
   onBlocked: showBlocked,
   tools: () => [

@@ -3,7 +3,7 @@
  *  화면마다 무엇을 하면 「완료」 인지를 한곳에 모아 둔다. 탭 잠금·알약의 ✔·활동 기록 HTML 이 모두 이것을 쓴다.
  *  ⚠ node 로 불러다 시험하므로 DOM 을 만지지 말 것. S 는 store.js 의 기록 묶음(그대로 넘겨받는다).
  */
-import { SORT_CARDS, ANATOMY, LEVELS } from '../data/concept.js';
+import { SORT_CARDS, ANATOMY, LEVELS, PUBLISH } from '../data/concept.js';
 import { FIXES, QUIZ } from '../data/imports.js';
 
 export const TAB_ORDER = ['concept', 'import', 'build', 'assess'];
@@ -25,6 +25,10 @@ export const ACTIVITIES = {
     done: (S) => !!(S.anatomy && ANATOMY.every((a, i) => S.anatomy[i] === a.ans)) },
   'concept/where': { title: '모듈은 어디서 올까? (pip)', how: 'pip install gtts 로 설치하고 main.py 를 실행해 hello.mp3 만들기',
     done: (S) => !!(S.pip && S.pip.ok) },
+  // ⭐ 교과서 밖이라 선택 — 이미 ② 탭으로 넘어간 학생이 이 화면 때문에 다시 잠기지 않게 (2026-11-05)
+  'concept/publish': { title: '⭐ 내 꾸러미도 pip 로', how: `${PUBLISH.steps.length}걸음을 모두 넘겨 보고 확인 문제 ${PUBLISH.quiz.length}개 맞히기 (선택)`, optional: true,
+    done: (S) => !!(S.publish && PUBLISH.steps.every((s) => S.publish.seen && S.publish.seen.includes(s.id))
+      && PUBLISH.quiz.every((q, k) => S.publish.ans && S.publish.ans[k] === q.ans)) },
   'import/forms': { title: 'import 세 가지 꼴', how: '9칸을 모두 예측하고 「실행해서 확인」',
     done: (S) => !!(S.forms && S.forms.shown) },
   'import/pkgforms': { title: '패키지 속 모듈 부르기', how: '12칸을 모두 예측하고 「실행해서 확인」',
