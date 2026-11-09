@@ -13,7 +13,9 @@ const size = statSync(path).size;
 if (size < 100_000) bad.push(`크기가 너무 작다 (${size}바이트) — 개발용 껍데기가 나온 것 아닌가?`);
 const marks = (html.match(/티쳐무/g) || []).length;
 if (!html.includes('<!--') || !/<!--[\s\S]*?티쳐무[\s\S]*?-->/.test(html)) bad.push('HTML 주석에 저작권 표시가 없다');
-if (!html.includes('/*! 📦 패키지 공작소 — © 2026 티쳐무')) bad.push('/*! 배너가 지워졌다 (esbuild.legalComments 를 확인할 것)');
+// ⚠ 배너는 둘째 줄까지 함께 본다 — 첫 줄은 CSS·HTML 머리 주석과 겹쳐, Vite 8 이 스크립트 배너를 지워도 통과했다(2026-11-09 postBanner 로 고침)
+const banner = "/*! 📦 패키지 공작소 — © 2026 티쳐무 · 모든 권리 보유\n * 학교 수업 목적으로만 이용해 주세요. 무단 배포·상업적 이용을 금합니다. */";
+if (!html.includes(banner)) bad.push('스크립트 /*! 배너가 지워졌다 — vite.config.js 의 output.postBanner 를 볼 것(Vite 8 은 banner 를 압축에서 지운다)');
 if (!html.includes('© 2026 티쳐무 · 모든 권리 보유')) bad.push('화면 푸터 문구가 없다');
 const urls = [...html.matchAll(/(?:src|href)=["'](https?:[^"']+)["']/g)].map((m) => m[1]);
 const allowed = ['https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/', 'https://cdn.jsdelivr.net/npm/d2coding@1.3.2/', 'https://cdn.jsdelivr.net'];
