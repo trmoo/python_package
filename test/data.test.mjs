@@ -3,7 +3,7 @@
  */
 import { 묶음, 확인, 참 } from './harness.mjs';
 import { runProject } from '../src/lib/pymini.js';
-import { WHY, SORT_CARDS, BINS, ANATOMY, ROLES, LEVELS, PANDAS, NUMPY_BOOK, INIT_INFO, treeLines, numpyBookAsNode, PUBLISH, SORT_HINTS } from '../src/data/concept.js';
+import { WHY, SORT_CARDS, BINS, ANATOMY, ROLES, LEVELS, PANDAS, NUMPY_BOOK, INIT_INFO, treeLines, numpyBookAsNode, PUBLISH, SORT_HINTS, isAnswer } from '../src/data/concept.js';
 import { FORMS, PKGFORMS, FIXES, QUIZ, MODULE1 } from '../src/data/imports.js';
 import { MISSIONS } from '../src/data/missions.js';
 import { fixPassedForTest } from './helpers.mjs';
@@ -100,6 +100,16 @@ for (const c of SORT_CARDS) {
   // 친구의 main.py — 설치된 꾸러미는 폴더와 똑같이 불린다 (화면이 이 결과를 그대로 보여 준다)
   const files = { 'mypackage/__init__.py': '', 'mypackage/module1.py': MODULE1 };
   확인('받기 — 친구의 main.py 실행 결과', runProject({ files: { ...files, 'main.py': step('get').code } }).stdout, '안녕! module1 이에요');
+  // 📝 한눈에 정리 (2026-11-10) — 걸음이 아니라 따로 둔다. 걸음에 섞이면 이미 끝낸 학생의 ✔ 가 사라진다
+  const SUM = P.summary;
+  확인('정리 — 네 낱말 차례', SUM.rows.map((r) => r.name), ['모듈', '패키지', '라이브러리', '배포 패키지']);
+  참('정리 — 칸마다 누가·무엇·예가 채워져 있다', SUM.head.length === 4 && SUM.rows.every((r) => r.ic && r.who && r.what && r.ex));
+  참('정리 — 걸음 칸에 섞이지 않는다', !P.steps.some((s) => s.id === 'sum' || s.title === SUM.title));
+  참('정리 — 배포 패키지의 예는 이름표의 pip 이름', SUM.rows[3].ex.includes(P.pipName));
+  참('정리 — 4단계 이름 짝(설치 이름 → 폴더 이름)이 화면과 같다', SUM.tips.some(([, t]) => t.includes(P.pipName) && t.includes(P.importName)));
+  // 「random 은 분류해 보기에서 두 답을 다 받는다」 는 도움말이 실제 채점과 맞아야 한다
+  const rnd = SORT_CARDS.find((c) => c.id === 'random');
+  참('정리 — random 도움말 = 분류해 보기에서 모듈·라이브러리 모두 정답', SUM.tips.some(([, t]) => t.includes('분류해 보기')) && isAnswer(rnd, 'mod') && isAnswer(rnd, 'lib'));
   // 확인 문제
   for (const [k, q] of P.quiz.entries()) {
     참(`확인 문제 ${k + 1} — 정답 칸이 있다`, q.ans >= 0 && q.ans < q.choices.length);

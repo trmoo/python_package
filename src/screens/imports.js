@@ -1,7 +1,7 @@
 /*! 📦 패키지 공작소 — © 2026 티쳐무 · 모든 권리 보유
  *  ② 불러오기 — import 세 가지 꼴 · 패키지 속 모듈 부르기 · 오류 고치기 · 확인 문제
  */
-import { h, fill, toast, modal } from '../ui/dom.js';
+import { h, fill, toast, modal, share } from '../ui/dom.js';
 import { codeBlock, quickRun, head, treeBlock } from './common.js';
 import { createIDE } from '../ui/ide.js';
 import { slot, save } from '../lib/store.js';
@@ -63,8 +63,8 @@ function predictGrid(body, api, { key, data, title, lead, side }) {
     } else fill(detail, side(), note());
   }
   fill(body, h('div', { class: 'cols' },
-    h('div', { class: 'col grow' }, head(title, lead), table, score),
-    h('div', { class: 'col', style: { width: '370px', flex: 'none' } }, detail)));
+    h('div', { class: 'col', style: share(858) }, head(title, lead), table, score),
+    h('div', { class: 'col', style: share(370) }, detail)));
   paint();
 }
 
@@ -98,7 +98,7 @@ export function renderFix(body, api) {
   const S = slot('fix', () => ({ cur: FIXES[0].id, done: {}, proj: {}, hint: {} }));
   const listEl = h('div', { class: 'col', style: { gap: '4px' } });
   const info = h('div', { class: 'col', style: { gap: '7px' } });
-  const ideHost = h('div', { style: { flex: 1, minWidth: 0, height: '100%' } });
+  const ideHost = h('div', { style: { ...share(898), height: '100%' } });
   let ide = null;
   const fx = () => FIXES.find((f) => f.id === S.cur);
 
@@ -134,7 +134,7 @@ export function renderFix(body, api) {
     if (!S.done[f.id]) ide.run(f.active || 'main.py');
   }
   fill(body, h('div', { class: 'cols' },
-    h('div', { class: 'col', style: { width: '330px', flex: 'none', gap: '7px' } }, h('h2', {}, '오류 고치기 — 자주 겪는 여섯 가지'), listEl, info),
+    h('div', { class: 'col', style: { ...share(330), gap: '7px' } }, h('h2', {}, '오류 고치기 — 자주 겪는 여섯 가지'), listEl, info),
     ideHost));
   mount();
 }

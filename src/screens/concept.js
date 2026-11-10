@@ -1,7 +1,7 @@
 /*! 📦 패키지 공작소 — © 2026 티쳐무 · 모든 권리 보유
  *  ① 개념 잡기 — 왜 나눌까 · 모듈⊂패키지⊂라이브러리 · 분류 · import 문 읽기 · 어디서 올까 · ⭐ 내 꾸러미도 pip 로
  */
-import { h, fill, toast, modal } from '../ui/dom.js';
+import { h, fill, toast, modal, share } from '../ui/dom.js';
 import { codeBlock, quickRun, head } from './common.js';
 import { createIDE } from '../ui/ide.js';
 import { slot, save } from '../lib/store.js';
@@ -61,9 +61,11 @@ export function renderWhy(body, api) {
           : '<b>score.py 한 곳만 고쳤는데 두 프로그램이 모두 맞아졌어요.</b> 이것이 모듈로 나누는 까닭이에요.' }),
       h('div', { class: 'small muted' }, `해 본 것: 방법 A ${rec.copy ? '✔' : '—'} · 방법 B ${rec.mod ? '✔' : '—'}  (두 방법 모두 🐞 고치기를 눌러 견줘 보면 이 활동이 끝나요)`));
   }
+  // 왼쪽 : 오른쪽 = 2 : 1 (2026-11-10 사용자 지시) — 오른쪽을 360px 로 박아 두었더니 가로로 긴 창(분할 화면)에서
+  // 왼쪽만 한없이 넓어져 「📝 모듈이란?」 빈칸이 화면 오른쪽 끝에 붙어 버렸다. 이제 창이 넓어지면 두 칸이 같은 비율로 는다.
   fill(body, h('div', { class: 'cols' },
-    h('div', { class: 'col', style: { flex: 1.25 } }, head('왜 파일을 나눌까?', '친구가 「네 프로그램의 <b>평균 함수</b>만 빌려 줘」 라고 해요. 어떻게 나눠 줄까요?'), stage),
-    h('div', { class: 'col', style: { width: '360px', flex: 'none' } },
+    h('div', { class: 'col', style: { flex: '2 1 0', minWidth: 0 } }, head('왜 파일을 나눌까?', '친구가 「네 프로그램의 <b>평균 함수</b>만 빌려 줘」 라고 해요. 어떻게 나눠 줄까요?'), stage),
+    h('div', { class: 'col', style: { flex: '1 1 0', minWidth: '360px' } },
       // 📝 빈칸 — 모듈의 뜻과 나누는 까닭 세 가지를 학생이 채운다 (자료는 data/blanks.js)
       h('div', { class: 'card bk-card' }, kit.head('📝 모듈이란?'), h('div', { class: 'bk-row' }, kit.line('why.def')),
         h('p', { class: 'tiny muted', style: { margin: 0 } }, '씨마스 「프로그래밍」 교과서 143쪽 「정보 더하기」 — 모듈·패키지·라이브러리를 쓰는 까닭 세 가지를 아래 카드의 빈칸에 한 낱말씩 채워 보세요.')),
@@ -79,8 +81,8 @@ export function renderLayers(body, api) {
   const kit = blankKit('concept/layers');
   const st = { lit: null, view: 'std', shape: 'box' };
   const rec = slot('layers', () => ({ seen: [] }));
-  const left = h('div', { class: 'col grow' });
-  const right = h('div', { class: 'col', style: { width: '400px', flex: 'none' } });
+  const left = h('div', { class: 'col', style: share(828) });
+  const right = h('div', { class: 'col', style: share(400) });
   const pick = (id) => (e) => { e.stopPropagation(); st.lit = id; paint(); };
   const box = (cls, label, kids, id) => h('div', { class: `nest ${cls}` + (st.lit === id ? ' lit' : ''), onClick: pick(id) },
     h('div', { class: 'lab' }, label), kids ? h('div', { class: 'kids' }, kids) : null);
@@ -282,9 +284,9 @@ export function renderAnatomy(body, api) {
 export function renderWhere(body, api) {
   const S = slot('pip', () => ({ installed: [], project: null, ok: false }));
   const kit = blankKit('concept/where');
-  const ideHost = h('div', { style: { flex: 1, minWidth: 0, height: '100%' } });
+  const ideHost = h('div', { style: { ...share(798), height: '100%' } });
   fill(body, h('div', { class: 'cols' },
-    h('div', { class: 'col', style: { width: '430px', flex: 'none', gap: '8px' } },
+    h('div', { class: 'col', style: { ...share(430), gap: '8px' } },
       h('h2', {}, '모듈은 어디서 올까?'),
       h('table', { class: 't small' }, SOURCES.map((s) => h('tr', {},
         h('td', { style: { borderLeft: `5px solid ${s.color}`, whiteSpace: 'nowrap' } }, h('b', {}, `${s.icon} ${s.title}`), h('div', { class: 'tiny muted' }, s.body)),
@@ -315,8 +317,9 @@ export function renderWhere(body, api) {
 export function renderPublish(body, api) {
   const rec = slot('publish', () => ({ seen: [], ans: {} }));
   const P = PUBLISH;
-  // 처음 열면 아직 안 본 첫 걸음부터
-  const st = { cur: (P.steps.find((s) => !rec.seen.includes(s.id)) || P.steps[0]).id, full: false };
+  const SUM = P.summary;
+  // 처음 열면 아직 안 본 첫 걸음부터 — 네 걸음을 다 봤으면 📝 한눈에 정리(cur 'sum')부터
+  const st = { cur: (P.steps.find((s) => !rec.seen.includes(s.id)) || { id: 'sum' }).id, full: false };
   const stepRow = h('div', { class: 'pub-steps' });
   const detail = h('div', { class: 'card pub-detail' });
   const quizBox = h('div', { class: 'col', style: { gap: '10px' } });
@@ -343,9 +346,23 @@ export function renderPublish(body, api) {
       h('button', { class: 'pub-step' + (st.cur === s.id ? ' on' : ''), onClick: () => show(s.id) },
         h('span', { class: 'ic' }, s.icon),
         h('span', {}, h('div', { class: 'n' }, `${i + 1}단계`), h('div', { class: 't' }, s.title), h('div', { class: 'c' }, s.cmd)),
-        rec.seen.includes(s.id) ? h('span', { class: 'seen' }, '✔') : null)]));
+        rec.seen.includes(s.id) ? h('span', { class: 'seen' }, '✔') : null)]),
+      // 📝 한눈에 정리 — 걸음이 아니라서 번호·화살표 없이, 좁은 세로 칸으로 (넓히면 네 걸음 칸의 글자가 줄바꿈된다)
+      h('button', { class: 'pub-step pub-sum' + (st.cur === 'sum' ? ' on' : ''), onClick: () => show('sum') },
+        h('span', { class: 'ic' }, SUM.icon), h('span', { class: 't' }, SUM.title)));
+  }
+  /** 📝 한눈에 정리 — 헷갈리는 네 낱말을 표 하나로. 이 칸을 봤는지는 기록하지 않는다(완료 조건·활동 기록과 무관) */
+  function paintSummary() {
+    fill(detail, h('div', { class: 'col grow', style: { gap: '10px', minWidth: 0 } },
+      h('table', { class: 't pub-terms' },
+        h('tr', {}, SUM.head.map((t) => h('th', {}, t))),
+        SUM.rows.map((r) => h('tr', {},
+          h('td', { class: 'nm' }, `${r.ic} ${r.name}`), h('td', { class: 'who' }, r.who), h('td', { html: r.what }), h('td', { class: 'ex', html: r.ex })))),
+      h('div', { class: 'pub-line', html: `💬 ${SUM.line}` }),
+      h('div', { class: 'pub-tips3' }, SUM.tips.map(([ic, t]) => h('div', { class: 'pub-tip' }, h('span', { class: 'ic' }, ic), h('span', { html: t }))))));
   }
   function paintDetail() {
+    if (st.cur === 'sum') return paintSummary();
     const i = P.steps.findIndex((s) => s.id === st.cur);
     const s = P.steps[i];
     const left = [];
@@ -375,7 +392,7 @@ export function renderPublish(body, api) {
     right.push(h('div', { class: 'row', style: { justifyContent: 'flex-end' } },
       i < P.steps.length - 1
         ? h('button', { class: 'btn primary', onClick: () => show(P.steps[i + 1].id) }, `다음 걸음 ▶ ${P.steps[i + 1].icon} ${P.steps[i + 1].title}`)
-        : h('span', { class: 'small muted' }, '네 걸음 끝! 오른쪽 확인 문제를 풀어 보세요 →')));
+        : h('button', { class: 'btn primary', onClick: () => show('sum') }, `네 걸음 끝! ▶ ${SUM.icon} ${SUM.title}`)));
     fill(detail,
       h('div', { class: 'col', style: { flex: 1.15, gap: '8px' } }, ...left),
       h('div', { class: 'col', style: { flex: 1, gap: '8px' } }, ...right));
@@ -397,18 +414,18 @@ export function renderPublish(body, api) {
   }
   function show(id) {
     st.cur = id;
-    if (!rec.seen.includes(id)) { rec.seen.push(id); afterChange(); }
+    if (id !== 'sum' && !rec.seen.includes(id)) { rec.seen.push(id); afterChange(); }
     paintSteps(); paintDetail();
   }
 
   fill(body, h('div', { class: 'cols pub' },
-    h('div', { class: 'col grow' },
+    h('div', { class: 'col', style: share(898) },
       h('div', { class: 'row', style: { flexWrap: 'nowrap' } },
         h('h2', { style: { margin: 0 } }, '내 꾸러미도 pip 로!'),
         h('span', { class: 'chip c-lib' }, '⭐ 더 알아보기 · 교과서 밖'),
         h('span', { class: 'small muted', html: '내가 만든 패키지도 친구가 <code>pip install</code> 로 받게 — <b>택배 보내기</b>와 같아요.' })),
       stepRow, detail),
-    h('div', { class: 'col', style: { width: '330px', flex: 'none' } }, quizBox)));
+    h('div', { class: 'col', style: share(330) }, quizBox)));
   show(st.cur);
   paintQuiz();
 }

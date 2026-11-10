@@ -198,8 +198,8 @@ pre.code mark { background: rgba(255, 212, 59, .28); color: inherit; border-radi
 .ide-cmd input::placeholder { color: #5a5a5a; }
 
 /* ══════════════ 화면별 ══════════════ */
-/* 미션 판 */
-.mission { width: 330px; flex: none; display: flex; flex-direction: column; gap: 9px; min-height: 0; }
+/* 미션 판 — 너비는 화면 쪽 share( ) 가 정한다(1280 에서 330px · 연습 과제 400px, 넓은 창에서는 비율대로 는다) */
+.mission { display: flex; flex-direction: column; gap: 9px; min-height: 0; }
 .mission .story { font-size: 15px; }
 .steps { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
 .steps li { display: flex; gap: 8px; align-items: flex-start; font-size: 14.5px; line-height: 1.45; background: var(--paper); border: 1px solid var(--line); border-radius: 10px; padding: 6px 10px; }
@@ -269,6 +269,16 @@ pre.code mark { background: rgba(255, 212, 59, .28); color: inherit; border-radi
 .pub-list { margin: 0; padding-left: 22px; font-size: 15.5px; line-height: 1.7; }
 .pub .shot { font-size: 14.5px; flex: none; }
 .pub .tree { font-size: 14.5px; flex: none; }
+/* 📝 한눈에 정리 (2026-11-10) — 걸음이 아니라서 점선 · 세로 칸 · 화살표 대신 조금 띄운다 */
+.pub-step.pub-sum { flex: none; flex-direction: column; justify-content: center; gap: 2px; text-align: center; border-style: dashed; margin-left: 6px; padding: 8px 12px; }
+.pub-step.pub-sum .ic { font-size: 26px; }
+table.t.pub-terms { font-size: 15.5px; flex: none; }
+table.t.pub-terms th, table.t.pub-terms td { padding: 7px 10px; vertical-align: middle; }
+table.t.pub-terms td.nm { font-weight: 900; white-space: nowrap; }
+table.t.pub-terms td.who { color: var(--muted); }
+table.t.pub-terms td.ex { white-space: nowrap; }
+.pub-line { font-size: 17px; font-weight: 700; line-height: 1.45; background: var(--lib-bg); border-left: 5px solid var(--lib); border-radius: 10px; padding: 8px 12px; flex: none; }
+.pub-tips3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; flex: none; word-break: keep-all; } /* 「라이 / 브러리」 처럼 낱말 가운데서 끊기지 않게 */
 
 /* 퀴즈 */
 .quiz-q { font-weight: 800; font-size: 17px; margin-bottom: 8px; }

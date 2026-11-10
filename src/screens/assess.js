@@ -2,7 +2,7 @@
  *  ④ 수행평가 준비 — 수행평가 문항 · 연습 과제(조건 점검기) · IDLE 에서 만들고 제출하기
  *  문항은 2026-11-05 선생님이 주신 것(foods 패키지 + start.py). 예전 「조건 여섯 가지 + 루브릭」 은 뺐다.
  */
-import { h, fill, toast, modal } from '../ui/dom.js';
+import { h, fill, toast, modal, share } from '../ui/dom.js';
 import { treeBlock, head } from './common.js';
 import { createIDE } from '../ui/ide.js';
 import { slot, save } from '../lib/store.js';
@@ -20,11 +20,11 @@ export function renderQuestion(body) {
     h('ul', {}, pt.lines.map((t, i) => h('li', {}, h('span', { html: t }),
       pt.no === 2 && SPEC[i - 1] ? h('div', { class: 'qouts' }, SPEC[i - 1].mods.map(([m, txt]) => h('span', {}, h('code', {}, `${m}.py`), ` → ${txt}`))) : null))));
   fill(body, h('div', { class: 'cols' },
-    h('div', { class: 'col', style: { width: '640px', flex: 'none', gap: '8px' } },
+    h('div', { class: 'col', style: { ...share(640), gap: '8px' } },
       h('h2', {}, `수행평가 — ${QUESTION.title}`),
       h('p', { class: 'lead', style: { margin: 0 } }, QUESTION.lead),
       QUESTION.parts.map(part)),
-    h('div', { class: 'col grow', style: { gap: '8px' } },
+    h('div', { class: 'col', style: { ...share(588), gap: '8px' } },
       h('h3', {}, '완성하면 이런 모습'),
       h('div', { class: 'row', style: { alignItems: 'stretch', flexWrap: 'nowrap' } },
         treeBlock(GOAL_TREE),
@@ -38,8 +38,8 @@ export function renderQuestion(body) {
 export function renderPractice(body, api) {
   const S = slot('exam', () => ({ project: null }));
   let proj = S.project || PRACTICE_START;
-  const panel = h('div', { class: 'mission', style: { width: '400px', gap: '7px' } });
-  const ideHost = h('div', { style: { flex: 1, minWidth: 0, height: '100%' } });
+  const panel = h('div', { class: 'mission', style: { ...share(400), gap: '7px' } });
+  const ideHost = h('div', { style: { ...share(828), height: '100%' } });
   let timer = null;
 
   function paint() {
@@ -86,7 +86,7 @@ export function renderIDLE(body) {
   const shot = (bar, lines, light) => h('div', { class: `shot${light ? ' light' : ''}` }, h('div', { class: 'bar' }, bar), h('div', { class: 'in', html: lines }));
   const step = (n, title, desc, pic) => h('div', { class: 'card stepcard' }, h('div', {}, h('span', { class: 'num' }, n), h('b', {}, title)), h('div', { class: 'small', html: desc }), pic);
   fill(body, h('div', { class: 'cols' },
-    h('div', { class: 'col grow' },
+    h('div', { class: 'col', style: share(828) },
       head('IDLE 에서 만들고 제출하기', '수행평가는 <b>IDLE</b> 로 해요. 이 앱(가상 VS Code)에서 연습한 그대로 만들면 돼요.'),
       h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' } },
         step(1, 'IDLE 열고 새 파일', '시작 메뉴에서 <b>IDLE (Python 3.x)</b>. 처음 뜨는 <b>IDLE Shell</b> 창이 아니라 <b>File › New File</b> 로 연 새 창에 코드를 써요.',
@@ -97,7 +97,7 @@ export function renderIDLE(body) {
           shot('IDLE Shell', '= RESTART: C:\\Users\\…\\Downloads\\start.py<br>신선한 우유<br>상쾌한 콜라 …', true)),
         step(4, '압축해서 제출', '파일 탐색기에서 다운로드 폴더 → <code>foods</code> 폴더와 <code>start.py</code> 를 <b>함께</b> 골라 오른쪽 클릭 → <b>압축 대상 › ZIP 파일</b> (윈도우 10: 보내기 › 압축(ZIP) 폴더) → 이름을 <b>모듈패키지 + 내 학번 + 이름</b> 으로.',
           shot('다운로드', '📁 <span class="hl">foods</span> &nbsp;📄 <span class="hl">start.py</span><br><b>[ZIP]</b> 모듈패키지30101홍길동.zip')))),
-    h('div', { class: 'col', style: { width: '400px', flex: 'none' } },
+    h('div', { class: 'col', style: share(400) },
       h('div', { class: 'note warn small', html: '<b>⚠ 이것만은 조심</b><br>· 「다운로드」 의 진짜 경로는 <code>C:\\Users\\(내 이름)\\Downloads</code> 예요.<br>· <code>start.py</code> 는 <code>foods</code> 폴더 <b>밖</b>, foods 와 <b>나란히</b>. foods 안에 두면 <code>ModuleNotFoundError</code>.<br>· 폴더·파일 이름은 문항 그대로 <b>소문자</b>. <code>Foods</code> 는 import 하지 못해요(윈도우에서도).<br>· 탐색기의 「새로 만들기 → 텍스트 문서」 로 만들면 진짜 이름이 <code>milk.py.txt</code> 가 될 수 있어요. 파일은 꼭 IDLE 에서 저장해요.<br>· 다운로드에 예전에 만든 <code>foods.py</code> 처럼 <b>같은 이름</b>의 파일이 있으면 패키지가 가려질 수 있어요.<br>· 고친 파일은 다시 <b>저장</b>해야 바뀐 내용으로 실행돼요. 저장하지 않고 <kbd>F5</kbd> 를 누르면 IDLE 이 저장할지 물어요.' }),
       h('div', { class: 'note small', html: '<b>📌 압축할 때</b> — 다운로드 폴더 <b>전체</b>를 압축하면 다른 파일이 섞여요. <code>foods</code> 와 <code>start.py</code> 두 가지만 골라요. 실행하면 저절로 생기는 <code>__pycache__</code> 폴더는 들어가도 괜찮아요.' }),
       h('details', { class: 'more' }, h('summary', {}, 'VS Code 로 연습한다면'),

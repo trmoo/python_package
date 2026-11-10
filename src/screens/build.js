@@ -2,7 +2,7 @@
  *  ③ 패키지 만들기 — 가상 VS Code 미션 네 개.
  *  왼쪽 미션 판의 체크리스트가 프로젝트와 실행 결과를 보고 스스로 채워진다.
  */
-import { h, fill, toast, modal } from '../ui/dom.js';
+import { h, fill, toast, modal, share } from '../ui/dom.js';
 import { codeBlock, treeBlock, projectTree } from './common.js';
 import { createIDE } from '../ui/ide.js';
 import { slot, save } from '../lib/store.js';
@@ -20,8 +20,8 @@ export function renderMission(id) {
     const kit = blankKit(`build/${id}`);
     const storyLine = kit.group && kit.group.lines.find((l) => l.story);
     const restIds = kit.group ? kit.group.lines.filter((l) => !l.story).map((l) => l.id) : [];
-    const panel = h('div', { class: 'mission' });
-    const ideHost = h('div', { style: { flex: 1, minWidth: 0, height: '100%' } });
+    const panel = h('div', { class: 'mission', style: share(330) });
+    const ideHost = h('div', { style: { ...share(898), height: '100%' } });
     let proj = clone(S.project || m.start);
     let ide = null;
 

@@ -92,6 +92,12 @@ export function toast(text, kind = '') {
   setTimeout(() => t.remove(), 3100);
 }
 
+/** 두 칸 나누기 — 1280×720 무대에서 그 칸이 차지하던 너비(px)를 「몫」으로 삼는다(2026-11-10 사용자 지시).
+ *  옛날처럼 한 칸만 px 로 박아 두면, 분할 화면에서 무대가 가로로 늘 때 다른 칸만 한없이 넓어져
+ *  고정 칸이 화면 끝에 붙는다. 두 칸에 모두 share( ) 를 주면 1280 에서는 예전과 똑같고, 넓어지면 같은 비율로 는다.
+ *  예) 왼쪽 share(828) · 오른쪽 share(400) → 무대 1280 에서 828 : 400, 2000×656 창(무대 가로 약 2195)에서 약 1445 : 698 */
+export const share = (px) => ({ flex: `${px} 1 0`, minWidth: 0 });
+
 /** 화면을 다시 그릴 때 스크롤을 지킨다 */
 export function swap(host, node) {
   const y = window.scrollY;

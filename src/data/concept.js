@@ -375,6 +375,26 @@ export const PUBLISH = {
         ['📨', 'PyPI 에 안 올려도 돼요. <code>.whl</code> 파일을 직접 건네면 <code>pip install 파일이름.whl</code> 로 설치해요.'],
       ] },
   ],
+  /** 📝 한눈에 정리 (2026-11-10 사용자 요청) — 네 걸음 다음 칸. 헷갈리는 네 낱말을 「무엇을 보고 붙인 이름인가」 로 가른다.
+   *  ⚠ 걸음(steps)에 넣지 않는다 — 넣으면 이미 끝낸 학생의 ✔ 가 다시 사라지고, 활동 기록의 「넘겨 본 걸음」 도 바뀐다.
+   *  예(ex)·도움말의 사실은 2026-11-10 파이썬 3.12.3 에서 확인 — type(random)·type(pandas) 모두 module 이고
+   *  pandas 만 __path__ 가 있다(패키지) · random 은 Lib/random.py 파일 하나 · 설치한 pillow 는 import PIL 로 부른다. */
+  summary: {
+    icon: '📝', title: '한눈에 정리',
+    head: ['말', '누가 정한 말', '무엇을 보고 가르나', '예'],
+    rows: [
+      { ic: '📄', name: '모듈', who: '파이썬', what: 'import 하면 생기는 것 하나 (보통 <code>.py</code> 파일 하나)', ex: '<code>random</code> · <code>module1.py</code>' },
+      { ic: '📦', name: '패키지', who: '파이썬', what: '안에 모듈을 또 담을 수 있는 모듈, 곧 폴더', ex: '<code>mypackage/</code> · <code>pandas/</code>' },
+      { ic: '📚', name: '라이브러리', who: '사람들이 쓰는 일상어', what: '남이 가져다 쓰라고 내놓은 코드인가 (크기·모양과 상관없음)', ex: '<code>pandas</code> · <code>random</code>' },
+      { ic: '🎁', name: '배포 패키지', who: 'pip', what: '<code>pyproject.toml</code> 로 포장해 <code>pip install</code> 로 받게 했나', ex: '<code>hong-mypackage</code> · <code>pillow</code>' },
+    ],
+    line: '모듈·패키지는 <b>어떻게 생겼나</b>, 라이브러리는 <b>누구 쓰라고 만들었나</b>, 배포 패키지는 <b>어떻게 나눠 주나</b>를 말해요.',
+    tips: [
+      ['🐼', '<code>pandas</code> 는 세 이름이 다 맞아요 — 폴더라서 <b>패키지</b>, 남이 쓰라고 내놓아서 <b>라이브러리</b>, <code>pip install pandas</code> 로 받으니 <b>배포 패키지</b>.'],
+      ['🎲', '<code>random</code> 은 파일 하나라 <b>모듈</b>이면서 남이 쓰라고 내놓은 <b>라이브러리</b>예요. 그래서 3번 「분류해 보기」 에서 두 답을 다 받아요.'],
+      ['🏷️', '설치 이름과 부르는 이름은 다를 수 있어요 — <code>pip install pillow</code> 로 받고 <code>import PIL</code> 로 불러요. 4단계의 <code>hong-mypackage</code> → <code>mypackage</code> 와 같아요.'],
+    ],
+  },
   /** 확인 문제 — ans 는 정답 칸 번호, why 는 고른 칸마다의 풀이 */
   quiz: [
     { q: '친구가 <code>pip install hong-mypackage</code> 로 설치했어요. 코드에서는 어떻게 불러올까요?',
