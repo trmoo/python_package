@@ -56,7 +56,7 @@ export const MISSIONS = [
   },
   {
     id: 'm2', short: '패키지로 묶기', title: '미션 2 · 패키지로 묶기',
-    story: '모듈이 늘어나면 폴더에 모아 관리해요. 폴더에 __init__.py 를 넣으면 「패키지」 가 됩니다. greet.py 를 mytools 패키지로 옮겨 봐요.',
+    story: '모듈이 늘어나면 폴더에 모아 관리해요. 그 안에 __init__.py 를 넣으면 「패키지」 가 됩니다. greet.py 를 mytools 로 옮겨 봐요.',
     start: M1_ANSWER,
     steps: [
       { text: '📁 로 <code>mytools</code> 폴더 만들기 (영문 소문자)', check: (p) => allDirs(p).includes('mytools') },
@@ -74,7 +74,7 @@ export const MISSIONS = [
   },
   {
     id: 'm3', short: '모듈 둘·두 꼴', title: '미션 3 · 모듈 하나 더, import 두 가지 꼴',
-    story: 'mytools 에 계산 모듈을 하나 더 넣고, 두 모듈을 서로 다른 import 꼴로 불러 봐요. 수행평가 조건 ③ · ⑤ 와 같아요.',
+    story: 'mytools 에 계산 모듈을 하나 더 넣고, 두 모듈을 서로 다른 import 꼴로 불러 봐요. 수행평가의 start.py 도 이렇게 여러 모듈을 불러요.',
     start: M2_ANSWER,
     steps: [
       { text: '<code>mytools</code> 안에 모듈 하나 더 — 예) <code>calc.py</code> 에 <code>def add(a, b):</code>', check: (p) => modsIn(p, 'mytools').filter((f) => f !== 'mytools/greet.py' && defsOf(p.files[f]).length).length > 0 },

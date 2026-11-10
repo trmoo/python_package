@@ -6,11 +6,17 @@ import { codeBlock, quickRun, head, treeBlock } from './common.js';
 import { createIDE } from '../ui/ide.js';
 import { slot, save } from '../lib/store.js';
 import { FORMS, PKGFORMS, FIXES, QUIZ } from '../data/imports.js';
+import { blankKit } from '../ui/blanks.js';
 
 /* ── 예측 표 (import 꼴 × 부르는 방법) ──
  * 학생이 칸마다 ⭕ / ❌ 를 먼저 예측하고, [실행해서 확인] 을 누르면 칸마다 진짜로 실행해 답을 맞춘다. */
 function predictGrid(body, api, { key, data, title, lead, side }) {
   const S = slot(key, () => ({ guess: {}, shown: false }));
+  // 📝 정리 빈칸 — 「실행해서 확인」 한 다음에만 연다. 먼저 열면 빈칸 채점이 예측의 답을 알려 주기 때문이다
+  // (예전의 「정리 (확인한 다음 열어 보세요)」 펼침 상자를 이 카드가 대신한다)
+  const kit = blankKit(`import/${key}`);
+  const note = () => (S.shown ? kit.card()
+    : h('div', { class: 'note small', html: '📝 <b>「실행해서 확인」</b> 을 하면 여기에 <b>정리 빈칸</b>이 열려요.' }));
   let pick = null;
   const runs = {};
   data.rows.forEach((r, i) => data.cols.forEach((c, j) => {
@@ -23,8 +29,12 @@ function predictGrid(body, api, { key, data, title, lead, side }) {
 
   function paint() {
     let right = 0;
+    // 칸 너비를 고르게 (2026-11-10 사용자 지시 「칸 사이즈가 들쭉날쭉」) — 왼쪽 import 칸만 정해 두고
+    // 나머지는 똑같이 나눈다(table-layout:fixed). 긴 머리글은 점(.) 뒤에서 줄을 바꿀 수 있게 <wbr> 을 넣는다.
+    const wrapDots = (t) => t.split('.').flatMap((part, i) => (i ? [h('wbr'), '.' + part] : [part]));
     fill(table,
-      h('tr', {}, h('th', { class: 'corner' }, 'import ↓ / 부르기 →'), data.cols.map((c) => h('th', {}, c))),
+      h('colgroup', {}, h('col', { style: { width: '27%' } }), data.cols.map(() => h('col'))),
+      h('tr', {}, h('th', { class: 'corner' }, 'import ↓ / 부르기 →'), data.cols.map((c) => h('th', {}, wrapDots(c)))),
       data.rows.map((r, i) => h('tr', {}, h('th', { class: 'rowh' }, r), data.cols.map((c, j) => {
         const k = `${i}-${j}`, g = S.guess[k], run = runs[k];
         const truth = run.ok ? 'o' : 'x';
@@ -49,8 +59,8 @@ function predictGrid(body, api, { key, data, title, lead, side }) {
       const run = runs[pick];
       fill(detail, h('b', {}, '이 칸의 main.py 를 실행하면'), codeBlock(run.main.trim(), true),
         h('pre', { class: 'code sm', style: { background: '#181818', color: run.ok ? '#e6e6e6' : '#f48771', whiteSpace: 'pre-wrap' } }, run.ok ? run.r.stdout : run.r.stderr.split('\n').slice(-1)[0]),
-        side().filter((x) => x && x.tagName === 'DETAILS'));
-    } else fill(detail, side());
+        note());
+    } else fill(detail, side(), note());
   }
   fill(body, h('div', { class: 'cols' },
     h('div', { class: 'col grow' }, head(title, lead), table, score),
@@ -63,10 +73,7 @@ export function renderForms(body, api) {
     key: 'forms', data: FORMS, title: 'import 세 가지 꼴',
     lead: 'calc.py 를 불러오는 줄(왼쪽)과 add 를 부르는 줄(위)을 짝지어 실행하면 될까요? 칸마다 예측해 보세요.',
     side: () => [h('b', {}, '📄 calc.py'), codeBlock(FORMS.files['calc.py'].trim(), true),
-      h('div', { class: 'note small', html: '<b>규칙 하나</b> — import 문이 <b>만들어 준 이름</b>만 쓸 수 있어요. 어떤 이름이 생기는지 생각해 보세요.' }),
-      h('details', { class: 'more' }, h('summary', {}, '정리 (확인한 다음 열어 보세요)'),
-        h('table', { class: 't small' }, h('tr', {}, h('th', {}, 'import 꼴'), h('th', {}, '생기는 이름'), h('th', {}, '부르기')),
-          FORMS.rule.map(([a, b, c]) => h('tr', {}, h('td', {}, h('code', {}, a)), h('td', {}, b), h('td', {}, h('code', {}, c))))))],
+      h('div', { class: 'note small', html: '<b>규칙 하나</b> — import 문이 <b>만들어 준 이름</b>만 쓸 수 있어요. 어떤 이름이 생기는지 생각해 보세요.' })],
   });
 }
 
@@ -76,11 +83,7 @@ export function renderPkgForms(body, api) {
     lead: '점(.)은 「폴더 안으로 들어간다」 는 뜻이에요. mypackage 폴더 안 module1.py 의 hello( ) 를 불러 봐요.',
     side: () => [treeBlock([['d', 'mypackage/'], ['i', '├── __init__.py', '빈 파일'], ['f', '├── module1.py', 'def hello()'], ['f', '└── module2.py', 'def bye()']]),
       h('div', { class: 'note small', html: '씨마스 교과서 209쪽 Tip — 다른 모듈에서 패키지 안의 모듈을 쓰려면 <code>패키지명.모듈명</code> 꼴로 import 한다.' }),
-      h('div', { class: 'note warn small', html: '마지막 줄 <code>import mypackage</code> 는 함정이에요. 폴더(패키지)만 불러오면 그 안의 파일도 따라올까요?' }),
-      h('details', { class: 'more' }, h('summary', {}, '정리 (확인한 다음 열어 보세요)'),
-        h('table', { class: 't small' }, h('tr', {}, h('th', {}, 'import 꼴'), h('th', {}, '부르기')),
-          PKGFORMS.rule.map(([a, b]) => h('tr', {}, h('td', {}, h('code', {}, a)), h('td', {}, h('code', {}, b))))),
-        h('p', { class: 'small', style: { marginTop: '6px' }, html: '<code>import mypackage</code> 만으로는 안의 모듈이 따라오지 않아요 (__init__.py 가 불러 주지 않는 한).' }))],
+      h('div', { class: 'note warn small', html: '마지막 줄 <code>import mypackage</code> 는 함정이에요. 폴더(패키지)만 불러오면 그 안의 파일도 따라올까요? <span class="tiny muted">(__init__.py 가 불러 주면 따라와요 — 미션 4)</span>' })],
   });
 }
 

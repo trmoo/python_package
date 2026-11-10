@@ -19,13 +19,13 @@
   --ide-muted: #858585; --ide-sel: #37373d; --ide-accent: #007acc; --term-bg: #181818;
 }
 * { box-sizing: border-box; }
-html, body { margin: 0; height: 100%; overflow: hidden; background: #1b2030; }
+html, body { margin: 0; height: 100%; overflow: hidden; background: var(--bg); } /* 예전엔 까만 띠(#1b2030) — 2026-11-10 무대가 창을 꽉 채우게 바꾸며 바탕도 앱 색으로 */
 body { font-family: var(--font); color: var(--ink); display: flex; align-items: center; justify-content: center; }
 button { font: inherit; }
 
 /* ── 무대 ── */
 .stage-holder { position: relative; overflow: hidden; }
-.stage { position: absolute; left: 0; top: 0; width: 1280px; height: 720px; transform-origin: 0 0; background: var(--bg);
+.stage { position: absolute; left: 0; top: 0; width: 1280px; height: 720px; /* 실제 크기는 shell.js 의 fit( ) 이 창 비율에 맞춰 정한다 */ transform-origin: 0 0; background: var(--bg);
   display: flex; flex-direction: column; font-size: 17px; line-height: 1.5; }
 .top { height: 58px; flex: none; display: flex; align-items: center; gap: 10px; padding: 0 16px; background: var(--paper); border-bottom: 1px solid var(--line); }
 .logo { font-weight: 900; font-size: 21px; letter-spacing: -.03em; margin-right: 10px; white-space: nowrap; }
@@ -211,13 +211,13 @@ pre.code mark { background: rgba(255, 212, 59, .28); color: inherit; border-radi
 .bigok { font-weight: 900; color: var(--good); font-size: 17px; }
 
 /* 예측 표 (import 꼴 × 부르는 방법) */
-.grid-tbl { border-collapse: separate; border-spacing: 6px; }
-.grid-tbl th { font-family: var(--mono); font-size: 15px; font-weight: 700; text-align: center; padding: 6px 8px; background: #1f2433; color: #e9ecf5; border-radius: 9px; white-space: nowrap; }
+.grid-tbl { border-collapse: separate; border-spacing: 6px; table-layout: fixed; width: 100%; } /* 칸 너비를 고르게 (2026-11-10) */
+.grid-tbl th { font-family: var(--mono); font-size: 15px; font-weight: 700; text-align: center; padding: 6px 8px; background: #1f2433; color: #e9ecf5; border-radius: 9px; white-space: normal; overflow-wrap: break-word; }
 .grid-tbl th.rowh { text-align: left; }
 .grid-tbl th.corner { background: transparent; color: var(--muted); font-family: var(--font); font-size: 13px; font-weight: 700; }
-.cell { width: 150px; height: 58px; border: 2px solid var(--line); border-radius: 10px; background: var(--paper); cursor: pointer; font-weight: 900; font-size: 22px; position: relative; padding: 2px 6px; display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.2; }
+.cell { width: 100%; height: 58px; border: 2px solid var(--line); border-radius: 10px; background: var(--paper); cursor: pointer; font-weight: 900; font-size: 22px; position: relative; padding: 2px 6px; display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.2; }
 .cell:hover { border-color: var(--brand); }
-.cell .res { font-size: 11.5px; font-weight: 700; font-family: var(--mono); color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 140px; }
+.cell .res { font-size: 11.5px; font-weight: 700; font-family: var(--mono); color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
 .cell.right { border-color: var(--good); background: var(--good-bg); }
 .cell.wrong { border-color: var(--bad); background: var(--bad-bg); }
 .cell.pick { box-shadow: 0 0 0 3px #ffd43b; }
@@ -227,7 +227,10 @@ pre.code mark { background: rgba(255, 212, 59, .28); color: inherit; border-radi
 .scard { background: var(--paper); border: 2px solid var(--line); border-radius: 12px; padding: 8px 10px; cursor: pointer; min-height: 76px; display: flex; flex-direction: column; gap: 3px; }
 .scard:hover { border-color: var(--brand); }
 .scard.sel { border-color: #fab005; box-shadow: 0 0 0 3px #ffec99; }
-.scard .nm { font-family: var(--mono); font-weight: 800; font-size: 16px; }
+.scard .nm { font-family: var(--mono); font-weight: 800; font-size: 16px; display: flex; align-items: center; gap: 6px; }
+/* 분류 카드의 💡 힌트 단추 (2026-11-10) — 카드 오른쪽 위 */
+.shint { margin-left: auto; flex: none; border: 1px solid var(--line); background: var(--paper); border-radius: 8px; font-size: 14px; line-height: 1; padding: 3px 5px; cursor: pointer; }
+.shint:hover { border-color: #f59f00; background: #fff9db; }
 .scard .ctx { font-size: 12.5px; color: var(--muted); line-height: 1.35; }
 .scard .put { margin-top: auto; }
 .scard.right { border-color: var(--good); background: var(--good-bg); }
@@ -320,3 +323,32 @@ table.t td.c { text-align: center; font-weight: 900; }
 .qouts { display: flex; flex-wrap: wrap; gap: 2px 12px; font-size: 13.5px; color: var(--muted); }
 .outbox { margin: 0; font-family: var(--mono); font-size: 14.5px; line-height: 1.6; background: #1f2433; color: #e9ecf5; border-radius: 10px; padding: 8px 14px; }
 .stepcard .num { display: inline-flex; width: 26px; height: 26px; border-radius: 50%; background: var(--brand); color: #fff; font-weight: 900; align-items: center; justify-content: center; margin-right: 6px; }
+
+/* ── 📝 개념 정리 빈칸 (2026-11-10) — 글을 읽다가 핵심 낱말을 직접 채운다 ── */
+.bk { display: inline-flex; align-items: center; vertical-align: baseline; margin: 0 2px; position: relative; }
+.bk-in { font: inherit; font-weight: 800; color: var(--brand); text-align: center; padding: 0 4px; height: 1.5em; line-height: 1.5em;
+  border: 0; border-bottom: 2.5px solid var(--brand); background: #f5f7ff; border-radius: 5px 5px 0 0; min-width: 2.4em; }
+.bk.code .bk-in { font-family: var(--mono); font-size: .93em; }
+.bk-in::placeholder { color: #b3bccf; font-weight: 700; letter-spacing: .05em; }
+.bk-in:focus { outline: 2px solid var(--brand); outline-offset: 1px; background: #fff; }
+.bk.right .bk-in { color: var(--good); border-bottom-color: var(--good); background: var(--good-bg); }
+.bk.wrong .bk-in { color: var(--bad); border-bottom-color: var(--bad); background: var(--bad-bg); animation: bk-shake .3s; }
+.bk-m { font-size: .8em; font-weight: 900; margin-left: 1px; }
+.bk.right .bk-m { color: var(--good); } .bk.wrong .bk-m { color: var(--bad); }
+.bk-m:empty { display: none; }
+@keyframes bk-shake { 25% { transform: translateX(-3px); } 75% { transform: translateX(3px); } }
+.bk-line { line-height: 1.72; }
+.bk-card { border: 1.5px dashed #9fb0f0; background: #fbfcff; display: flex; flex-direction: column; gap: 3px; padding: 9px 12px; }
+.bk-head { display: flex; align-items: center; gap: 6px; flex-wrap: nowrap; }
+.bk-head > b { font-size: 15.5px; white-space: nowrap; }
+.bk-count { font-size: 12.5px; font-weight: 800; color: var(--muted); background: var(--soft); border-radius: 999px; padding: 1px 8px; white-space: nowrap; }
+.bk-count::before { content: '맞힌 칸 '; font-weight: 600; }
+.bk-count.all { color: #fff; background: var(--good); }
+.bk-hint { white-space: nowrap; }
+.bk-row { font-size: 15px; }
+.bk-row .bk-code { display: block; font-family: var(--mono); font-size: 14px; font-weight: 700; color: var(--ink); }
+.bk-open .bk-count { margin-left: 2px; } .bk-open .bk-count::before { content: ''; }
+table.t.lv-tbl th, table.t.lv-tbl td { padding: 3px 8px; }
+.bk-head > b { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+/* 미션 판 — 💡 힌트를 모두 열면 판이 넘친다. 무대 밖으로 잘리지 않게 판 안에서만 스크롤 (2026-11-10) */
+.mission { overflow-y: auto; overflow-x: hidden; scrollbar-width: thin; }

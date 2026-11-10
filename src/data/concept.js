@@ -116,8 +116,9 @@ export const SORT_CARDS = [
     why: '함수를 담아 둔 .py 파일 하나 — 모듈이에요.' },
   { id: 'mypkg', nm: 'mypackage/', ctx: '안에 __init__.py, module1.py, module2.py', ans: 'pkg',
     why: '모듈 파일들을 담은 폴더이고 __init__.py 가 있어요 — 패키지예요.' },
-  { id: 'pandas', nm: 'pandas', ctx: 'pip install pandas · 안에 core/ · io/ 등 여러 폴더', ans: 'lib',
-    why: '여러 패키지(core/ · io/ …)와 모듈을 묶어 내놓은 꾸러미 — 라이브러리예요.' },
+  { id: 'pandas', nm: 'pandas', ctx: 'pip install pandas · 안에 core/ · io/ 등 여러 폴더', ans: 'lib', also: ['pkg'],
+    why: '여러 패키지(core/ · io/ …)와 모듈을 묶어 내놓은 꾸러미 — 라이브러리예요.',
+    whyAlso: '맨 위 폴더에 __init__.py 가 있어 문법으로는 패키지예요. 큰 꾸러미라 교과서는 라이브러리라고 불러요.' },
   { id: 'pyplot', nm: 'pyplot', ctx: 'from matplotlib import pyplot', ans: 'mod',
     why: 'matplotlib 라이브러리 폴더 안의 pyplot.py 파일 — 모듈이에요. (교과서 143쪽)' },
   { id: 'module1', nm: 'module1.py', ctx: 'mypackage 폴더 안의 파일', ans: 'mod',
@@ -126,8 +127,9 @@ export const SORT_CARDS = [
     why: '모듈 안에 정의한 함수 — 모듈 안의 이름이에요. calc.add( ) 로 불러요.' },
   { id: 'randint', nm: 'randint', ctx: 'from random import randint', ans: 'fn',
     why: 'random 모듈 안에 들어 있는 함수예요. from 으로 「이름」 을 꺼내 온 거예요.' },
-  { id: 'random', nm: 'random', ctx: 'import random — 설치 없이 바로', ans: 'mod',
-    why: '파이썬에 딸려 오는 random.py 파일 하나 — 모듈이에요. (표준 라이브러리 안의 모듈)' },
+  { id: 'random', nm: 'random', ctx: 'import random — 설치 없이 바로', ans: 'mod', also: ['lib'],
+    why: '파이썬에 딸려 오는 random.py 파일 하나 — 모듈이에요. (표준 라이브러리 안의 모듈)',
+    whyAlso: '파이썬에 딸려 오는 표준 라이브러리라 「random 라이브러리」 라고도 불러요. 파일로 보면 random.py 하나 — 모듈이에요.' },
   { id: 'io', nm: 'io/', ctx: 'pandas 폴더 안 · __init__.py · parsers/ …', ans: 'pkg',
     why: '라이브러리 안에 든 폴더 + __init__.py — 패키지예요. 그 안에 또 parsers/ 같은 하위 패키지가 있어요.' },
   { id: 'pi', nm: 'pi', ctx: 'math.pi → 3.141592…', ans: 'fn',
@@ -158,21 +160,94 @@ const HINT_MYPKG = (mark) => [
   ['n', '    └── bye()', ''],
 ];
 
+/** 「분류해 보기」 카드마다 💡 힌트 그림 (2026-11-10 사용자 요청 — 「import 문 읽기」 의 나무 힌트를 여기에도).
+ *  꼴은 ANATOMY 의 hint 와 같다 — { ask, tree:[갈래, 나무 글자, # 설명, 칠할 줄인가] }. 노란 줄이 그 카드의 이름이다.
+ *  ⚠ 답을 말하지 않는다 — 물음과 # 설명에 정답 바구니 이름(함께 받는 정답 포함)을 쓰지 않는다. 시험이 막는다.
+ *  사실은 ANATOMY 힌트와 같은 확인을 따른다(math 는 __file__ 없는 내장 · pandas 3.0.5 의 io/parsers/readers.py). */
+export const SORT_HINTS = {
+  calc: { ask: 'calc.py 끝에는 .py 가 붙었어요. 폴더(/)일까요, 파일 하나일까요?', tree: [
+    ['d', '내프로젝트/', ''],
+    ['f', '├── main.py', 'import calc'],
+    ['f', '└── calc.py', 'def add(a, b) · def sub(a, b)', true],
+  ] },
+  mypkg: { ask: 'mypackage 끝에는 / 가 붙었어요. 그 안에 무엇이 들어 있고, __init__.py 는 어떤 표지판이었나요?', tree: [
+    ['d', 'mypackage/', '', true],
+    ['i', '├── __init__.py', '빈 파일 — 표지판'],
+    ['f', '├── module1.py', 'def hello()'],
+    ['f', '└── module2.py', 'def bye()'],
+  ] },
+  pandas: { ask: 'pandas 는 파일 하나일까요? 그 안에 폴더가 몇 겹이나 들어 있나요?', tree: [
+    ['d', 'pandas/', 'pip install pandas', true],
+    ['i', '├── __init__.py', ''],
+    ['d', '├── core/', 'frame.py · series.py …'],
+    ['d', '├── io/', ''],
+    ['d', '│   └── parsers/', '폴더 안에 또 폴더'],
+    ['c', '└── …', '그 밖에도 아주 많음'],
+  ] },
+  pyplot: { ask: 'pyplot 은 폴더(/)일까요, 파일(.py)일까요?', tree: HINT_MPL('pyplot') },
+  module1: { ask: 'module1.py 는 폴더 안에 들어 있어요. 그래도 그 자신은 폴더일까요, 파일 하나일까요?', tree: [
+    ['d', 'mypackage/', ''],
+    ['i', '├── __init__.py', '빈 파일'],
+    ['f', '├── module1.py', 'def hello()', true],
+    ['f', '└── module2.py', 'def bye()'],
+  ] },
+  add: { ask: 'add 는 calc.py 파일 안에 def 로 만든 것이에요. 뒤에 ( ) 를 붙여 부르는 것은 무엇이었나요?', tree: [
+    ['f', 'calc.py', ''],
+    ['n', '├── add(a, b)', '두 수를 더해 돌려줌', true],
+    ['n', '└── sub(a, b)', '두 수를 빼서 돌려줌'],
+  ] },
+  randint: { ask: 'randint 는 random.py 파일 안에 있어요. 뒤에 ( ) 를 붙여 부르는 것은 무엇이었나요?', tree: [
+    ['f', 'random.py', ''],
+    ['n', '├── randint(a, b)', 'a 이상 b 이하 정수 하나', true],
+    ['n', '├── choice(seq)', '하나 골라 줌'],
+    ['n', '└── shuffle(x)', '섞어 줌'],
+  ] },
+  random: { ask: 'random 은 폴더(/)일까요, 파일(.py)일까요? 설치하지 않아도 바로 쓸 수 있는 까닭은?', tree: [
+    ['r', '🐍 파이썬 (설치할 때 함께 들어옴)', ''],
+    ['f', '├── random.py', 'randint() · choice()', true],
+    ['f', '├── math', 'sqrt() · pi — 파일 없이 파이썬 안에 넣어 둠'],
+    ['d', '└── tkinter/', '창 만들기'],
+  ] },
+  io: { ask: 'io 끝에는 / 가 붙었어요. 그 안에 __init__.py 가 있나요?', tree: [
+    ['d', 'pandas/', ''],
+    ['i', '├── __init__.py', ''],
+    ['d', '└── io/', '', true],
+    ['i', '    ├── __init__.py', ''],
+    ['d', '    └── parsers/', '폴더 안에 또 폴더'],
+    ['f', '        └── readers.py', 'def read_csv()'],
+  ] },
+  pi: { ask: 'pi 는 math 안에 담긴 값이에요. 폴더도 파일도 아니라면 무엇일까요?', tree: [
+    ['f', 'math', '파일 없이 파이썬 안에 넣어 둠'],
+    ['n', '├── pi', '3.141592…', true],
+    ['n', '└── sqrt(x)', '제곱근'],
+  ] },
+};
+
+/** 정답인가 — 부르는 관점에 따라 두 이름이 다 맞는 것이 있다 (2026-11-10 사용자 결정 「둘 다 정답으로」).
+ *  matplotlib·pandas 는 라이브러리이면서 문법으로는 맨 위 패키지, math·random 같은 표준(내장) 라이브러리는 모듈이면서 라이브러리.
+ *  ans 는 교과서가 부르는 이름(대표 정답), also 는 함께 받는 정답, whyAlso 는 also 를 골랐을 때의 풀이다.
+ *  분류 카드·import 문 읽기 문항 모두 이것으로 채점한다 — 화면 · 탭 잠금(progress.js) · 활동 기록(report.js) */
+export const isAnswer = (item, pick) => pick != null && (pick === item.ans || (item.also || []).includes(pick));
+/** 맞힌 답에 붙일 풀이 */
+export const whyOf = (item, pick) => (pick !== item.ans && item.whyAlso ? item.whyAlso : item.why);
+
 export const ROLES = [
   { id: 'lib', label: '📚 라이브러리' }, { id: 'pkg', label: '📦 패키지' }, { id: 'mod', label: '📄 모듈' },
   { id: 'fn', label: 'ƒ 함수·클래스' }, { id: 'as', label: '🏷 별명' },
 ];
 export const ANATOMY = [
-  { parts: ['import ', { t: 'math', mark: true }], ans: 'mod',
+  { parts: ['import ', { t: 'math', mark: true }], ans: 'mod', also: ['lib'],
     why: 'math 는 파이썬 안에 들어 있는 모듈이에요. 이제 math.sqrt(16) 처럼 「모듈.함수」 로 써요.',
+    whyAlso: '파이썬에 딸려 오는 표준 라이브러리라 그렇게도 불러요. 정확히는 모듈 하나 — math.sqrt(16) 처럼 써요.',
     hint: { ask: 'math 는 random.py 와 같은 갈래예요. random.py 는 무엇이었나요?', tree: [
       ['r', '🐍 파이썬 (설치할 때 함께 들어옴)', ''],
       ['f', '├── math', 'sqrt() · pi — 파일 없이 파이썬 안에 넣어 둠', true],
       ['f', '├── random.py', 'randint() · choice()'],
       ['d', '└── tkinter/', '창 만들기'],
     ] } },
-  { parts: ['from ', { t: 'matplotlib', mark: true }, ' import pyplot'], ans: 'lib',
+  { parts: ['from ', { t: 'matplotlib', mark: true }, ' import pyplot'], ans: 'lib', also: ['pkg'],
     why: 'matplotlib 은 그래프를 그리는 라이브러리예요 (교과서 143쪽). 그 안에서 pyplot 모듈만 꺼내 와요.',
+    whyAlso: '맨 위 폴더에 __init__.py 가 있어 문법으로는 패키지예요. 큰 꾸러미라 교과서는 라이브러리라고 불러요.',
     hint: { ask: 'matplotlib 은 파일 하나일까요? 안에 무엇이 얼마나 들어 있나요?', tree: HINT_MPL('matplotlib') } },
   { parts: ['from matplotlib import ', { t: 'pyplot', mark: true }], ans: 'mod',
     why: 'pyplot 은 matplotlib 안의 pyplot.py — 모듈이에요. 이제 pyplot.plot( ) 처럼 써요.',

@@ -3,7 +3,7 @@
  */
 import { 묶음, 확인, 참 } from './harness.mjs';
 import { runProject } from '../src/lib/pymini.js';
-import { WHY, SORT_CARDS, BINS, ANATOMY, ROLES, LEVELS, PANDAS, NUMPY_BOOK, INIT_INFO, treeLines, numpyBookAsNode, PUBLISH } from '../src/data/concept.js';
+import { WHY, SORT_CARDS, BINS, ANATOMY, ROLES, LEVELS, PANDAS, NUMPY_BOOK, INIT_INFO, treeLines, numpyBookAsNode, PUBLISH, SORT_HINTS } from '../src/data/concept.js';
 import { FORMS, PKGFORMS, FIXES, QUIZ, MODULE1 } from '../src/data/imports.js';
 import { MISSIONS } from '../src/data/missions.js';
 import { fixPassedForTest } from './helpers.mjs';
@@ -40,8 +40,28 @@ for (const [i, a] of ANATOMY.entries()) {
   참(`힌트 ${i + 1} — 칠한 줄에 「${word}」 가 있다`, marked.length === 1 && marked[0][1].includes(word));
   참(`힌트 ${i + 1} — 아는 갈래만 쓴다`, rows.every((r) => 'rdifnac'.includes(r[0])));
   // 힌트가 답을 말해 버리면 안 된다 — 물음과 # 설명에 정답 이름(모듈·패키지…)이 없어야 한다
-  const answer = ROLES.find((r) => r.id === a.ans).label.split(' ').slice(1).join(' ');
-  참(`힌트 ${i + 1} — 정답 「${answer}」 를 적지 않는다`, !!a.hint.ask && ![a.hint.ask, ...rows.map((r) => r[2])].some((t) => t.includes(answer)));
+  // 함께 받는 정답(also)도 적지 않는다 (2026-11-10 복수 정답)
+  for (const id of [a.ans, ...(a.also || [])]) {
+    const answer = ROLES.find((r) => r.id === id).label.split(' ').slice(1).join(' ');
+    참(`힌트 ${i + 1} — 정답 「${answer}」 를 적지 않는다`, !!a.hint.ask && ![a.hint.ask, ...rows.map((r) => r[2])].some((t) => t.includes(answer)));
+  }
+}
+
+묶음('분류해 보기 — 카드마다 💡 힌트 그림 (2026-11-10)');
+확인('힌트가 있는 카드 = 모든 카드', Object.keys(SORT_HINTS).sort(), SORT_CARDS.map((c) => c.id).sort());
+for (const c of SORT_CARDS) {
+  const hint = SORT_HINTS[c.id];
+  const rows = (hint && hint.tree) || [];
+  const marked = rows.filter((r) => r[3]);
+  확인(`「${c.nm}」 노랗게 칠한 줄은 하나`, marked.length, 1);
+  참(`「${c.nm}」 칠한 줄에 카드 이름이 있다`, marked.length === 1 && marked[0][1].includes(c.nm.replace(/\.py$/, '')));
+  참(`「${c.nm}」 아는 갈래만 쓴다`, rows.every((r) => 'rdifnac'.includes(r[0])));
+  참(`「${c.nm}」 물음이 있다`, !!hint && !!hint.ask);
+  // 답을 말하면 안 된다 — 정답 바구니 이름(함께 받는 정답 포함)이 물음·# 설명에 없어야 한다
+  for (const id of [c.ans, ...(c.also || [])]) {
+    const name = BINS.find((b) => b.id === id).name;
+    참(`「${c.nm}」 힌트가 정답 「${name}」 를 적지 않는다`, ![hint.ask, ...rows.map((r) => r[2])].some((t) => t.includes(name)));
+  }
 }
 
 묶음('폴더 나무 그림 — 상자 그림과 같은 자료에서 나온다');

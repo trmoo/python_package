@@ -3,7 +3,7 @@
  *  화면마다 무엇을 하면 「완료」 인지를 한곳에 모아 둔다. 탭 잠금·알약의 ✔·활동 기록 HTML 이 모두 이것을 쓴다.
  *  ⚠ node 로 불러다 시험하므로 DOM 을 만지지 말 것. S 는 store.js 의 기록 묶음(그대로 넘겨받는다).
  */
-import { SORT_CARDS, ANATOMY, LEVELS, PUBLISH } from '../data/concept.js';
+import { SORT_CARDS, ANATOMY, LEVELS, PUBLISH, isAnswer } from '../data/concept.js';
 import { FIXES, QUIZ } from '../data/imports.js';
 
 export const TAB_ORDER = ['concept', 'import', 'build', 'assess'];
@@ -20,9 +20,9 @@ export const ACTIVITIES = {
   'concept/layers': { title: '모듈 ⊂ 패키지 ⊂ 라이브러리', how: `라이브러리·패키지·모듈·이름 ${LEVELS.length}가지를 모두 눌러 보기`,
     done: (S) => !!(S.layers && LEVELS.every((l) => S.layers.seen && S.layers.seen.includes(l.id))) },
   'concept/sort': { title: '분류해 보기', how: `카드 ${SORT_CARDS.length}장을 모두 바르게 넣고 채점`,
-    done: (S) => !!(S.sort && S.sort.graded && SORT_CARDS.every((c) => S.sort.put[c.id] === c.ans)) },
+    done: (S) => !!(S.sort && S.sort.graded && SORT_CARDS.every((c) => isAnswer(c, S.sort.put[c.id]))) },
   'concept/anatomy': { title: 'import 문 읽기', how: `${ANATOMY.length}문항 모두 맞히기`,
-    done: (S) => !!(S.anatomy && ANATOMY.every((a, i) => S.anatomy[i] === a.ans)) },
+    done: (S) => !!(S.anatomy && ANATOMY.every((a, i) => isAnswer(a, S.anatomy[i]))) },
   'concept/where': { title: '모듈은 어디서 올까? (pip)', how: 'pip install gtts 로 설치하고 main.py 를 실행해 hello.mp3 만들기',
     done: (S) => !!(S.pip && S.pip.ok) },
   // ⭐ 교과서 밖이라 선택 — 이미 ② 탭으로 넘어간 학생이 이 화면 때문에 다시 잠기지 않게 (2026-11-05)

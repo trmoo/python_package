@@ -1,22 +1,29 @@
 /*! 📦 패키지 공작소 — © 2026 티쳐무 · 모든 권리 보유
  *  앱의 틀 — 1280×720 무대 · 위쪽 탭 · 알약(화면) · 아래쪽 이전/다음.
- *  ★ 화면은 언제나 1280×720 「무대」 하나다. 창 크기에 맞춰 통째로 키우거나 줄이므로
- *    교실 TV·노트북·태블릿 어디서나 스크롤이 생기지 않는다.
+ *  ★ 화면은 언제나 「무대」 하나다(적어도 1280×720). 창 크기에 맞춰 통째로 키우거나 줄이므로
+ *    교실 TV·노트북·태블릿 어디서나 스크롤이 생기지 않는다. 창 비율이 다르면 남는 쪽으로 무대가 늘어난다(분할 화면).
  *  주소 해시로 화면을 바로 열 수 있다 — 예) #build/m2
  */
 import { h, fill, beginScreen, onWindow } from './dom.js';
 
 export const W = 1280, H = 720;
 
-/** 무대를 만들고 창 크기에 맞춰 늘이고 줄인다 */
+/** 무대를 만들고 창 크기에 맞춰 늘이고 줄인다.
+ *  ★ 창 비율이 16:9 와 다르면 남는 쪽으로 무대를 늘린다(2026-11-10 사용자 지시) — 화면을 반으로 갈라 보면
+ *    예전에는 위아래에 까만 띠가 생겼다. 이제 무대는 「적어도」 1280×720 이고, 세로로 긴 창이면 세로가, 가로로 긴 창이면
+ *    가로가 늘어난다. 글자 크기는 그대로이고 늘어난 자리는 화면의 flex 칸(본문·가상 VS Code)이 나눠 갖는다. */
 export function createStage() {
   const stage = h('div', { class: 'stage' });
   const holder = h('div', { class: 'stage-holder' }, stage);
   const fit = () => {
-    const s = Math.min(window.innerWidth / W, window.innerHeight / H);
+    const vw = window.innerWidth, vh = window.innerHeight;
+    const s = Math.min(vw / W, vh / H);
+    const w = Math.max(W, vw / s), hh = Math.max(H, vh / s);
+    stage.style.width = `${w}px`;
+    stage.style.height = `${hh}px`;
     stage.style.transform = `scale(${s})`;
-    holder.style.width = `${W * s}px`;
-    holder.style.height = `${H * s}px`;
+    holder.style.width = `${w * s}px`;
+    holder.style.height = `${hh * s}px`;
   };
   window.addEventListener('resize', fit);
   fit();

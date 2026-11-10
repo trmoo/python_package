@@ -6,10 +6,12 @@
  */
 import { ACTIVITIES, isDone, progressOf } from './progress.js';
 import { check, CONDITIONS, EXTRA } from './checker.js';
-import { SORT_CARDS, BINS, ANATOMY, ROLES, PUBLISH } from '../data/concept.js';
+import { SORT_CARDS, BINS, ANATOMY, ROLES, PUBLISH, isAnswer } from '../data/concept.js';
 import { FORMS, PKGFORMS, FIXES, QUIZ } from '../data/imports.js';
 import { MISSIONS, stepsDone } from '../data/missions.js';
 import { runProject } from './pymini.js';
+import { BLANKS } from '../data/blanks.js';
+import { parseLine, isRight, blankKey, blankStats } from './blanks.js';
 
 export const ACTIVITY_NAME = '패키지 공작소';
 /** 파일 이름에 쓸 수 없는 글자를 걷어 낸다 (윈도우: \ / : * ? " < > |) */
@@ -51,13 +53,13 @@ export function buildReport(S, who, now = new Date()) {
   const sort = S0.sort || { put: {} };
   parts.push(section('concept/sort', `<table><tr><th>카드</th><th>내가 넣은 곳</th><th>정답</th><th></th></tr>${SORT_CARDS.map((c) => {
     const put = BINS.find((b) => b.id === sort.put[c.id]);
-    return `<tr><td><code>${esc(c.nm)}</code></td><td>${put ? esc(put.name) : '<span class="muted">안 넣음</span>'}</td><td>${esc(BINS.find((b) => b.id === c.ans).name)}</td><td>${put ? mark(put.id === c.ans) : ''}</td></tr>`;
+    return `<tr><td><code>${esc(c.nm)}</code></td><td>${put ? esc(put.name) : '<span class="muted">안 넣음</span>'}</td><td>${esc([c.ans, ...(c.also || [])].map((id) => BINS.find((b) => b.id === id).name).join(' · '))}</td><td>${put ? mark(isAnswer(c, put.id)) : ''}</td></tr>`;
   }).join('')}</table>${sort.graded ? '' : '<p class="muted">아직 채점하지 않았어요.</p>'}`));
   const ana = S0.anatomy || {};
   parts.push(section('concept/anatomy', `<table><tr><th>import 문 (밑줄 = 물어본 곳)</th><th>내 답</th><th></th></tr>${ANATOMY.map((a, i) => {
     const src = a.parts.map((p) => (typeof p === 'string' ? esc(p) : `<u>${esc(p.t)}</u>`)).join('');
     const mine = ROLES.find((r) => r.id === ana[i]);
-    return `<tr><td><code>${src}</code></td><td>${mine ? esc(mine.label) : '<span class="muted">안 고름</span>'}</td><td>${mine ? mark(ana[i] === a.ans) : ''}</td></tr>`;
+    return `<tr><td><code>${src}</code></td><td>${mine ? esc(mine.label) : '<span class="muted">안 고름</span>'}</td><td>${mine ? mark(isAnswer(a, ana[i])) : ''}</td></tr>`;
   }).join('')}</table>`));
   const pip = S0.pip || {};
   parts.push(section('concept/where', `<p>설치한 외부 라이브러리: ${pip.installed && pip.installed.length ? esc(pip.installed.join(', ')) : '없음'} · gtts 로 소리 파일 만들기 ${mark(pip.ok)}</p>`));
@@ -113,6 +115,28 @@ ${res.run ? `<div class="file"><div class="fname">▶ python start.py 실행 결
 <details open><summary>내가 만든 프로젝트</summary>${projectHtml(pr.project)}</details>`));
   } else parts.push(section('assess/practice', '<p class="muted">아직 시작하지 않았어요.</p>'));
 
+  // ── 📝 개념 정리 빈칸 (2026-11-10) — 화면마다 문장을 그대로 싣고 빈칸 자리에 학생이 쓴 답 ──
+  const rec = S0.blanks || {};
+  const bst = blankStats(S0);
+  parts.push(`<h2>📝 개념 정리 빈칸 <span class="muted">— ${bst.right} / ${bst.total}칸 맞음</span></h2>`);
+  parts.push('<p class="how">화면 곳곳의 핵심 문장에서 비워 둔 낱말을 채운 것이에요. 탭 잠금(완료 조건)에는 들어가지 않아요.</p>');
+  for (const g of BLANKS) {
+    const a = ACTIVITIES[g.screen];
+    const st = blankStats(S0, g.screen);
+    const rows = g.lines.map((l) => {
+      const html = parseLine(l.text).map((pt) => {
+        if (pt.t === 'text') return esc(pt.v);
+        if (pt.t === 'code') return `<code>${esc(pt.v)}</code>`;
+        const v = rec[blankKey(l.id, pt.k)];
+        if (!v || !String(v).trim()) return '<span class="blank">　　　</span>';
+        return `<span class="blank ${isRight(pt.answers, v) ? 'r' : 'w'}">${esc(v)}</span>`;
+      }).join('');
+      const head = [l.label, l.icon, l.code ? `<code>${esc(l.code)}</code> →` : ''].filter(Boolean).map((x) => (x.startsWith('<') ? x : esc(x))).join(' ');
+      return `<li>${head ? `${head} ` : ''}${html}${l.desc ? ` <span class="muted">— ${esc(l.desc)}</span>` : ''}</li>`;
+    }).join('');
+    parts.push(`<section><h3>${st.right === st.total ? '✅ ' : '⬜ '}${esc(a ? a.title : g.screen)} <span class="muted">(${st.right}/${st.total})</span></h3><ul class="blanks">${rows}</ul></section>`);
+  }
+
   return `<!doctype html>
 <!-- ${ACTIVITY_NAME} — 활동 기록 · © 2026 티쳐무 · 모든 권리 보유 -->
 <html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
@@ -131,12 +155,14 @@ pre{font-family:'D2Coding',Consolas,monospace;background:#1f2433;color:#e9ecf5;p
 .fname{font-weight:700;font-size:13px;margin-top:6px} .muted{color:#868e96} .ok{color:#2b8a3e;font-weight:900} .no{color:#e03131;font-weight:900}
 .sub{margin:4px 0} details{margin:4px 0} summary{cursor:pointer;font-weight:700;color:#3b5bdb}
 .steps{margin:4px 0;padding-left:20px;font-size:14px;list-style:none} .bar{height:12px;background:#eef1f8;border-radius:999px;overflow:hidden}
-.bar i{display:block;height:100%;background:#2b8a3e} footer{margin-top:24px;font-size:12px;color:#868e96;text-align:center}
+.bar i{display:block;height:100%;background:#2b8a3e}
+.blanks{margin:4px 0;padding-left:20px;font-size:14.5px;line-height:1.9} .blank{display:inline-block;min-width:3em;border-bottom:2px solid #868e96;padding:0 4px;text-align:center;font-weight:700}
+.blank.r{color:#2b8a3e;border-color:#2b8a3e} .blank.r::after{content:' ✔'} .blank.w{color:#e03131;border-color:#e03131} .blank.w::after{content:' ✘'} footer{margin-top:24px;font-size:12px;color:#868e96;text-align:center}
 @media print{body{background:#fff;padding:0} main{border:0} details{display:block} details>*{display:block}}
 </style></head><body><main>
 <h1>📦 ${ACTIVITY_NAME} — 지금까지 한 활동</h1>
 <div class="who"><span>학번 <b>${esc(who.id)}</b></span><span>이름 <b>${esc(who.name)}</b></span><span>저장한 때 <b>${stamp(now)}</b></span></div>
-<p>필수 활동 <b>${prog.done} / ${prog.total}</b> 끝냄</p>
+<p>필수 활동 <b>${prog.done} / ${prog.total}</b> 끝냄 · 📝 개념 정리 빈칸 <b>${bst.right} / ${bst.total}</b>칸 맞음</p>
 <div class="bar"><i style="width:${Math.round((prog.done / prog.total) * 100)}%"></i></div>
 ${parts.join('\n')}
 <footer>📦 ${ACTIVITY_NAME} 에서 저장한 활동 기록입니다. 조건 점검 결과는 앱의 자기 점검이며 채점 결과가 아닙니다.<br>© 2026 티쳐무 · 모든 권리 보유</footer>

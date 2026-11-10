@@ -84,3 +84,32 @@ function fullState() {
   const evil = buildReport({ exam: { project: { files: { 'start.py': '</pre><script>alert(1)</script>' } } } }, { id: '1', name: 'x' });
   참('학생 코드 속 태그도 글자 그대로', !evil.includes('<script>alert(1)</script>'));
 }
+
+묶음('복수 정답 — 두 이름이 다 맞는 것 (2026-11-10 사용자 결정)');
+{
+  const { isAnswer, whyOf, BINS, ROLES } = await import('../src/data/concept.js');
+  const card = (id) => SORT_CARDS.find((c) => c.id === id);
+  const ana = (word) => ANATOMY.find((a) => a.parts.some((p) => typeof p === 'object' && p.t === word));
+  확인('복수 정답인 분류 카드', SORT_CARDS.filter((c) => c.also).map((c) => [c.id, c.ans, ...c.also]), [['pandas', 'lib', 'pkg'], ['random', 'mod', 'lib']]);
+  확인('복수 정답인 import 문', ANATOMY.filter((a) => a.also).map((a) => [a.parts.find((p) => typeof p === 'object').t, a.ans, ...a.also]), [['math', 'mod', 'lib'], ['matplotlib', 'lib', 'pkg']]);
+  참('random — 모듈·라이브러리 모두 정답, 패키지는 틀림', isAnswer(card('random'), 'mod') && isAnswer(card('random'), 'lib') && !isAnswer(card('random'), 'pkg'));
+  참('pandas — 라이브러리·패키지 모두 정답, 모듈은 틀림', isAnswer(card('pandas'), 'lib') && isAnswer(card('pandas'), 'pkg') && !isAnswer(card('pandas'), 'mod'));
+  참('math — 모듈·라이브러리 모두 정답', isAnswer(ana('math'), 'mod') && isAnswer(ana('math'), 'lib') && !isAnswer(ana('math'), 'fn'));
+  참('matplotlib — 라이브러리·패키지 모두 정답', isAnswer(ana('matplotlib'), 'lib') && isAnswer(ana('matplotlib'), 'pkg') && !isAnswer(ana('matplotlib'), 'mod'));
+  참('pyplot 은 여전히 모듈 하나만', isAnswer(ana('pyplot'), 'mod') && !isAnswer(ana('pyplot'), 'lib'));
+  참('아무것도 안 고르면 정답이 아니다', !isAnswer(card('random'), undefined) && !isAnswer(ana('math'), undefined));
+  for (const it of [...SORT_CARDS, ...ANATOMY].filter((x) => x.also)) {
+    참(`「${it.id || it.parts.join('')}」 함께 받는 정답이 실재하는 칸`, it.also.every((id) => BINS.some((b) => b.id === id) && ROLES.some((r) => r.id === id)));
+    참(`「${it.id || it.ans}」 함께 받는 정답을 골랐을 때의 풀이가 따로 있다`, !!it.whyAlso && whyOf(it, it.also[0]) === it.whyAlso && whyOf(it, it.ans) === it.why);
+  }
+  // 다른 이름을 골라도 활동이 끝난다 (탭 잠금)
+  const S = fullState();
+  S.sort.put.random = 'lib'; S.sort.put.pandas = 'pkg';
+  S.anatomy[ANATOMY.indexOf(ana('math'))] = 'lib'; S.anatomy[ANATOMY.indexOf(ana('matplotlib'))] = 'pkg';
+  참('다른 이름으로 넣어도 분류해 보기가 끝난다', isDone('concept/sort', S));
+  참('다른 이름으로 골라도 import 문 읽기가 끝난다', isDone('concept/anatomy', S));
+  확인('② 탭이 열린다', blockers('import', S), []);
+  const html = buildReport(S, { id: '1', name: 'x' });
+  참('활동 기록 — 정답 칸에 두 이름을 함께 적는다', html.includes('<td>모듈 · 라이브러리</td>') && html.includes('<td>라이브러리 · 패키지</td>'));
+  참('활동 기록 — 다른 이름도 ✔', !/<td><code>random<\/code><\/td><td>라이브러리<\/td><td>[^<]*<\/td><td><span class="no">/.test(html));
+}

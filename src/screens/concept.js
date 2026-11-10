@@ -5,13 +5,15 @@ import { h, fill, toast, modal } from '../ui/dom.js';
 import { codeBlock, quickRun, head } from './common.js';
 import { createIDE } from '../ui/ide.js';
 import { slot, save } from '../lib/store.js';
-import { WHY, LEVELS, INIT_INFO, NUMPY_BOOK, PANDAS, treeLines, numpyBookAsNode, BINS, SORT_CARDS, ROLES, ANATOMY, SOURCES, PIP_PROJECT, PUBLISH } from '../data/concept.js';
+import { WHY, LEVELS, INIT_INFO, NUMPY_BOOK, PANDAS, treeLines, numpyBookAsNode, BINS, SORT_CARDS, ROLES, ANATOMY, SOURCES, PIP_PROJECT, PUBLISH, isAnswer, whyOf, SORT_HINTS } from '../data/concept.js';
 import { MODULE1 } from '../data/imports.js';
 import { isDone } from '../lib/progress.js';
+import { blankKit } from '../ui/blanks.js';
 import { S } from '../lib/store.js';
 
 /* ── 1. 왜 나눌까 ── */
 export function renderWhy(body, api) {
+  const kit = blankKit('concept/why');
   const st = { way: 'copy', fixed: false };
   const rec = slot('why', () => ({ copy: false, mod: false }));
   const markFixed = () => { rec[st.way === 'copy' ? 'copy' : 'mod'] = true; save(); api.refreshNav(); };
@@ -62,17 +64,19 @@ export function renderWhy(body, api) {
   fill(body, h('div', { class: 'cols' },
     h('div', { class: 'col', style: { flex: 1.25 } }, head('왜 파일을 나눌까?', '친구가 「네 프로그램의 <b>평균 함수</b>만 빌려 줘」 라고 해요. 어떻게 나눠 줄까요?'), stage),
     h('div', { class: 'col', style: { width: '360px', flex: 'none' } },
-      h('div', { class: 'card' }, h('h3', {}, '📄 모듈이란?'), h('p', { html: '변수·함수를 담아 둔 <b>.py 파일 하나</b>. 다른 파일에서 <code>import</code> 로 불러 쓴다.' }),
-        h('p', { class: 'small muted' }, '씨마스 「프로그래밍」 교과서 143쪽 「정보 더하기」 — 코드의 효율적인 관리와 재사용성을 높이려고 모듈·패키지·라이브러리를 쓴다.')),
-      ...[['♻️', '재사용', '한 번 만든 함수를 여러 프로그램이 import 해서 쓴다. 복사·붙이기가 필요 없다.'],
-        ['🧹', '관리', '고칠 곳이 한 군데. 기능별로 파일이 나뉘어 있어 찾기도 쉽다.'],
-        ['🤝', '협업', '큰 프로그램을 모듈로 나눠 팀원이 하나씩 맡아 만든다. (교과서 207쪽 「모듈화」)']]
-        .map(([i, t, d]) => h('div', { class: 'card row', style: { alignItems: 'flex-start', flexWrap: 'nowrap' } }, h('span', { style: { fontSize: '26px' } }, i), h('div', {}, h('b', {}, t), h('div', { class: 'small muted' }, d)))))));
+      // 📝 빈칸 — 모듈의 뜻과 나누는 까닭 세 가지를 학생이 채운다 (자료는 data/blanks.js)
+      h('div', { class: 'card bk-card' }, kit.head('📝 모듈이란?'), h('div', { class: 'bk-row' }, kit.line('why.def')),
+        h('p', { class: 'tiny muted', style: { margin: 0 } }, '씨마스 「프로그래밍」 교과서 143쪽 「정보 더하기」 — 모듈·패키지·라이브러리를 쓰는 까닭 세 가지를 아래 카드의 빈칸에 한 낱말씩 채워 보세요.')),
+      ...['why.reuse', 'why.manage', 'why.team'].map((id) => {
+        const l = kit.lineOf(id);
+        return h('div', { class: 'card row', style: { alignItems: 'flex-start', flexWrap: 'nowrap', padding: '9px 12px' } }, h('span', { style: { fontSize: '26px' } }, l.icon), h('div', {}, h('b', {}, kit.line(id)), h('div', { class: 'small muted' }, l.desc)));
+      }))));
   paint();
 }
 
 /* ── 2. 모듈 ⊂ 패키지 ⊂ 라이브러리 ── */
 export function renderLayers(body, api) {
+  const kit = blankKit('concept/layers');
   const st = { lit: null, view: 'std', shape: 'box' };
   const rec = slot('layers', () => ({ seen: [] }));
   const left = h('div', { class: 'col grow' });
@@ -154,16 +158,44 @@ export function renderLayers(body, api) {
         h('button', { class: 'chip', style: { ...chipStyle(isInit), color: '#495057', background: '#f1f3f5', fontFamily: 'var(--mono)' }, onClick: () => { st.lit = 'init'; paint(); } }, `${rec.seen.includes('init') ? '✔ ' : ''}📝 __init__.py`)),
       h('div', { class: 'tiny muted' }, `네 가지를 모두 눌러 보세요 (${seenLevels}/${LEVELS.length}) · 점선 상자 __init__.py 는 무슨 일을 할까요?`),
       isInit ? initCard() : levelCard(),
-      isInit ? null : h('table', { class: 't small' },
-        h('tr', {}, h('th', {}, '무엇'), h('th', {}, '실제로는'), h('th', {}, '불러오기')),
-        h('tr', {}, h('td', {}, '📄 모듈'), h('td', {}, '.py 파일'), h('td', {}, h('code', {}, 'import random'))),
-        h('tr', {}, h('td', {}, '📦 패키지'), h('td', {}, '폴더 (+ __init__.py)'), h('td', {}, h('code', {}, 'import mypackage.module1'))),
-        h('tr', {}, h('td', {}, '📚 라이브러리'), h('td', {}, '패키지·모듈 꾸러미'), h('td', {}, h('code', {}, 'pip install pandas'), h('div', { class: 'tiny muted' }, '코랩에는 미리 깔려 있어요')))),
-      h('details', { class: 'more' }, h('summary', {}, '🔬 「라이브러리」 는 문법 용어가 아니에요'),
-        h('p', { class: 'small', html: '모듈·패키지는 파이썬이 정한 말이지만, 「라이브러리」 는 <b>남이 쓰라고 묶어 내놓은 코드</b>를 부르는 일상어예요. 그래서 random 모듈 하나를 「random 라이브러리」 라고 부르는 사람도 있어요. 이 앱은 교과서 정의(여러 패키지·모듈을 모아 놓은 것)를 따릅니다.' })));
+      // 📝 표의 「실제로는」 칸이 빈칸이다 — 위 카드를 읽고 학생이 채운다
+      // (예전 「불러오기」 칸은 자리가 모자라 뺐다 — 같은 예가 위 카드의 「예」 줄에 있다)
+      isInit ? null : h('div', { class: 'card bk-card', style: { padding: '8px 10px', flex: 'none' } }, kit.head('📝 표로 정리'),
+        h('table', { class: 't small lv-tbl' },
+          h('tr', {}, h('th', {}, '무엇'), h('th', {}, '실제로는')),
+          ['layers.mod', 'layers.pkg', 'layers.lib'].map((id) => h('tr', {}, h('td', { style: { whiteSpace: 'nowrap', width: '1%' } }, kit.lineOf(id).label), h('td', {}, kit.line(id)))))),
+      // 펼침 상자(details)로 두면 펼칠 때 위 카드가 눌려 글이 잘린다(2026-11-10 선생님이 발견) — 알림창으로 띄운다
+      h('button', { class: 'btn small ghost', style: { alignSelf: 'flex-start' }, onClick: () => modal('🔬 「라이브러리」 는 문법 용어가 아니에요',
+        h('p', { html: '모듈·패키지는 파이썬이 정한 말이지만, 「라이브러리」 는 <b>남이 쓰라고 묶어 내놓은 코드</b>를 부르는 일상어예요. 그래서 random 모듈 하나를 「random 라이브러리」 라고 부르는 사람도 있어요.<br><br>거꾸로 pandas·matplotlib 도 파이썬 문법으로 보면 맨 위 <b>패키지</b>(폴더 + __init__.py)예요. 이 앱은 교과서 정의를 따라, 그 안에 패키지·모듈을 여럿 모아 내놓은 큰 꾸러미를 「라이브러리」 라고 부릅니다.<br><br>그래서 「분류해 보기」·「import 문 읽기」 에서는 두 이름을 모두 정답으로 받아요 — <b>random·math</b> 는 모듈·라이브러리, <b>pandas·matplotlib</b> 은 라이브러리·패키지.' }),
+        { ok: '닫기' }) }, '🔬 「라이브러리」 는 문법 용어가 아니에요'));
   }
   fill(body, h('div', { class: 'cols' }, left, right));
   paint();
+}
+
+/* ── 💡 폴더 나무 힌트 — 분류해 보기 · import 문 읽기가 함께 쓴다 ── */
+const MARK = { background: '#ffec99', borderBottom: '3px solid #f59f00', padding: '0 3px', borderRadius: '4px' };
+/** 💡 힌트 그림 — 폴더 나무 꼴. 노란 줄이 물어본 이름이고, 답은 적지 않는다 (/ · .py · ( ) 를 스스로 읽게) */
+function hintTree(rows) {
+  const color = { r: 'var(--ink)', d: 'var(--pkg)', i: '#868e96', f: 'var(--mod)', n: 'var(--nm)', a: '#e8590c', c: '#adb5bd' };
+  return h('div', { class: 'tree', style: { display: 'grid', gridTemplateColumns: 'max-content 1fr', columnGap: '28px', fontSize: '17px', lineHeight: '1.9', padding: '10px 16px' } },
+    rows.map(([k, text, cmt, mark]) => {
+      const name = text.replace(/^[│├└─ ]+/, '');
+      const gap = k === 'a' ? { marginTop: '8px' } : null; // 별명 줄은 나무와 한 줄 띄운다 — 나무 안에 없는 이름이라서
+      return [
+        h('span', { style: gap }, h('span', { style: { color: '#adb5bd' } }, text.slice(0, text.length - name.length)),
+          h('span', { style: { color: color[k], fontWeight: k === 'i' || k === 'c' ? 400 : 800, ...(mark ? MARK : {}) } }, k === 'a' ? `🏷 ${name}` : name)),
+        h('span', { class: 'c', style: gap }, cmt ? `# ${cmt}` : '')];
+    }));
+}
+/** 💡 힌트 창 — word: 물어본 이름 · head: 위에 보여 줄 줄(import 문이나 카드 설명) · hint: { ask, tree } */
+function showTreeHint(word, head, hint) {
+  modal(`💡 힌트 — 「${word}」 는 무엇일까요?`, h('div', { class: 'col', style: { gap: '10px' } },
+    head,
+    hintTree(hint.tree),
+    h('div', { style: { fontSize: '16px' } }, `🤔 ${hint.ask}`),
+    h('div', { class: 'small muted' }, '📁 이름/ — 폴더   ·   📄 이름.py — 파일 하나   ·   이름( ) — 파일 안에서 꺼내 쓰는 것')),
+  { ok: '닫기', wide: true });
 }
 
 /* ── 3. 분류해 보기 ── */
@@ -172,16 +204,24 @@ export function renderSort(body, api) {
   let sel = null;
   const wrap = h('div', { class: 'col grow' });
   function paint() {
-    const right = SORT_CARDS.filter((c) => S.put[c.id] === c.ans).length;
+    const right = SORT_CARDS.filter((c) => isAnswer(c, S.put[c.id])).length;
+    // 두 이름이 다 맞는 카드(also) — 「모듈 · 라이브러리」 처럼 함께 적는다
+    const names = (c) => [c.ans, ...(c.also || [])].map((id) => BINS.find((b) => b.id === id).name).join(' · ');
     fill(wrap,
-      h('div', { class: 'row' }, h('h2', { style: { margin: 0 } }, '분류해 보기'), h('span', { class: 'muted' }, '카드를 누른 다음 아래 바구니를 누르세요. 다 넣으면 [채점]!')),
+      h('div', { class: 'row' }, h('h2', { style: { margin: 0 } }, '분류해 보기'), h('span', { class: 'muted' }, '카드를 누른 다음 아래 바구니를 누르세요. 다 넣으면 [채점]! 헷갈리면 카드의 💡 를 눌러 폴더 나무를 보세요.')),
       h('div', { class: 'cards' }, SORT_CARDS.map((c) => {
         const put = S.put[c.id];
         const bin = BINS.find((b) => b.id === put);
-        const cls = S.graded && put ? (put === c.ans ? ' right' : ' wrong') : '';
+        const ok = isAnswer(c, put);
+        const cls = S.graded && put ? (ok ? ' right' : ' wrong') : '';
         return h('div', { class: 'scard' + (sel === c.id ? ' sel' : '') + cls, onClick: () => { sel = c.id; paint(); } },
-          h('div', { class: 'nm' }, c.nm), h('div', { class: 'ctx' }, c.ctx),
-          S.graded && put ? h('div', { class: 'tiny', style: { color: put === c.ans ? 'var(--good)' : 'var(--bad)' } }, (put === c.ans ? '✔ ' : `✘ 정답은 ${BINS.find((b) => b.id === c.ans).name} — `) + c.why) : null,
+          h('div', { class: 'nm' }, c.nm,
+            SORT_HINTS[c.id] ? h('button', { class: 'shint', title: '힌트 그림 보기', 'aria-label': `${c.nm} 힌트`, onClick: (e) => {
+              e.stopPropagation();
+              showTreeHint(c.nm, h('div', { class: 'small' }, h('code', { style: { fontSize: '17px', fontWeight: 800 } }, c.nm), '  ', h('span', { class: 'muted' }, c.ctx)), SORT_HINTS[c.id]);
+            } }, '💡') : null),
+          h('div', { class: 'ctx' }, c.ctx),
+          S.graded && put ? h('div', { class: 'tiny', style: { color: ok ? 'var(--good)' : 'var(--bad)' } }, (ok ? (c.also ? `✔ ${names(c)} 모두 정답 — ` : '✔ ') : `✘ 정답은 ${names(c)} — `) + whyOf(c, ok ? put : c.ans)) : null,
           h('div', { class: 'put' }, bin ? h('span', { class: 'chip', style: { color: bin.color, background: '#fff', border: `1px solid ${bin.color}` } }, `${bin.icon} ${bin.name}`) : h('span', { class: 'tiny muted' }, '아직 안 넣음')));
       })),
       h('div', { class: 'bins' }, BINS.map((b) => h('div', { class: 'bin', style: { '--c': b.color }, onClick: () => {
@@ -207,33 +247,16 @@ export function renderSort(body, api) {
 /* ── 4. import 문 읽기 ── */
 export function renderAnatomy(body, api) {
   const S = slot('anatomy', () => ({}));
+  const kit = blankKit('concept/anatomy');
   const grid = h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' } });
-  const MARK = { background: '#ffec99', borderBottom: '3px solid #f59f00', padding: '0 3px', borderRadius: '4px' };
-  /** 💡 힌트 그림 — 폴더 나무 꼴. 노란 줄이 밑줄 친 이름이고, 답은 적지 않는다 (/ · .py · ( ) 를 스스로 읽게) */
-  function hintTree(rows) {
-    const color = { r: 'var(--ink)', d: 'var(--pkg)', i: '#868e96', f: 'var(--mod)', n: 'var(--nm)', a: '#e8590c', c: '#adb5bd' };
-    return h('div', { class: 'tree', style: { display: 'grid', gridTemplateColumns: 'max-content 1fr', columnGap: '28px', fontSize: '17px', lineHeight: '1.9', padding: '10px 16px' } },
-      rows.map(([k, text, cmt, mark]) => {
-        const name = text.replace(/^[│├└─ ]+/, '');
-        const gap = k === 'a' ? { marginTop: '8px' } : null; // 별명 줄은 나무와 한 줄 띄운다 — 나무 안에 없는 이름이라서
-        return [
-          h('span', { style: gap }, h('span', { style: { color: '#adb5bd' } }, text.slice(0, text.length - name.length)),
-            h('span', { style: { color: color[k], fontWeight: k === 'i' || k === 'c' ? 400 : 800, ...(mark ? MARK : {}) } }, k === 'a' ? `🏷 ${name}` : name)),
-          h('span', { class: 'c', style: gap }, cmt ? `# ${cmt}` : '')];
-      }));
-  }
   function showHint(it) {
     const word = it.parts.find((p) => typeof p === 'object').t;
-    modal(`💡 힌트 — 「${word}」 는 어디에 있을까요?`, h('div', { class: 'col', style: { gap: '10px' } },
-      h('div', { class: 'code', style: { fontSize: '18px', fontWeight: 700 } }, it.parts.map((p) => (typeof p === 'string' ? p : h('span', { style: MARK }, p.t)))),
-      hintTree(it.hint.tree),
-      h('div', { style: { fontSize: '16px' } }, `🤔 ${it.hint.ask}`),
-      h('div', { class: 'small muted' }, '📁 이름/ — 폴더   ·   📄 이름.py — 파일 하나   ·   이름( ) — 파일 안에서 꺼내 쓰는 것')),
-    { ok: '닫기', wide: true });
+    showTreeHint(word, h('div', { class: 'code', style: { fontSize: '18px', fontWeight: 700 } }, it.parts.map((p) => (typeof p === 'string' ? p : h('span', { style: MARK }, p.t)))), it.hint);
   }
   function item(it, i) {
     const pick = S[i];
-    const ok = pick === it.ans;
+    const ok = isAnswer(it, pick);
+    const both = it.also ? [it.ans, ...it.also].map((id) => ROLES.find((r) => r.id === id).label.split(' ').slice(1).join(' ')).join('·') : '';
     return h('div', { class: 'card col', style: { gap: '5px', padding: '9px 12px', borderColor: pick ? (ok ? '#8ce99a' : '#ffa8a8') : 'var(--line)' } },
       h('div', { class: 'code', style: { fontSize: '18px', fontWeight: 700 } }, it.parts.map((p) => (typeof p === 'string' ? p : h('span', { style: { background: '#ffec99', borderBottom: '3px solid #f59f00', padding: '0 3px', borderRadius: '4px' } }, p.t)))),
       h('div', { class: 'row', style: { gap: '4px' } }, ROLES.map((r) => h('button', {
@@ -241,17 +264,24 @@ export function renderAnatomy(body, api) {
         onClick: () => { S[i] = r.id; save(); paint(); api.refreshNav(); },
       }, r.label)), h('span', { class: 'grow' }),
       h('button', { class: 'btn small', title: '힌트 그림 보기', onClick: () => showHint(it) }, '💡 힌트')),
-      pick ? h('div', { class: 'tiny', style: { color: ok ? 'var(--good)' : 'var(--bad)' } }, (ok ? '✔ ' : '✘ 다시 골라 보세요 — ') + (ok ? it.why : '밑줄 친 것이 파일인지, 폴더인지, 꾸러미인지, 그 안의 이름인지 생각해 봐요.')) : null);
+      pick ? h('div', { class: 'tiny', style: { color: ok ? 'var(--good)' : 'var(--bad)' } }, (ok ? (both ? `✔ ${both} 모두 정답 — ` : '✔ ') : '✘ 다시 골라 보세요 — ') + (ok ? whyOf(it, pick) : '밑줄 친 것이 파일인지, 폴더인지, 꾸러미인지, 그 안의 이름인지 생각해 봐요.')) : null);
   }
   function paint() { fill(grid, ANATOMY.map(item)); }
   fill(body, h('div', { class: 'col', style: { height: '100%' } },
-    h('div', { class: 'row', style: { marginBottom: '8px' } }, h('h2', { style: { margin: 0 } }, 'import 문 읽기'), h('span', { class: 'muted' }, '노랗게 밑줄 친 것은 무엇일까요? 알맞은 것을 고르세요.')), grid));
+    h('div', { class: 'row', style: { marginBottom: '8px', flexWrap: 'nowrap' } }, h('h2', { style: { margin: 0, whiteSpace: 'nowrap' } }, 'import 문 읽기'), h('span', { class: 'muted' }, '노랗게 밑줄 친 것은 무엇일까요? 알맞은 것을 고르세요.'),
+      h('span', { class: 'grow' }),
+      // 📝 여덟 문항에서 쓴 「읽는 법」 을 빈칸으로 정리한다 — 창으로 연다.
+      // 화면 아래에 카드로 두면 여덟 문항을 다 풀어 풀이 줄이 늘었을 때 127px 넘쳤다 (2026-11-10 미리보기에서 잼)
+      h('button', { class: 'btn small primary bk-open', style: { whiteSpace: 'nowrap' }, onClick: () => modal('📝 import 문 읽는 법 — 정리',
+        h('div', { class: 'col', style: { gap: '8px' } }, h('p', { class: 'small muted', style: { margin: 0 } }, '여덟 문항에서 본 것을 떠올리며 빈칸을 채워 보세요.'), kit.card()), { ok: '닫기', wide: true }) },
+      '📝 읽는 법 정리 ', kit.counter())), grid));
   paint();
 }
 
 /* ── 5. 모듈은 어디서 올까 — pip ── */
 export function renderWhere(body, api) {
   const S = slot('pip', () => ({ installed: [], project: null, ok: false }));
+  const kit = blankKit('concept/where');
   const ideHost = h('div', { style: { flex: 1, minWidth: 0, height: '100%' } });
   fill(body, h('div', { class: 'cols' },
     h('div', { class: 'col', style: { width: '430px', flex: 'none', gap: '8px' } },
@@ -266,7 +296,8 @@ export function renderWhere(body, api) {
           h('li', { html: '터미널 아래 칸에 <code>pip install gtts</code> + <kbd>Enter</kbd>' }),
           h('li', { html: '다시 ▶ → 생긴 <code>hello.mp3</code> 를 눌러 듣기' }),
           h('li', { html: '⚠ <code>main.py</code> 첫 줄에 <code>pip install gtts</code> 를 쓰고 ▶ 하면?' }))),
-      h('div', { class: 'note small', html: '<b>pip 와 !pip</b> (교과서 141쪽 Tip) — VS Code 의 <b>터미널</b>에서는 <code>pip install gtts</code>, 코랩·주피터의 <b>셀</b>에서는 <code>!pip install gtts</code>.' }),
+      // 📝 「pip 와 !pip」 (교과서 141쪽 Tip) 를 빈칸으로 정리한다
+      kit.card(),
       h('div', { class: 'tiny muted' }, '이 앱의 pip·gtts 는 흉내예요. 실제로 내려받지 않고, 소리는 브라우저의 음성 기능으로 냅니다. 진짜 gtts 는 인터넷으로 구글 서버에 글을 보내 mp3 를 받아 와요.')),
     ideHost));
   createIDE(ideHost, {
