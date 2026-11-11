@@ -9,6 +9,7 @@ import { FIXES, QUIZ } from '../src/data/imports.js';
 import { MISSIONS } from '../src/data/missions.js';
 import { EXAM } from './golden-cases.mjs';
 import { PRACTICE_START } from '../src/data/assess.js';
+import { migrate, QUIZ_V } from '../src/lib/store.js';
 
 /* ④ 연습 과제의 모범 답은 정답이라 test/local/ 에만 있다(깃허브에 안 올림). 없으면 처음 모습으로 대신한다 */
 const EXAM_PROJECT = EXAM ? EXAM.ANSWER : PRACTICE_START;
@@ -57,6 +58,24 @@ function fullState() {
   참('⭐ 한 문제라도 틀리면 아직', !isDone('concept/publish', { publish: { ...pubAll, ans: { ...pubAll.ans, 1: 0 } } }));
   참('⭐ 끝내도 필수 활동 수는 그대로', progressOf({ ...fullState(), publish: pubAll }).total === 13);
   참('빈 기록에서 아무 활동도 끝난 것이 아니다', Object.keys(ACTIVITIES).every((k) => !isDone(k, {})));
+}
+
+묶음('확인 문제 — 8문항이던 때의 기록을 5문항 번호로 옮긴다 (2026-11-11 옛 3·6·8번을 뺌)');
+{
+  const OLD_ANS = [1, 1, 3, 1, 1, 1, 1, 0]; // 옛 8문항의 정답
+  const old = () => ({ ...fullState(), quiz: { ans: Object.fromEntries(OLD_ANS.map((a, k) => [k, a])), cur: 7 } });
+  확인('지금 확인 문제는 5문항', QUIZ.length, 5);
+  참('옮기지 않으면 — 옛 기록으로는 ③ 탭이 다시 잠긴다(옮기기가 왜 필요한지)', blockers('build', old()).some((x) => x.key === 'import/quiz'));
+  const moved = migrate(old());
+  확인('옛 8문항을 다 맞힌 기록 → 새 5문항도 다 맞힘', QUIZ.map((q, k) => moved.quiz.ans[k] === q.ans), [true, true, true, true, true]);
+  확인('빠진 문항(옛 3·6·8번)의 답은 버린다', Object.keys(moved.quiz.ans), ['0', '1', '2', '3', '4']);
+  확인('보던 문항(옛 8번)이 빠졌으면 마지막 문항으로', moved.quiz.cur, 4);
+  확인('옮긴 기록에는 판 표시가 붙는다', moved.quiz.v, QUIZ_V);
+  확인('③ 탭이 열린 그대로', blockers('build', moved), []);
+  const once = migrate(JSON.parse(JSON.stringify(moved)));
+  확인('두 번 옮기지 않는다(판 표시가 있으면 그대로)', once.quiz, moved.quiz);
+  확인('옛 4번 답만 있던 기록 → 새 3번 답', migrate({ quiz: { ans: { 3: 1 }, cur: 3 } }).quiz, { ans: { 2: 1 }, cur: 2, v: QUIZ_V });
+  확인('확인 문제 기록이 없으면 손대지 않는다', migrate({ why: { copy: true } }), { why: { copy: true } });
 }
 
 묶음('활동 기록 HTML');

@@ -4,7 +4,7 @@
 import { h, fill, toast, modal, share } from '../ui/dom.js';
 import { codeBlock, quickRun, head, treeBlock } from './common.js';
 import { createIDE } from '../ui/ide.js';
-import { slot, save } from '../lib/store.js';
+import { slot, save, QUIZ_V } from '../lib/store.js';
 import { FORMS, PKGFORMS, FIXES, QUIZ } from '../data/imports.js';
 import { blankKit } from '../ui/blanks.js';
 
@@ -116,7 +116,7 @@ export function renderFix(body, api) {
         h('pre', { class: 'code sm', style: { background: '#181818' } }, f.goal),
         S.done[f.id] ? h('div', { class: 'bigok' }, '✅ 고쳤어요!') : h('div', { class: 'tiny muted' }, '고친 다음 main.py 를 열고 ▶ — 맞으면 저절로 ✅')),
       h('div', { class: 'hintbox' },
-        h('div', { class: 'row' }, h('button', { class: 'btn small', disabled: n >= f.hints.length, onClick: () => { S.hint[f.id] = n + 1; save(); paintInfo(); } }, `💡 힌트 ${Math.min(n + 1, f.hints.length)}/${f.hints.length}`),
+        h('div', { class: 'row' }, h('button', { class: 'btn small', disabled: n >= f.hints.length, onClick: () => { S.hint[f.id] = n + 1; save(); paintInfo(); side.scrollTop = side.scrollHeight; } },`💡 힌트 ${Math.min(n + 1, f.hints.length)}/${f.hints.length}`),
           h('button', { class: 'btn small ghost', onClick: async () => { if (await modal('처음 상태로', '고친 것을 지우고 오류가 난 처음 모습으로 되돌릴까요?', { ok: '되돌리기', cancel: '그만두기' })) { delete S.proj[f.id]; save(); mount(); } } }, '↺ 처음 상태로')),
         f.hints.slice(0, n).map((t, i) => h('div', { class: 'h' }, `${i + 1}. ${t}`))));
   }
@@ -133,20 +133,18 @@ export function renderFix(body, api) {
     // 아직 못 고친 문제는 열 때마다 한 번 실행해서 지금 상태(오류)를 보여 준다
     if (!S.done[f.id]) ide.run(f.active || 'main.py');
   }
-  fill(body, h('div', { class: 'cols' },
-    h('div', { class: 'col', style: { ...share(330), gap: '7px' } }, h('h2', {}, '오류 고치기 — 자주 겪는 여섯 가지'), listEl, info),
-    ideHost));
+  const side = h('div', { class: 'col fix-side', style: { ...share(330), gap: '7px' } }, h('h2', {}, '오류 고치기 — 자주 겪는 여섯 가지'), listEl, info);
+  fill(body, h('div', { class: 'cols' }, side, ideHost));
   mount();
 }
 
 /* ── 확인 문제 ── */
 export function renderQuiz(body, api) {
-  const S = slot('quiz', () => ({ ans: {}, cur: 0 }));
+  const S = slot('quiz', () => ({ ans: {}, cur: 0, v: QUIZ_V }));
   const wrap = h('div', { class: 'cols' });
   function paint() {
     const i = S.cur, q = QUIZ[i], a = S.ans[i];
     const got = Object.keys(S.ans).filter((k) => S.ans[k] === QUIZ[k].ans).length;
-    const filesBox = q.files ? h('div', { class: 'row', style: { alignItems: 'flex-start' } }, Object.entries(q.files).map(([f, src]) => h('div', { class: 'col', style: { gap: '3px' } }, h('b', { class: 'small' }, `📄 ${f}`), codeBlock(src, true)))) : null;
     fill(wrap,
       h('div', { class: 'col grow' },
         h('div', { class: 'row' }, h('h2', { style: { margin: 0 } }, '확인 문제'),
@@ -155,13 +153,10 @@ export function renderQuiz(body, api) {
         h('div', { class: 'card col', style: { gap: '8px' } },
           h('div', { class: 'quiz-q' }, `${i + 1}. ${q.q}`),
           q.code ? codeBlock(q.code, true) : null,
-          filesBox,
-          h('div', { class: 'row', style: { alignItems: 'flex-start', flexWrap: 'nowrap', gap: '14px' } },
-            h('div', { class: 'choices grow' }, q.choices.map((c, k) => h('button', {
-              class: 'choice' + (a === k ? (k === q.ans ? ' right' : ' wrong') : '') + (a !== undefined && k === q.ans && a !== k ? ' right' : ''),
-              onClick: () => { S.ans[i] = k; save(); paint(); api.refreshNav(); },
-            }, q.code4 || q.output ? h('pre', { class: 'code sm', style: { background: 'transparent', color: 'inherit', padding: 0, fontSize: '14.5px' } }, `${'①②③④'[k]} ${c}`) : `${'①②③④'[k]} ${c}`))),
-            q.tree ? h('div', { class: 'tree', style: { fontSize: '14px' } }, q.tree) : null),
+          h('div', { class: 'choices' }, q.choices.map((c, k) => h('button', {
+            class: 'choice' + (a === k ? (k === q.ans ? ' right' : ' wrong') : '') + (a !== undefined && k === q.ans && a !== k ? ' right' : ''),
+            onClick: () => { S.ans[i] = k; save(); paint(); api.refreshNav(); },
+          }, `${'①②③④'[k]} ${c}`))),
           a !== undefined ? h('div', { class: 'note ' + (a === q.ans ? 'good' : 'bad'), html: (a === q.ans ? '✔ 맞았어요. ' : `✘ 정답은 ${'①②③④'[q.ans]}. `) + q.why }) : null),
         h('div', { class: 'row' },
           h('button', { class: 'btn', disabled: i === 0, onClick: () => { S.cur = i - 1; save(); paint(); } }, '◀ 앞 문제'),

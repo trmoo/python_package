@@ -720,18 +720,6 @@
    "stdout": "시험용님, 안녕하세요!",
    "stderr": "",
    "code": 0
-  },
-  {
-   "name": "확인 문제 6",
-   "stdout": "hello.py 실행!\n끝",
-   "stderr": "",
-   "code": 0
-  },
-  {
-   "name": "확인 문제 8",
-   "stdout": "greet\n__main__",
-   "stderr": "",
-   "code": 0
   }
  ]
 }

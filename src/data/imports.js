@@ -88,8 +88,10 @@ export const FIXES = [
   },
 ];
 
-/* ── 4. 확인 문제 ── type: 'choice' (보기 고르기) · code 가 있으면 그 코드를 함께 보여 준다
- * output 문제(실행 결과 고르기)는 시험이 진짜 파이썬 결과와 정답 보기를 대조한다. */
+/* ── 4. 확인 문제 ── 보기 고르기 · code 가 있으면 그 코드를 함께 보여 준다
+ * ⚠ 2026-11-11 옛 3번(폴더 구조에서 오류 나는 코드)·6번(두 번 import)·8번(__name__)을 뺐다(사용자 지시) — 8문항 → 5문항.
+ *   그래서 실행 결과를 고르는 문항(files·output)과 폴더 그림(tree·code4)은 이제 없다. 화면도 그 갈래를 지웠다.
+ *   학생 답은 번호(0부터)로 저장되므로, 문항을 빼거나 차례를 바꾸면 store.js 의 migrate( ) 에 옮기는 표를 더할 것. */
 export const QUIZ = [
   {
     q: '모듈·패키지·라이브러리의 관계로 알맞은 것은?',
@@ -102,11 +104,6 @@ export const QUIZ = [
     ans: 1, why: 'from 으로 add 라는 이름을 꺼내 왔으니 앞에 calc. 없이 add( ) 로 불러요. calc 라는 이름은 생기지 않아요.',
   },
   {
-    q: '오른쪽 폴더 구조에서 hello( ) 를 부르는 코드 가운데 오류가 나는 것은?', tree: 'mypackage/\n├── __init__.py\n└── module1.py   ← def hello()',
-    choices: ['import mypackage.module1\nmypackage.module1.hello()', 'from mypackage import module1\nmodule1.hello()', 'from mypackage.module1 import hello\nhello()', 'import mypackage\nmypackage.module1.hello()'],
-    code4: true, ans: 3, why: 'import mypackage 만으로는 안의 모듈이 따라오지 않아요 → AttributeError. (__init__.py 가 불러 주지 않는 한)',
-  },
-  {
     q: 'import calc.py 를 실행하면 어떻게 될까?',
     choices: ['calc.py 를 잘 불러온다', "ModuleNotFoundError: No module named 'calc.py'; 'calc' is not a package", 'SyntaxError 가 난다', '아무 일도 일어나지 않는다'],
     ans: 1, why: '점(.)은 「폴더 안으로」 라는 뜻이라 calc 안의 py 를 찾다 실패해요. import 뒤에는 .py 를 빼고 적어요.',
@@ -117,18 +114,8 @@ export const QUIZ = [
     ans: 1, why: '빈 파일이어도 돼요. 파이썬 3.3 부터는 없어도 불러오기는 되지만(이름공간 패키지), 교과서와 실제 라이브러리는 모두 넣어 둡니다.',
   },
   {
-    q: '아래 두 파일이 있을 때 main.py 를 실행한 결과는?', files: { 'hello.py': 'print("hello.py 실행!")', 'main.py': 'import hello\nimport hello\nprint("끝")' },
-    choices: ['hello.py 실행!\nhello.py 실행!\n끝', 'hello.py 실행!\n끝', '끝', '오류가 난다'],
-    ans: 1, output: true, why: '모듈은 처음 import 할 때 한 번만 실행돼요. 두 번째부터는 이미 불러온 것을 그대로 써요.',
-  },
-  {
     q: 'gtts 라이브러리를 설치하려고 한다. VS Code 에서 pip install gtts 는 어디에 입력할까?',
     choices: ['main.py 의 맨 첫 줄', '아래쪽 터미널(명령 프롬프트)', '__init__.py 안', '어디에 써도 똑같다'],
     ans: 1, why: 'pip 는 파이썬 코드가 아니라 명령어예요. 코드 안에 쓰면 SyntaxError. (코랩·주피터 셀에서는 !pip install gtts — 교과서 141쪽 Tip)',
-  },
-  {
-    q: '아래 두 파일이 있을 때 main.py 를 실행한 결과는?', files: { 'greet.py': 'print(__name__)', 'main.py': 'import greet\nprint(__name__)' },
-    choices: ['greet\n__main__', '__main__\n__main__', 'greet\ngreet', '__main__\ngreet'],
-    ans: 0, output: true, why: '직접 실행한 파일의 __name__ 은 \'__main__\', import 로 불려 온 파일의 __name__ 은 자기 모듈 이름이에요.',
   },
 ];

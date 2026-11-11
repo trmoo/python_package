@@ -11,7 +11,26 @@ function load() {
     return raw ? JSON.parse(raw) : {};
   } catch (e) { return {}; }
 }
-export const S = load();
+/* ── 옛 기록 옮기기 ──
+ * 확인 문제 답은 문항 번호(0부터)로 저장된다. 2026-11-11 8문항 가운데 옛 3·6·8번을 빼서 번호가 당겨졌다.
+ * 그대로 두면 옛 4번 답이 새 3번 답으로 읽혀 「틀림」 이 되고, 다 맞혔던 학생의 ③ 탭이 다시 잠긴다.
+ * QUIZ_V 가 없는 옛 기록만 한 번 옮긴다. ⚠ 새로 만드는 확인 문제 칸에도 v: QUIZ_V 를 넣을 것(안 넣으면 새 답을 또 옮긴다). */
+export const QUIZ_V = 2;
+const QUIZ_MOVE = { 0: 0, 1: 1, 3: 2, 4: 3, 6: 4 }; // 옛 번호 → 새 번호 (빠진 2·5·7 은 버린다)
+const QUIZ_CUR = [0, 1, 2, 2, 3, 4, 4, 4]; // 보던 문항이 빠졌으면 그다음 문항으로
+export function migrate(st) {
+  const q = st && st.quiz;
+  if (q && typeof q === 'object' && q.v === undefined) {
+    const ans = {};
+    for (const [k, a] of Object.entries(q.ans || {})) if (QUIZ_MOVE[k] !== undefined) ans[QUIZ_MOVE[k]] = a;
+    q.ans = ans;
+    q.cur = QUIZ_CUR[q.cur] ?? 0;
+    q.v = QUIZ_V;
+  }
+  return st;
+}
+// ⚠ 위의 표(const)들보다 아래에 둘 것 — 위에 두면 표가 만들어지기 전에 migrate 가 불려 멈춘다
+export const S = migrate(load());
 
 let timer = null;
 /** 고친 것을 잠시 뒤에 한 번에 저장한다 (글자를 칠 때마다 저장하지 않게) */

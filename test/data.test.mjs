@@ -151,13 +151,13 @@ for (const f of FIXES) {
 for (const [i, q] of QUIZ.entries()) {
   참(`${i + 1}번 — 정답 번호가 보기 안에 있다`, q.ans >= 0 && q.ans < q.choices.length);
   확인(`${i + 1}번 — 보기 네 개`, q.choices.length, 4);
-  if (q.files) 확인(`${i + 1}번 — 정답 보기가 실제 실행 결과와 같다`, runProject({ files: q.files }).stdout, q.choices[q.ans]);
-  if (q.code4) {
-    const res = q.choices.map((c) => runProject({ files: { ...PKGFORMS.files, 'main.py': c } }).ok);
-    확인(`${i + 1}번 — 오류가 나는 것은 정답 하나뿐`, res.map((ok) => (ok ? 'o' : 'x')).join(''), q.choices.map((_, k) => (k === q.ans ? 'x' : 'o')).join(''));
-  }
+  // 2026-11-11 실행 결과·폴더 그림 문항을 빼며 화면에서도 그 갈래를 지웠다 — 되살리려면 화면(renderQuiz)도 함께
+  확인(`${i + 1}번 — 화면이 그리지 않는 갈래(files·output·tree·code4)가 없다`, ['files', 'output', 'tree', 'code4'].filter((k) => k in q), []);
 }
-확인('4번 — import calc.py 의 실제 문구', runProject({ files: { 'main.py': 'import calc.py\n', 'calc.py': 'x = 1\n' } }).stderr.split('\n').pop(), QUIZ[3].choices[QUIZ[3].ans]);
+{
+  const q = QUIZ.find((x) => x.q.startsWith('import calc.py'));
+  확인('import calc.py 문항 — 보기가 실제 오류 문구와 같다', runProject({ files: { 'main.py': 'import calc.py\n', 'calc.py': 'x = 1\n' } }).stderr.split('\n').pop(), q.choices[q.ans]);
+}
 
 묶음('미션 — 모범 답안은 모든 단계를 통과하고, 시작 모습은 통과하지 않는다');
 const runsFor = (p, entries) => Object.fromEntries(entries.map((e) => { const r = runProject({ files: p.files, dirs: p.dirs, entry: e }); return [e, { r, p }]; }));

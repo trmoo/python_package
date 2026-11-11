@@ -362,3 +362,6 @@ table.t.lv-tbl th, table.t.lv-tbl td { padding: 3px 8px; }
 .bk-head > b { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
 /* 미션 판 — 💡 힌트를 모두 열면 판이 넘친다. 무대 밖으로 잘리지 않게 판 안에서만 스크롤 (2026-11-10) */
 .mission { overflow-y: auto; overflow-x: hidden; scrollbar-width: thin; }
+/* 오류 고치기 왼쪽 판 — 힌트 3개를 열면 넘쳐서 목록·문제 카드가 눌려 서로 겹쳤다. 줄어들지 말고 판 안에서 스크롤 (2026-11-11) */
+.fix-side { overflow-y: auto; overflow-x: hidden; scrollbar-width: thin; }
+.fix-side > *, .fix-side > .col > * { flex-shrink: 0; }
