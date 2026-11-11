@@ -331,6 +331,14 @@ table.t td.c { text-align: center; font-weight: 900; }
 .qno { display: inline-flex; width: 26px; height: 26px; border-radius: 50%; background: var(--brand); color: #fff; font-weight: 900; align-items: center; justify-content: center; }
 .qpts { margin-left: auto; font-weight: 900; color: var(--brand); }
 .qouts { display: flex; flex-wrap: wrap; gap: 2px 12px; font-size: 13.5px; color: var(--muted); }
+/* 문항 줄 아래의 start.py 출력 결과 (2026-11-11) */
+.qrun { display: block; width: fit-content; margin-top: 4px; font-size: 13.5px; line-height: 1.5; padding: 5px 14px; }
+/* 채점 기준 (2026-11-11 — 5점짜리 문항, 칸 하나에 1점) */
+.rubric { display: flex; flex-direction: column; gap: 4px; padding: 10px 14px; }
+.rubric table { border-collapse: collapse; font-size: 14px; }
+.rubric td { padding: 3px 6px; border-top: 1px solid var(--line, #e3e6ee); vertical-align: top; }
+.rubric td.rno { width: 22px; text-align: center; font-weight: 800; color: var(--brand); }
+.rubric td.rpt { width: 36px; text-align: right; font-weight: 800; white-space: nowrap; }
 .outbox { margin: 0; font-family: var(--mono); font-size: 14.5px; line-height: 1.6; background: #1f2433; color: #e9ecf5; border-radius: 10px; padding: 8px 14px; }
 .stepcard .num { display: inline-flex; width: 26px; height: 26px; border-radius: 50%; background: var(--brand); color: #fff; font-weight: 900; align-items: center; justify-content: center; margin-right: 6px; }
 

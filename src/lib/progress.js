@@ -41,7 +41,7 @@ export const ACTIVITIES = {
   'build/m2': { title: '미션 2 · 패키지로 묶기', how: '체크리스트를 모두 채우기', done: (S) => !!(S['mission:m2'] && S['mission:m2'].done) },
   'build/m3': { title: '미션 3 · 모듈 하나 더, import 두 가지 꼴', how: '체크리스트를 모두 채우기', done: (S) => !!(S['mission:m3'] && S['mission:m3'].done) },
   'build/m4': { title: '미션 4 · ⭐ 심화', how: '체크리스트를 모두 채우기 (선택)', optional: true, done: (S) => !!(S['mission:m4'] && S['mission:m4'].done) },
-  'assess/practice': { title: '연습 과제 · 조건 점검기', how: '수행평가 문항 2번의 조건 여섯 가지를 모두 ✅', done: (S) => !!(S.exam && S.exam.passed) },
+  'assess/practice': { title: '연습 과제 · 조건 점검기', how: '수행평가 문항 2번의 조건 네 가지를 모두 ✅', done: (S) => !!(S.exam && S.exam.passed) },
 };
 
 export const isDone = (key, S) => !!(ACTIVITIES[key] && ACTIVITIES[key].done(S));

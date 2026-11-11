@@ -1,14 +1,15 @@
 /*! 📦 패키지 공작소 — © 2026 티쳐무 · 모든 권리 보유
  *  ④ 수행평가 준비 — 수행평가 문항 · 연습 과제(조건 점검기) · IDLE 에서 만들고 제출하기
- *  문항은 2026-11-05 선생님이 주신 것(foods 패키지 + start.py). 예전 「조건 여섯 가지 + 루브릭」 은 뺐다.
+ *  문항은 2026-11-11 사용자 지시로 5점짜리로 줄인 것(foods 패키지에 모듈 둘 + start.py).
+ *  2026-11-05 의 「IDLE 5점 + drinks · fruits 모듈 여섯 개 10점」 은 뺐다.
  */
 import { h, fill, toast, modal, share } from '../ui/dom.js';
 import { treeBlock, head } from './common.js';
 import { createIDE } from '../ui/ide.js';
 import { slot, save } from '../lib/store.js';
-import { CONDITIONS, EXTRA, EXPECTED, SPEC, check } from '../lib/checker.js';
+import { CONDITIONS, EXTRA, EXPECTED, PKG, check } from '../lib/checker.js';
 import { makeZip, projectEntries } from '../lib/zip.js';
-import { QUESTION, GOAL_TREE, PRACTICE_START } from '../data/assess.js';
+import { QUESTION, RUBRIC, GOAL_TREE, PRACTICE_START } from '../data/assess.js';
 
 const MARK = (state) => (state === 'ok' ? '✅' : state === 'part' ? '🟨' : '⬜');
 const outBox = (lines) => h('pre', { class: 'outbox' }, lines.join('\n'));
@@ -17,21 +18,27 @@ const outBox = (lines) => h('pre', { class: 'outbox' }, lines.join('\n'));
 export function renderQuestion(body) {
   const part = (pt) => h('div', { class: 'card qpart' },
     h('div', { class: 'qhead' }, h('span', { class: 'qno' }, pt.no), h('b', {}, pt.title), h('span', { class: 'qpts' }, `${pt.points}점`)),
-    h('ul', {}, pt.lines.map((t, i) => h('li', {}, h('span', { html: t }),
-      pt.no === 2 && SPEC[i - 1] ? h('div', { class: 'qouts' }, SPEC[i - 1].mods.map(([m, txt]) => h('span', {}, h('code', {}, `${m}.py`), ` → ${txt}`))) : null))));
+    h('ul', {}, pt.lines.map((t) => h('li', {}, h('span', { html: typeof t === 'string' ? t : t.html }),
+      t.outs ? h('div', { class: 'qouts' }, t.outs.map(([f, txt]) => h('span', {}, h('code', {}, f), ` → ${txt}`))) : null,
+      t.run ? h('pre', { class: 'outbox qrun' }, t.run.join('\n')) : null))));
+  const rubric = h('div', { class: 'card rubric' },
+    h('div', { class: 'row', style: { flexWrap: 'nowrap' } }, h('b', {}, '📋 채점 기준'), h('span', { class: 'grow' }), h('span', { class: 'qpts' }, `${QUESTION.points}점`)),
+    h('table', {}, RUBRIC.map((r) => h('tr', {}, h('td', { class: 'rno' }, r.no), h('td', {}, r.what), h('td', { class: 'rpt' }, `${r.points}점`)))),
+    h('div', { class: 'tiny muted' }, '2번의 네 칸은 「연습 과제」 조건 점검기의 칸과 같아요. 1번(IDLE·압축)은 앱이 확인할 수 없어요.'));
+  // ⚠ 1280×720 에서 왼쪽 칸이 넘치지 않게 채점 기준은 오른쪽 칸에 둔다 (왼쪽에 두면 52px 넘쳤다)
   fill(body, h('div', { class: 'cols' },
     h('div', { class: 'col', style: { ...share(640), gap: '8px' } },
-      h('h2', {}, `수행평가 — ${QUESTION.title}`),
+      h('div', { class: 'row', style: { flexWrap: 'nowrap', alignItems: 'baseline' } }, h('h2', { style: { margin: 0 } }, `수행평가 — ${QUESTION.title}`), h('span', { class: 'grow' }), h('span', { class: 'qpts', style: { fontSize: '18px' } }, `${QUESTION.points}점`)),
       h('p', { class: 'lead', style: { margin: 0 } }, QUESTION.lead),
-      QUESTION.parts.map(part)),
+      QUESTION.parts.map(part),
+      h('div', { class: 'note small', html: `<b>💡 생각해 볼 것</b> — <code>start.py</code> 에서 <code>${PKG}</code> 안의 두 모듈을 부르는 방법은 여러 가지예요. 어떤 꼴로 import 하면 함수를 어떻게 불러야 할까요? (② 불러오기 탭의 「패키지 속 모듈 부르기」)` })),
     h('div', { class: 'col', style: { ...share(588), gap: '8px' } },
       h('h3', {}, '완성하면 이런 모습'),
       h('div', { class: 'row', style: { alignItems: 'stretch', flexWrap: 'nowrap' } },
         treeBlock(GOAL_TREE),
         h('div', { class: 'col', style: { gap: '4px', flex: 'none' } }, h('b', { class: 'small' }, '▶ start.py 출력 예'), outBox(EXPECTED))),
-      h('div', { class: 'note small', html: '<b>💡 생각해 볼 것</b> — 세 모듈의 함수 이름이 모두 <code>drink</code>, 세 모듈은 모두 <code>eat</code> 예요. <code>start.py</code> 에서 서로 구별해 부르려면 어떻게 import 해야 할까요? (② 불러오기 탭의 「패키지 속 모듈 부르기」)' }),
-      h('div', { class: 'note warn small', html: '<b>⚠ __init__.py</b> — 문항에는 없지만, 교과서(씨마스 143쪽)는 패키지 폴더마다 「패키지로 인식하게 해 주는 특별한 파일」 을 넣어요. 파이썬 3.3 부터는 없어도 실행되므로, 넣을지는 선생님 안내를 따르세요.' }),
-      h('p', { class: 'small muted', style: { margin: 0 } }, '「연습 과제」 의 조건 점검기로 2번을 확인하고, 「IDLE 에서」 화면대로 만들어 압축해 제출해요. 1번(IDLE·압축)은 앱이 확인할 수 없어요.'))));
+      rubric,
+      h('div', { class: 'note warn small', html: '<b>⚠ __init__.py</b> — 문항에는 없지만, 교과서(씨마스 143쪽)는 패키지 폴더마다 「패키지로 인식하게 해 주는 특별한 파일」 을 넣어요. 파이썬 3.3 부터는 없어도 실행되므로, 넣어도 되고 안 넣어도 됩니다.' }))));
 }
 
 /* ── 2. 연습 과제 + 조건 점검기 ── */
@@ -59,7 +66,7 @@ export function renderPractice(body, api) {
         res.items.map((it, i) => row(it, `${'①②③④⑤⑥'[i]} ${CONDITIONS[i].title}`)),
         row(res.extra, EXTRA.title)),
       h('div', { class: 'level' }, h('div', { class: 'row', style: { gap: '8px', flexWrap: 'nowrap' } }, h('span', { class: 'n' }, `${res.okCount} / ${res.total}`), h('span', { class: 'small' }, res.summary)),
-        h('div', { class: 'tiny', style: { opacity: 0.75, marginTop: '2px' } }, '⚠ 자기 점검이에요. 1번(IDLE·압축)은 볼 수 없고, 점수는 선생님이 파일을 보고 정해요.')));
+        h('div', { class: 'tiny', style: { opacity: 0.75, marginTop: '2px' } }, '⚠ 자기 점검이에요. 칸 하나가 2번의 1점이고, 1번(IDLE·압축)은 볼 수 없어요. 점수는 선생님이 파일을 보고 정해요.')));
     if (res.allOk && !S.passed) { S.passed = true; save(); api.refreshNav(); }
   }
   function download() {
@@ -91,10 +98,10 @@ export function renderIDLE(body) {
       h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' } },
         step(1, 'IDLE 열고 새 파일', '시작 메뉴에서 <b>IDLE (Python 3.x)</b>. 처음 뜨는 <b>IDLE Shell</b> 창이 아니라 <b>File › New File</b> 로 연 새 창에 코드를 써요.',
           shot('untitled', 'def drink():<br>&nbsp;&nbsp;&nbsp;&nbsp;print(<span style="color:#0a7d00">\'…\'</span>)', true)),
-        step(2, '다운로드 폴더에 폴더째 저장', '<b>File › Save As</b> → 왼쪽에서 <b>다운로드</b> → 저장 창의 <b>[새 폴더]</b> 로 <code>foods</code>, 그 안에 <code>drinks</code> · <code>fruits</code>. 파일 이름은 <code>milk</code> 처럼 쓰면 <code>.py</code> 가 붙어요.',
-          shot('다른 이름으로 저장', '다운로드 › foods › <span class="hl">drinks</span><br>파일 이름: <span class="hl">milk.py</span> &nbsp; [새 폴더] [저장]')),
+        step(2, '다운로드 폴더에 폴더째 저장', '<b>File › Save As</b> → 왼쪽에서 <b>다운로드</b> → 저장 창의 <b>[새 폴더]</b> 로 <code>foods</code> 를 만들고 그 안에 저장. 파일 이름은 <code>milk</code> 처럼 쓰면 <code>.py</code> 가 붙어요.',
+          shot('다른 이름으로 저장', '다운로드 › <span class="hl">foods</span><br>파일 이름: <span class="hl">milk.py</span> &nbsp; [새 폴더] [저장]')),
         step(3, 'start.py 를 열고 F5', '<code>start.py</code> 창에서 <b>Run › Run Module</b> (<kbd>F5</kbd>). 결과는 <b>IDLE Shell</b> 창에 나와요. 오류가 나면 맨 아래 줄부터 읽어요.',
-          shot('IDLE Shell', '= RESTART: C:\\Users\\…\\Downloads\\start.py<br>신선한 우유<br>상쾌한 콜라 …', true)),
+          shot('IDLE Shell', '= RESTART: C:\\Users\\…\\Downloads\\start.py<br>' + EXPECTED.join('<br>'), true)),
         step(4, '압축해서 제출', '파일 탐색기에서 다운로드 폴더 → <code>foods</code> 폴더와 <code>start.py</code> 를 <b>함께</b> 골라 오른쪽 클릭 → <b>압축 대상 › ZIP 파일</b> (윈도우 10: 보내기 › 압축(ZIP) 폴더) → 이름을 <b>모듈패키지 + 내 학번 + 이름</b> 으로.',
           shot('다운로드', '📁 <span class="hl">foods</span> &nbsp;📄 <span class="hl">start.py</span><br><b>[ZIP]</b> 모듈패키지30101홍길동.zip')))),
     h('div', { class: 'col', style: share(400) },

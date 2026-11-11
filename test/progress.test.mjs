@@ -92,9 +92,9 @@ function fullState() {
   const pubHtml = buildReport({ publish: { seen: ['pack', 'build'], ans: { 0: 1 } } }, { id: '1', name: 'x' });
   참('⭐ 넘겨 본 걸음과 고른 답이 들어간다', pubHtml.includes('✔ 📦 상자 꾸리기') && pubHtml.includes('— 🚚 올리기') && pubHtml.includes('import mypackage.module1'));
   참('⭐ 확인 문제 글에서 태그를 걷어 낸다', pubHtml.includes('1. 친구가 pip install hong-mypackage 로 설치했어요'));
-  참('연습 과제 자기 점검 칸이 있다', html.includes(EXAM ? '자기 점검: 6 / 6' : '자기 점검: 0 / 6'));
+  참('연습 과제 자기 점검 칸이 있다', html.includes(EXAM ? '자기 점검: 4 / 4' : '자기 점검: 0 / 4'));
   참('start.py 실행 결과 칸이 있다', html.includes('python start.py 실행 결과'));
-  if (EXAM) 참('(이 컴퓨터에만) 모범 답의 실행 결과가 들어 있다', html.includes('새콤한 사과') && html.includes('foods/drinks/milk.py'));
+  if (EXAM) 참('(이 컴퓨터에만) 모범 답의 실행 결과가 들어 있다', html.includes('새콤한 사과') && html.includes('foods/milk.py'));
   참('예전 mytools 연습 기록(practice)은 ④ 에 쓰지 않는다', !buildReport({ practice: { passed: true, project: MISSIONS[2].answer } }, { id: '1', name: 'x' }).includes('자기 점검:'));
   참('만든 코드가 들어 있다', html.includes('from mytools.calc import add'));
   참('저작권 표시', html.includes('© 2026 티쳐무'));
