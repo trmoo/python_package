@@ -1,7 +1,8 @@
 /*! 📦 패키지 공작소 — © 2026 티쳐무 · 모든 권리 보유
  *  수행평가 문항 「2. 사용자 정의 패키지 제작」 조건 점검기.
- *  2026-11-11 사용자 지시로 문항을 5점짜리로 줄였다 — foods 패키지 하나에 모듈 둘(milk · apple) + 다운로드 폴더의 start.py.
+ *  2026-11-11 사용자 지시로 문항을 5점짜리로 줄였다 — foods 패키지 하나에 모듈 둘(milk · apple) + start.py.
  *  (2026-11-05 의 drinks · fruits 하위 패키지와 모듈 여섯 개는 뺐다)
+ *  2026-11-15 — 만드는 곳이 다운로드 폴더에서 **바탕 화면의 「학번 이름」 폴더**로 바뀌었다. 점검하는 프로젝트의 맨 위가 그 폴더다.
  *  점검 칸 네 개 = 문항 2번의 4점(칸 하나에 1점). 1번(IDLE·압축 1점)은 앱이 볼 수 없다.
  *  ⚠ 채점기가 아니라 자기 점검 도구다 — 규칙으로 훑어보는 것이라 사람처럼 읽지 못한다.
  *    최종 점수는 선생님이 실제 파일을 보고 정한다. (화면·README·LICENSE 에 밝혀 둔다)
@@ -13,6 +14,10 @@ import { allDirs, parentOf, baseName, defsOf, importsOf, syntaxOk } from './proj
 
 export const PKG = 'foods';
 export const ENTRY = 'start.py';
+/** 바탕 화면에 만드는 폴더 — foods 와 start.py 가 이 안에 나란히 든다 (2026-11-15) */
+export const ROOT_DIR = '학번 이름';
+export const ROOT_EXAMPLE = '30101 홍길동';
+const TOP = `맨 위(「${ROOT_DIR}」 폴더)`;
 /** 문항이 정한 모듈 — 파일 · 함수 이름 · 출력 문구 (출력 예의 차례) */
 export const MODULES = [
   { mod: 'milk', fn: 'drink', text: '신선한 우유' },
@@ -23,7 +28,7 @@ export const EXPECTED = MODULES.map((m) => m.text);
 
 /** 조건 네 가지 — 문항 「2. 사용자 정의 패키지 제작」(4점)을 칸 하나에 1점씩 */
 export const CONDITIONS = [
-  { id: 'files', title: `${PKG} 폴더 안에 ${MODULES.map((m) => `${m.mod}.py`).join(' · ')}`, sub: `다운로드 폴더(맨 위)에 ${PKG}, 그 안에 두 파일` },
+  { id: 'files', title: `${PKG} 폴더 안에 ${MODULES.map((m) => `${m.mod}.py`).join(' · ')}`, sub: `「${ROOT_DIR}」 폴더(맨 위)에 ${PKG}, 그 안에 두 파일` },
   ...MODULES.map((m) => ({ id: m.mod, title: `${m.mod}.py 의 ${m.fn}( ) → 「${m.text}」 출력`, sub: 'def 로 직접 만든 함수' })),
   { id: 'run', title: `start.py 가 import 하고 두 함수를 불러 두 줄 출력`, sub: '출력 예와 같은 차례로' },
 ];
@@ -63,6 +68,9 @@ const quote = (s) => `「${s}」`;
 /** 점검용으로 잠깐 더해 실행하는 파일 이름 — 학생 파일과 겹치지 않게 */
 const PROBE = '__pkg_check__.py';
 const SHADOW_HINT = `맨 위의 ${PKG}.py 가 ${PKG} 폴더를 가렸어요 — 그 파일 이름을 바꾸거나 ${PKG}/ 안에 __init__.py 를 넣어 주세요`;
+/** 탐색기 맨 위가 이미 「학번 이름」 폴더인데 그 안에 학번 이름 폴더를 또 만든 것 (30101 홍길동/30101 홍길동/foods) */
+const looksRoot = (dir) => !!dir && !dir.includes('/') && (/^\d{4,5}\s*\S/.test(dir) || dir.includes('학번'));
+const nestedHint = (dir) => `${quote(dir)} 폴더를 또 만들었어요 — 탐색기의 맨 위가 이미 「${ROOT_DIR}」 폴더예요. 그 안의 것을 맨 위로 꺼내 주세요`;
 
 /** [뒷말, 이름] 들을 같은 뒷말끼리 묶는다 — 「milk.py · apple.py 가 없어요」. 이름이 빈 것은 뒷말이 곧 한 줄 */
 function grouped(pairs) {
@@ -100,7 +108,7 @@ export function check(p) {
     const pkgStray = hasPkg || pkgTwin ? null : dirs.find((d) => baseName(d) === PKG);   // 다른 폴더/foods/
     const hints = [];
     if (pkgTwin) hints.push(`${quote(pkgTwin)} — 소문자 ${PKG} 로 지어 주세요 (import 는 대소문자를 따져요)`);
-    else if (pkgStray) hints.push(`${PKG}/ 가 ${parentOf(pkgStray)}/ 안에 있어요 — 맨 위(다운로드)로 옮겨 주세요`);
+    else if (pkgStray) hints.push(looksRoot(parentOf(pkgStray)) ? nestedHint(parentOf(pkgStray)) : `${PKG}/ 가 ${parentOf(pkgStray)}/ 안에 있어요 — ${TOP}로 옮겨 주세요`);
     const pairs = [];   // [뒷말, 파일 이름] — 같은 까닭은 한 줄로 묶어 알린다
     for (const m of MODULES) {
       if (p.files[m.path] !== undefined) continue;
@@ -112,13 +120,13 @@ export function check(p) {
       else if (twin) pairs.push([`${quote(baseName(twin))} → ${fname}`, '']);
       else if (txt) pairs.push([`${quote(baseName(txt))} — 끝이 .txt 예요. 이름이 정확히 ${fname} 여야 해요`, '']);
       else if (stray && pkgStray && parentOf(stray) === pkgStray) continue;   // 폴더째 옮기면 된다 — 위에서 알려 준다
-      else if (stray) pairs.push([` 가 ${parentOf(stray) ? `${parentOf(stray)}/ 안에` : '맨 위(다운로드)에'} 있어요 — ${PKG}/ 안으로 옮겨 주세요`, fname]);
+      else if (stray) pairs.push([` 가 ${parentOf(stray) ? `${parentOf(stray)}/ 안에` : `${TOP}에`} 있어요 — ${PKG}/ 안으로 옮겨 주세요`, fname]);
       else pairs.push([' 가 없어요', fname]);
     }
     hints.push(...grouped(pairs));
     if (have.length === MODULES.length) set('files', 'ok', `📁 ${PKG}/ ⊃ ${MODULES.map((m) => `📄 ${m.mod}.py`).join(' · ')}`);
     else if (have.length || hasPkg || hints.some((x) => !x.endsWith('없어요'))) set('files', 'part', (hasPkg && !have.length && pairs.length === MODULES.length && pairs.every(([t]) => t === ' 가 없어요') ? `📁 ${PKG}/ 는 좋아요 — 그 안에 ${MODULES.map((m) => `${m.mod}.py`).join(' · ')} 를 만들어 주세요` : hints.join(' · ')) + '.');
-    else set('files', 'no', dirs.length ? `폴더 이름이 문항과 달라요 — 다운로드 폴더(맨 위)에 ${PKG}.` : `아직 폴더가 없어요. 탐색기의 📁 로 ${PKG} 부터 만들어 보세요.`);
+    else set('files', 'no', dirs.length ? `폴더 이름이 문항과 달라요 — 「${ROOT_DIR}」 폴더(맨 위)에 ${PKG}.` : `아직 폴더가 없어요. 탐색기의 📁 로 ${PKG} 부터 만들어 보세요.`);
   }
 
   // ②③ 모듈마다 — 함수 이름과 출력 문구. 모듈을 따로 불러 함수를 한 번 불러 본다 (불러오기만 했을 때 나오는 것도 본다)
@@ -163,7 +171,7 @@ export function check(p) {
     const twin = caseTwin(files, ENTRY);
     const n = EXPECTED.length;
     if (main === undefined) {
-      set('run', twin || misplaced ? 'part' : 'no', twin ? `${quote(twin)} → start.py` : misplaced ? `start.py 가 ${parentOf(misplaced)}/ 안에 있어요 — ${PKG} 와 나란히, 맨 위(다운로드)로 옮겨 주세요.` : '맨 위(다운로드)에 start.py 가 없어요.');
+      set('run', twin || misplaced ? 'part' : 'no', twin ? `${quote(twin)} → start.py` : misplaced ? (looksRoot(parentOf(misplaced)) ? `${nestedHint(parentOf(misplaced))}.` : `start.py 가 ${parentOf(misplaced)}/ 안에 있어요 — ${PKG} 와 나란히, ${TOP}로 옮겨 주세요.`) : `${TOP}에 start.py 가 없어요.`);
     } else {
       r = runProject({ files: p.files, dirs: p.dirs, entry: ENTRY });
       const got = lines(r);

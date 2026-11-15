@@ -24,6 +24,21 @@ const states = (p) => check(p).items.map(mark).join('');
 확인('출력 예 두 줄 (문항 그대로)', EXPECTED, ['신선한 우유', '새콤한 사과']);
 확인('모듈 두 개 — foods 바로 아래', MODULES.map((m) => m.path), ['foods/milk.py', 'foods/apple.py']);
 
+묶음('조건 점검기 — 「학번 이름」 폴더 (2026-11-15)');
+{
+  // 연습 탐색기의 맨 위가 이미 「학번 이름」 폴더인데, 그 안에 같은 폴더를 또 만들고 전부 넣은 경우
+  const nest = (root) => ({ files: { [`${root}/start.py`]: '', [`${root}/foods/milk.py`]: "def drink():\n    print('신선한 우유')\n" }, dirs: [root, `${root}/foods`] });
+  for (const root of ['30101 홍길동', '30101홍길동', '학번 이름']) {
+    const r = check(nest(root));
+    참(`「${root}」 를 또 만듦 — ① 칸이 「또 만들었어요」`, /폴더를 또 만들었어요/.test(r.items[0].detail));
+    참(`「${root}」 를 또 만듦 — ④ 칸도 「또 만들었어요」`, /폴더를 또 만들었어요/.test(r.items[3].detail));
+  }
+  const other = check({ files: { '수행평가/start.py': '' }, dirs: ['수행평가'] });
+  참('학번 꼴이 아닌 폴더 — 보통 「옮겨 주세요」', /수행평가\/ 안에 있어요 — foods 와 나란히, 맨 위\(「학번 이름」 폴더\)로/.test(other.items[3].detail));
+  참('start.py 가 없을 때 — 「학번 이름」 폴더를 말한다', /맨 위\(「학번 이름」 폴더\)에 start\.py 가 없어요/.test(check({ files: {}, dirs: [] }).items[3].detail));
+  참('① 칸 설명 — 「학번 이름」 폴더', CONDITIONS[0].sub.includes('「학번 이름」 폴더'));
+}
+
 if (EXAM) {
   const { EXAM_CASES, ANSWER, START } = EXAM;
 
@@ -46,11 +61,11 @@ if (EXAM) {
     참('모듈 맨 아래에서도 부름 — 「두 번씩」', /두 번씩/.test(find('모듈 맨 아래에서도 부름').items[3].detail) && /맨 아래/.test(find('모듈 맨 아래에서도 부름').items[1].detail));
     참('print 로 감쌈 — None 을 짚는다', /None/.test(find('print( ) 로 한 번 더 감쌈').items[3].detail));
     참('문구를 직접 print — 「부르지 않은 함수」', /부르지 않은 함수/.test(find('문구를 직접 print').items[3].detail));
-    참('start.py 를 foods 안에 — 옮기라고 한다', /맨 위\(다운로드\)로 옮겨/.test(find('start.py 를 foods 안에').items[3].detail));
+    참('start.py 를 foods 안에 — 옮기라고 한다', /맨 위\(「학번 이름」 폴더\)로 옮겨/.test(find('start.py 를 foods 안에').items[3].detail));
     참('Start.py — 이름을 짚는다', /Start\.py」 → start\.py/.test(find('start.py 이름 Start.py').items[3].detail));
     참('Foods — 소문자로', /소문자 foods/.test(find('폴더 이름 Foods').items[0].detail));
     참('다른 폴더 안의 foods — 맨 위로 옮기라고 한다', /foods\/ 가 수행평가\/ 안에 있어요/.test(find('foods 를 다른 폴더 안에').items[0].detail));
-    참('foods 밖의 milk.py — foods 안으로 옮기라고 한다', /milk\.py 가 맨 위\(다운로드\)에 있어요 — foods\/ 안으로/.test(find('milk.py 가 foods 밖').items[0].detail));
+    참('foods 밖의 milk.py — foods 안으로 옮기라고 한다', /milk\.py 가 맨 위\(「학번 이름」 폴더\)에 있어요 — foods\/ 안으로/.test(find('milk.py 가 foods 밖').items[0].detail));
     참('milk.py.txt — .txt 를 짚는다', /\.txt/.test(find('milk.py.txt').items[0].detail));
     참('Drink — 대소문자', /Drink → drink/.test(find('함수 이름 Drink').items[1].detail));
     참('milk 에 eat — 함수 이름을 짚는다', /함수 이름은 drink\( \) — 지금은 eat\( \)/.test(find('milk 에 eat').items[1].detail));
@@ -83,6 +98,14 @@ if (EXAM) {
 참('압축 파일 이름 예가 그대로 있다', QUESTION.parts[0].lines.join(' ').includes('모듈패키지30101홍길동.zip'));
 참('문항 글에 모듈·함수 이름이 다 있다', MODULES.every((m) => JSON.stringify(QUESTION.parts[1].lines).includes(`${m.mod}.py`) && JSON.stringify(QUESTION.parts[1].lines).includes(`<code>${m.fn}</code>`)));
 참('폴더 그림에 모듈 두 개가 다 있다', MODULES.every((m) => GOAL_TREE.some(([, t]) => t.includes(`${m.mod}.py`))));
+확인('폴더 그림 — 바탕 화면 › 30101 홍길동 › foods 차례', GOAL_TREE.filter(([k]) => k === 'd').map(([, t]) => t.replace(/[│├└─\s]+/g, ' ').trim()), ['바탕 화면/', '30101 홍길동/', 'foods/']);
+참('문항 2번 — 바탕 화면에 「학번 이름」 폴더', QUESTION.parts[1].lines[0].includes('<b>바탕 화면</b>에') && QUESTION.parts[1].lines[0].includes('「학번 이름」'));
+{
+  // 2026-11-15 — 만드는 곳이 다운로드에서 바탕 화면으로 바뀌었다. 문항·채점 기준·점검기·화면에 옛 말이 남지 않게
+  const screen = readFileSync(new URL('../src/screens/assess.js', import.meta.url), 'utf-8').replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');   // 주석(바뀐 기록)은 빼고
+  const text = JSON.stringify([QUESTION, RUBRIC, GOAL_TREE, PRACTICE_START, CONDITIONS]) + screen;
+  참('⚠ 문항·채점 기준·폴더 그림·점검기·화면에 「다운로드」 가 없다', !/다운로드|Downloads/.test(text));
+}
 
 묶음('import 꼴 가려내기 (③ 탭 미션 3 이 쓴다)');
 확인('세 가지 꼴', importForms('import p.a\nfrom p import b\nfrom p.c import f\n', 'p').forms, ['A', 'B', 'C']);

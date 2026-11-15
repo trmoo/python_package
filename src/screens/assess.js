@@ -2,12 +2,13 @@
  *  ④ 수행평가 준비 — 수행평가 문항 · 연습 과제(조건 점검기) · IDLE 에서 만들고 제출하기
  *  문항은 2026-11-11 사용자 지시로 5점짜리로 줄인 것(foods 패키지에 모듈 둘 + start.py).
  *  2026-11-05 의 「IDLE 5점 + drinks · fruits 모듈 여섯 개 10점」 은 뺐다.
+ *  2026-11-15 — 다운로드 폴더 대신 바탕 화면의 「학번 이름」 폴더 안에 만든다(연습 탐색기의 맨 위 = 그 폴더).
  */
 import { h, fill, toast, modal, share } from '../ui/dom.js';
 import { treeBlock, head } from './common.js';
 import { createIDE } from '../ui/ide.js';
 import { slot, save } from '../lib/store.js';
-import { CONDITIONS, EXTRA, EXPECTED, PKG, check } from '../lib/checker.js';
+import { CONDITIONS, EXTRA, EXPECTED, PKG, ROOT_DIR, ROOT_EXAMPLE, check } from '../lib/checker.js';
 import { makeZip, projectEntries } from '../lib/zip.js';
 import { QUESTION, RUBRIC, GOAL_TREE, PRACTICE_START } from '../data/assess.js';
 
@@ -61,7 +62,7 @@ export function renderPractice(body, api) {
           if (!(await modal('처음부터', '연습 과제에서 만든 것을 모두 지울까요?', { ok: '지우기', cancel: '그만두기' }))) return;
           proj = PRACTICE_START; S.project = null; save(); ide.setProject(proj); paint();
         } }, '↺')),
-      h('div', { class: 'tiny muted' }, '문항 2번을 오른쪽에 그대로 만들어 보세요. 탐색기의 맨 위가 「다운로드」 폴더예요.'),
+      h('div', { class: 'tiny muted' }, `문항 2번을 오른쪽에 그대로 만들어 보세요. 탐색기의 맨 위(${ROOT_EXAMPLE})가 바탕 화면의 「${ROOT_DIR}」 폴더예요 — 그 안에 또 만들지 않아요.`),
       h('div', { class: 'conds', style: { overflowY: 'auto', minHeight: 0, flex: '1 1 auto' } },
         res.items.map((it, i) => row(it, `${'①②③④⑤⑥'[i]} ${CONDITIONS[i].title}`)),
         row(res.extra, EXTRA.title)),
@@ -81,7 +82,7 @@ export function renderPractice(body, api) {
   }
   fill(body, h('div', { class: 'cols' }, panel, ideHost));
   const ide = createIDE(ideHost, {
-    project: proj, active: 'start.py', title: '다운로드',
+    project: proj, active: 'start.py', title: ROOT_EXAMPLE,
     onChange: (p) => { proj = p; S.project = p; save(); clearTimeout(timer); timer = setTimeout(paint, 700); },
     onRun: () => paint(),
   });
@@ -98,17 +99,17 @@ export function renderIDLE(body) {
       h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' } },
         step(1, 'IDLE 열고 새 파일', '시작 메뉴에서 <b>IDLE (Python 3.x)</b>. 처음 뜨는 <b>IDLE Shell</b> 창이 아니라 <b>File › New File</b> 로 연 새 창에 코드를 써요.',
           shot('untitled', 'def drink():<br>&nbsp;&nbsp;&nbsp;&nbsp;print(<span style="color:#0a7d00">\'…\'</span>)', true)),
-        step(2, '다운로드 폴더에 폴더째 저장', '<b>File › Save As</b> → 왼쪽에서 <b>다운로드</b> → 저장 창의 <b>[새 폴더]</b> 로 <code>foods</code> 를 만들고 그 안에 저장. 파일 이름은 <code>milk</code> 처럼 쓰면 <code>.py</code> 가 붙어요.',
-          shot('다른 이름으로 저장', '다운로드 › <span class="hl">foods</span><br>파일 이름: <span class="hl">milk.py</span> &nbsp; [새 폴더] [저장]')),
-        step(3, 'start.py 를 열고 F5', '<code>start.py</code> 창에서 <b>Run › Run Module</b> (<kbd>F5</kbd>). 결과는 <b>IDLE Shell</b> 창에 나와요. 오류가 나면 맨 아래 줄부터 읽어요.',
-          shot('IDLE Shell', '= RESTART: C:\\Users\\…\\Downloads\\start.py<br>' + EXPECTED.join('<br>'), true)),
-        step(4, '압축해서 제출', '파일 탐색기에서 다운로드 폴더 → <code>foods</code> 폴더와 <code>start.py</code> 를 <b>함께</b> 골라 오른쪽 클릭 → <b>압축 대상 › ZIP 파일</b> (윈도우 10: 보내기 › 압축(ZIP) 폴더) → 이름을 <b>모듈패키지 + 내 학번 + 이름</b> 으로.',
-          shot('다운로드', '📁 <span class="hl">foods</span> &nbsp;📄 <span class="hl">start.py</span><br><b>[ZIP]</b> 모듈패키지30101홍길동.zip')))),
+        step(2, `바탕 화면 › 「${ROOT_DIR}」 › foods`, `<b>File › Save As</b> → 왼쪽에서 <b>바탕 화면</b> → <b>[새 폴더]</b> 로 <code>${ROOT_EXAMPLE}</code> 처럼 내 학번 이름 폴더 → 그 안에서 <b>[새 폴더]</b> 로 <code>foods</code> → 그 안에 저장. <code>milk</code> 만 써도 <code>.py</code> 가 붙어요.`,
+          shot('다른 이름으로 저장', `바탕 화면 › <span class="hl">${ROOT_EXAMPLE}</span> › <span class="hl">foods</span><br>파일 이름: <span class="hl">milk.py</span> &nbsp; [새 폴더] [저장]`)),
+        step(3, 'start.py 를 열고 F5', `<code>start.py</code> 는 <code>foods</code> 밖, <code>${ROOT_EXAMPLE}</code> 폴더에 저장. 그 창에서 <b>Run › Run Module</b> (<kbd>F5</kbd>) — 결과는 <b>IDLE Shell</b> 창에. 오류는 맨 아래 줄부터 읽어요.`,
+          shot('IDLE Shell', `= RESTART: C:\\Users\\…\\Desktop\\${ROOT_EXAMPLE}\\start.py<br>` + EXPECTED.join('<br>'), true)),
+        step(4, '폴더째 압축해서 제출', `바탕 화면의 <code>${ROOT_EXAMPLE}</code> 폴더를 오른쪽 클릭 → <b>압축 대상 › ZIP 파일</b> (윈도우 10: 보내기 › 압축(ZIP) 폴더) → 이름을 <b>모듈패키지 + 내 학번 + 이름</b> 으로.`,
+          shot('바탕 화면', `📁 <span class="hl">${ROOT_EXAMPLE}</span><br><b>[ZIP]</b> 모듈패키지30101홍길동.zip`)))),
     h('div', { class: 'col', style: share(400) },
-      h('div', { class: 'note warn small', html: '<b>⚠ 이것만은 조심</b><br>· 「다운로드」 의 진짜 경로는 <code>C:\\Users\\(내 이름)\\Downloads</code> 예요.<br>· <code>start.py</code> 는 <code>foods</code> 폴더 <b>밖</b>, foods 와 <b>나란히</b>. foods 안에 두면 <code>ModuleNotFoundError</code>.<br>· 폴더·파일 이름은 문항 그대로 <b>소문자</b>. <code>Foods</code> 는 import 하지 못해요(윈도우에서도).<br>· 탐색기의 「새로 만들기 → 텍스트 문서」 로 만들면 진짜 이름이 <code>milk.py.txt</code> 가 될 수 있어요. 파일은 꼭 IDLE 에서 저장해요.<br>· 다운로드에 예전에 만든 <code>foods.py</code> 처럼 <b>같은 이름</b>의 파일이 있으면 패키지가 가려질 수 있어요.<br>· 고친 파일은 다시 <b>저장</b>해야 바뀐 내용으로 실행돼요. 저장하지 않고 <kbd>F5</kbd> 를 누르면 IDLE 이 저장할지 물어요.' }),
-      h('div', { class: 'note small', html: '<b>📌 압축할 때</b> — 다운로드 폴더 <b>전체</b>를 압축하면 다른 파일이 섞여요. <code>foods</code> 와 <code>start.py</code> 두 가지만 골라요. 실행하면 저절로 생기는 <code>__pycache__</code> 폴더는 들어가도 괜찮아요.' }),
+      h('div', { class: 'note warn small', html: `<b>⚠ 이것만은 조심</b><br>· 폴더 이름은 <b>내 학번 + 빈칸 + 이름</b>(예: <code>${ROOT_EXAMPLE}</code>). 그 안에 같은 폴더를 또 만들지 않아요.<br>· 「바탕 화면」 의 진짜 경로는 보통 <code>C:\\Users\\(내 이름)\\Desktop</code> 이에요.<br>· <code>start.py</code> 는 <code>foods</code> 폴더 <b>밖</b>, foods 와 <b>나란히</b>. foods 안에 두면 <code>ModuleNotFoundError</code>.<br>· 폴더·파일 이름은 문항 그대로 <b>소문자</b>. <code>Foods</code> 는 import 하지 못해요(윈도우에서도).<br>· 탐색기의 「새로 만들기 → 텍스트 문서」 로 만들면 진짜 이름이 <code>milk.py.txt</code> 가 될 수 있어요. 파일은 꼭 IDLE 에서 저장해요.<br>· 그 폴더에 <code>foods.py</code> 처럼 <b>같은 이름</b>의 파일이 있으면 패키지가 가려질 수 있어요.<br>· 고친 파일은 다시 <b>저장</b>해야 바뀐 내용으로 실행돼요. 저장하지 않고 <kbd>F5</kbd> 를 누르면 IDLE 이 저장할지 물어요.` }),
+      h('div', { class: 'note small', html: `<b>📌 압축할 때</b> — <code>${ROOT_EXAMPLE}</code> 폴더를 <b>통째로</b> 압축해요. 바탕 화면 전체나 <code>foods</code> 만 압축하면 안 돼요. 실행하면 저절로 생기는 <code>__pycache__</code> 폴더는 들어가도 괜찮아요.` }),
       h('details', { class: 'more' }, h('summary', {}, 'VS Code 로 연습한다면'),
-        h('p', { class: 'small', html: '<b>파일 → 폴더 열기</b> 로 <b>다운로드</b> 폴더를 열면 이 앱과 똑같이 왼쪽 탐색기에서 폴더·파일을 만들 수 있어요. <code>start.py</code> 탭을 누른 다음 오른쪽 위 ▶. 다만 <b>수행평가는 IDLE</b> 로 해요.' })),
+        h('p', { class: 'small', html: '<b>파일 → 폴더 열기</b> 로 바탕 화면의 <b>「학번 이름」</b> 폴더를 열면 이 앱과 똑같이 왼쪽 탐색기에서 폴더·파일을 만들 수 있어요. <code>start.py</code> 탭을 누른 다음 오른쪽 위 ▶. 다만 <b>수행평가는 IDLE</b> 로 해요.' })),
       h('details', { class: 'more' }, h('summary', {}, '이 앱에서 만든 것을 가져가려면'),
         h('p', { class: 'small', html: '「연습 과제」 의 <b>💾 zip</b> → 압축 풀기 → IDLE 의 <b>File › Open</b> 으로 <code>start.py</code> 를 열고 <kbd>F5</kbd>. 연습용이에요 — 제출할 것은 IDLE 에서 직접 만들어요.' })))));
 }
