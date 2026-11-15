@@ -22,14 +22,26 @@ export function renderQuestion(body) {
     h('ul', {}, pt.lines.map((t) => h('li', {}, h('span', { html: typeof t === 'string' ? t : t.html }),
       t.outs ? h('div', { class: 'qouts' }, t.outs.map(([f, txt]) => h('span', {}, h('code', {}, f), ` → ${txt}`))) : null,
       t.run ? h('pre', { class: 'outbox qrun' }, t.run.join('\n')) : null))));
+  // 채점 기준 표 — 받은 표(2026-11-16)처럼 같은 번호는 한 칸으로 묶고, 맨 아래에 기본점수 · 합계
+  const span = (i) => {   // 그 번호의 첫 줄이면 몇 줄을 묶는지, 아니면 0
+    if (i && RUBRIC[i - 1].no === RUBRIC[i].no) return 0;
+    let n = 1;
+    while (RUBRIC[i + n] && RUBRIC[i + n].no === RUBRIC[i].no) n++;
+    return n;
+  };
   const rubric = h('div', { class: 'card rubric' },
-    h('div', { class: 'row', style: { flexWrap: 'nowrap' } }, h('b', {}, '📋 채점 기준'), h('span', { class: 'grow' }), h('span', { class: 'qpts' }, `${QUESTION.points}점`)),
-    h('table', {}, RUBRIC.map((r) => h('tr', {}, h('td', { class: 'rno' }, r.no), h('td', {}, r.what), h('td', { class: 'rpt' }, `${r.points}점`)))),
-    h('div', { class: 'tiny muted' }, '2번의 네 칸은 「연습 과제」 조건 점검기의 칸과 같아요. 1번(IDLE·압축)은 앱이 확인할 수 없어요.'));
+    h('div', { class: 'row', style: { flexWrap: 'nowrap', alignItems: 'baseline' } }, h('b', {}, '📋 채점 기준'), h('span', { class: 'grow' }),
+      h('span', { class: 'tiny muted' }, '2번의 세 칸 = 「연습 과제」 점검기의 칸 · 1번은 앱이 볼 수 없어요')),
+    h('table', {},
+      RUBRIC.map((r, i) => h('tr', { class: r.base ? 'rbase' : null },
+        span(i) ? h('td', { class: 'rno', rowspan: span(i) }, r.no ? `${r.no}번` : '') : null,
+        h('td', {}, r.lines ? r.lines.map((t, k) => [k ? h('br') : null, t]) : r.what),
+        h('td', { class: 'rpt' }, `${r.points}점`))),
+      h('tr', { class: 'rsum' }, h('td', { class: 'rno' }), h('td', {}, '합계'), h('td', { class: 'rpt' }, `${QUESTION.points}점`))));
   // ⚠ 1280×720 에서 왼쪽 칸이 넘치지 않게 채점 기준은 오른쪽 칸에 둔다 (왼쪽에 두면 52px 넘쳤다)
   fill(body, h('div', { class: 'cols' },
     h('div', { class: 'col', style: { ...share(640), gap: '8px' } },
-      h('div', { class: 'row', style: { flexWrap: 'nowrap', alignItems: 'baseline' } }, h('h2', { style: { margin: 0 } }, `수행평가 — ${QUESTION.title}`), h('span', { class: 'grow' }), h('span', { class: 'qpts', style: { fontSize: '18px' } }, `${QUESTION.points}점`)),
+      h('div', { class: 'row', style: { flexWrap: 'nowrap', alignItems: 'baseline' } }, h('h2', { style: { margin: 0 } }, `수행평가 — ${QUESTION.title}`), h('span', { class: 'grow' }), h('span', { class: 'small muted' }, `기본점수 ${QUESTION.base}점 포함`), h('span', { class: 'qpts', style: { fontSize: '18px', marginLeft: '8px' } }, `${QUESTION.points}점`)),
       h('p', { class: 'lead', style: { margin: 0 } }, QUESTION.lead),
       QUESTION.parts.map(part),
       h('div', { class: 'note small', html: `<b>💡 생각해 볼 것</b> — <code>start.py</code> 에서 <code>${PKG}</code> 안의 두 모듈을 부르는 방법은 여러 가지예요. 어떤 꼴로 import 하면 함수를 어떻게 불러야 할까요? (② 불러오기 탭의 「패키지 속 모듈 부르기」)` })),
@@ -39,7 +51,7 @@ export function renderQuestion(body) {
         treeBlock(GOAL_TREE),
         h('div', { class: 'col', style: { gap: '4px', flex: 'none' } }, h('b', { class: 'small' }, '▶ start.py 출력 예'), outBox(EXPECTED))),
       rubric,
-      h('div', { class: 'note warn small', html: '<b>⚠ __init__.py</b> — 문항에는 없지만, 교과서(씨마스 143쪽)는 패키지 폴더마다 「패키지로 인식하게 해 주는 특별한 파일」 을 넣어요. 파이썬 3.3 부터는 없어도 실행되므로, 넣어도 되고 안 넣어도 됩니다.' }))));
+      h('div', { class: 'note warn small', html: '<b>⚠ __init__.py</b> — 문항 조건은 아니에요. 교과서(씨마스 143쪽)는 패키지 폴더마다 넣지만, 파이썬 3.3 부터는 없어도 실행돼요. 넣어도 되고 안 넣어도 됩니다.' }))));
 }
 
 /* ── 2. 연습 과제 + 조건 점검기 ── */
@@ -103,8 +115,8 @@ export function renderIDLE(body) {
           shot('다른 이름으로 저장', `바탕 화면 › <span class="hl">${ROOT_EXAMPLE}</span> › <span class="hl">foods</span><br>파일 이름: <span class="hl">milk.py</span> &nbsp; [새 폴더] [저장]`)),
         step(3, 'start.py 를 열고 F5', `<code>start.py</code> 는 <code>foods</code> 밖, <code>${ROOT_EXAMPLE}</code> 폴더에 저장. 그 창에서 <b>Run › Run Module</b> (<kbd>F5</kbd>) — 결과는 <b>IDLE Shell</b> 창에. 오류는 맨 아래 줄부터 읽어요.`,
           shot('IDLE Shell', `= RESTART: C:\\Users\\…\\Desktop\\${ROOT_EXAMPLE}\\start.py<br>` + EXPECTED.join('<br>'), true)),
-        step(4, '폴더째 압축해서 제출', `바탕 화면의 <code>${ROOT_EXAMPLE}</code> 폴더를 오른쪽 클릭 → <b>압축 대상 › ZIP 파일</b> (윈도우 10: 보내기 › 압축(ZIP) 폴더) → 이름을 <b>모듈패키지 + 내 학번 + 이름</b> 으로.`,
-          shot('바탕 화면', `📁 <span class="hl">${ROOT_EXAMPLE}</span><br><b>[ZIP]</b> 모듈패키지30101홍길동.zip`)))),
+        step(4, '폴더째 압축해서 제출', `바탕 화면의 <code>${ROOT_EXAMPLE}</code> 폴더를 오른쪽 클릭 → <b>압축 대상 › ZIP 파일</b> (윈도우 10: 보내기 › 압축(ZIP) 폴더) → 폴더와 같은 <b>학번 이름</b> 으로 압축 파일이 생겨요. 이름을 바꾸지 않고 그대로 제출.`,
+          shot('바탕 화면', `📁 <span class="hl">${ROOT_EXAMPLE}</span><br><b>[ZIP]</b> <span class="hl">${ROOT_EXAMPLE}.zip</span>`)))),
     h('div', { class: 'col', style: share(400) },
       h('div', { class: 'note warn small', html: `<b>⚠ 이것만은 조심</b><br>· 폴더 이름은 <b>내 학번 + 빈칸 + 이름</b>(예: <code>${ROOT_EXAMPLE}</code>). 그 안에 같은 폴더를 또 만들지 않아요.<br>· 「바탕 화면」 의 진짜 경로는 보통 <code>C:\\Users\\(내 이름)\\Desktop</code> 이에요.<br>· <code>start.py</code> 는 <code>foods</code> 폴더 <b>밖</b>, foods 와 <b>나란히</b>. foods 안에 두면 <code>ModuleNotFoundError</code>.<br>· 폴더·파일 이름은 문항 그대로 <b>소문자</b>. <code>Foods</code> 는 import 하지 못해요(윈도우에서도).<br>· 탐색기의 「새로 만들기 → 텍스트 문서」 로 만들면 진짜 이름이 <code>milk.py.txt</code> 가 될 수 있어요. 파일은 꼭 IDLE 에서 저장해요.<br>· 그 폴더에 <code>foods.py</code> 처럼 <b>같은 이름</b>의 파일이 있으면 패키지가 가려질 수 있어요.<br>· 고친 파일은 다시 <b>저장</b>해야 바뀐 내용으로 실행돼요. 저장하지 않고 <kbd>F5</kbd> 를 누르면 IDLE 이 저장할지 물어요.` }),
       h('div', { class: 'note small', html: `<b>📌 압축할 때</b> — <code>${ROOT_EXAMPLE}</code> 폴더를 <b>통째로</b> 압축해요. 바탕 화면 전체나 <code>foods</code> 만 압축하면 안 돼요. 실행하면 저절로 생기는 <code>__pycache__</code> 폴더는 들어가도 괜찮아요.` }),

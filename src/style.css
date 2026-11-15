@@ -339,6 +339,10 @@ table.t td.c { text-align: center; font-weight: 900; }
 .rubric td { padding: 3px 6px; border-top: 1px solid var(--line, #e3e6ee); vertical-align: top; }
 .rubric td.rno { width: 22px; text-align: center; font-weight: 800; color: var(--brand); }
 .rubric td.rpt { width: 36px; text-align: right; font-weight: 800; white-space: nowrap; }
+.rubric td.rno { vertical-align: middle; width: 36px; white-space: nowrap; }
+.rubric td { padding-top: 2px; padding-bottom: 2px; line-height: 1.35; }
+.rubric tr.rbase td, .rubric tr.rsum td { font-weight: 800; }
+.rubric tr.rsum td { border-top: 2px solid var(--ink, #2a2f3a); }
 .outbox { margin: 0; font-family: var(--mono); font-size: 14.5px; line-height: 1.6; background: #1f2433; color: #e9ecf5; border-radius: 10px; padding: 8px 14px; }
 .stepcard .num { display: inline-flex; width: 26px; height: 26px; border-radius: 50%; background: var(--brand); color: #fff; font-weight: 900; align-items: center; justify-content: center; margin-right: 6px; }
 

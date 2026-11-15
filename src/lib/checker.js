@@ -3,7 +3,9 @@
  *  2026-11-11 사용자 지시로 문항을 5점짜리로 줄였다 — foods 패키지 하나에 모듈 둘(milk · apple) + start.py.
  *  (2026-11-05 의 drinks · fruits 하위 패키지와 모듈 여섯 개는 뺐다)
  *  2026-11-15 — 만드는 곳이 다운로드 폴더에서 **바탕 화면의 「학번 이름」 폴더**로 바뀌었다. 점검하는 프로젝트의 맨 위가 그 폴더다.
- *  점검 칸 네 개 = 문항 2번의 4점(칸 하나에 1점). 1번(IDLE·압축 1점)은 앱이 볼 수 없다.
+ *  2026-11-16 사용자 지시로 채점 기준을 고쳤다 — 2번이 3점(① 두 파일 ② 두 함수의 출력 ③ start.py), 기본점수 1점.
+ *  그래서 milk · apple 의 함수 칸 둘을 한 칸으로 합쳤다. 점검 칸 세 개 = 문항 2번의 3점(칸 하나에 1점).
+ *  1번(IDLE·압축 1점)과 기본점수는 앱이 볼 수 없다.
  *  ⚠ 채점기가 아니라 자기 점검 도구다 — 규칙으로 훑어보는 것이라 사람처럼 읽지 못한다.
  *    최종 점수는 선생님이 실제 파일을 보고 정한다. (화면·README·LICENSE 에 밝혀 둔다)
  *  ⚠ 정답 코드는 여기 두지 않는다(앱 번들에 들어가 학생이 읽을 수 있다). 시험 파일에만 둔다.
@@ -26,11 +28,13 @@ export const MODULES = [
 /** start.py 를 실행했을 때 나와야 하는 줄 */
 export const EXPECTED = MODULES.map((m) => m.text);
 
-/** 조건 네 가지 — 문항 「2. 사용자 정의 패키지 제작」(4점)을 칸 하나에 1점씩 */
+/** 조건 세 가지 — 문항 「2. 사용자 정의 패키지 제작」(3점)을 칸 하나에 1점씩 (2026-11-16 채점 기준 그대로)
+ *  lines 가 있으면 채점 기준 표에서 줄을 나눠 보여 준다. title 은 그 줄을 ' · ' 로 이은 것 */
+const FUNC_LINES = MODULES.map((m) => `${m.mod}.py 의 ${m.fn}( ) → 「${m.text}」 출력`);
 export const CONDITIONS = [
   { id: 'files', title: `${PKG} 폴더 안에 ${MODULES.map((m) => `${m.mod}.py`).join(' · ')}`, sub: `「${ROOT_DIR}」 폴더(맨 위)에 ${PKG}, 그 안에 두 파일` },
-  ...MODULES.map((m) => ({ id: m.mod, title: `${m.mod}.py 의 ${m.fn}( ) → 「${m.text}」 출력`, sub: 'def 로 직접 만든 함수' })),
-  { id: 'run', title: `start.py 가 import 하고 두 함수를 불러 두 줄 출력`, sub: '출력 예와 같은 차례로' },
+  { id: 'funcs', title: FUNC_LINES.join(' · '), lines: FUNC_LINES, sub: 'def 로 직접 만든 함수 — 두 파일 모두' },
+  { id: 'run', title: `start.py 가 ${PKG} 를 import 하고 두 함수를 불러 두 줄 출력`, sub: '출력 예와 같은 차례로' },
 ];
 /** 문항 조건은 아니지만 함께 보여 주는 것 */
 export const EXTRA = { id: 'init', title: '＋ __init__.py (권장 · 문항 조건은 아님)', sub: `「이 폴더는 패키지」 표지판 — ${PKG}/ 안에` };
@@ -129,41 +133,50 @@ export function check(p) {
     else set('files', 'no', dirs.length ? `폴더 이름이 문항과 달라요 — 「${ROOT_DIR}」 폴더(맨 위)에 ${PKG}.` : `아직 폴더가 없어요. 탐색기의 📁 로 ${PKG} 부터 만들어 보세요.`);
   }
 
-  // ②③ 모듈마다 — 함수 이름과 출력 문구. 모듈을 따로 불러 함수를 한 번 불러 본다 (불러오기만 했을 때 나오는 것도 본다)
-  for (const m of MODULES) {
-    const src = p.files[m.path];
-    if (src === undefined) {
-      const elsewhere = files.some((f) => low(baseName(f)).startsWith(`${m.mod}.py`));   // Foods/milk.py · milk.py.txt · 다른 폴더의 milk.py
-      set(m.mod, 'no', elsewhere ? `① 칸을 먼저 고쳐 주세요 — ${m.mod}.py 가 ${PKG}/ 바로 안에 있어야 불러올 수 있어요.` : `먼저 ${PKG}/ 안에 ${m.mod}.py 를 만들어 주세요 (① 칸).`);
-      continue;
+  // ② 두 모듈의 함수 — 이름과 출력 문구. 모듈을 따로 불러 함수를 한 번 불러 본다 (불러오기만 했을 때 나오는 것도 본다)
+  //    채점 기준이 두 함수를 한 칸(1점)으로 보므로 모듈마다 살핀 것을 한 칸에 모은다 (2026-11-16)
+  {
+    const fname = (m) => `${m.mod}.py`;
+    const one = (m) => {   // { state, pairs: [[뒷말, 이름], …] } — 같은 까닭은 grouped( ) 가 한 줄로 묶는다
+      const src = p.files[m.path];
+      if (src === undefined) {
+        const elsewhere = files.some((f) => low(baseName(f)).startsWith(fname(m)));   // Foods/milk.py · milk.py.txt · 다른 폴더의 milk.py
+        return { state: 'no', pairs: [[elsewhere ? ` 가 ${PKG}/ 바로 안에 있어야 불러올 수 있어요 — ① 칸을 먼저 고쳐 주세요` : ` 를 먼저 ${PKG}/ 안에 만들어 주세요 (① 칸)`, fname(m)]] };
+      }
+      if (!syntaxOk(src)) return { state: 'part', pairs: [[' 에 문법 오류가 있어요 — 그 파일을 열고 ▶ 로 실행해 보면 어디인지 알려 줘요', fname(m)]] };
+      const defs = defsOf(src);
+      if (!defs.includes(m.fn)) {
+        const twin = defs.find((d) => low(d) === m.fn);
+        const other = MODULES.find((o) => o !== m && defs.includes(o.fn));
+        if (twin) return { state: 'part', pairs: [[`${fname(m)} 의 ${twin} → ${m.fn} (함수 이름도 대소문자를 따져요)`, '']] };
+        if (other) return { state: 'part', pairs: [[`${fname(m)} 의 함수 이름은 ${m.fn}( ) — 지금은 ${other.fn}( )`, '']] };
+        if (defs.length) return { state: 'part', pairs: [[`${fname(m)} 에 만들 것: def ${m.fn}( ) (지금은 ${defs.join(', ')} 만 있어요)`, '']] };
+        return { state: 'no', pairs: [[`${fname(m)} 에 만들 것: def ${m.fn}( ) — 출력은 그 함수 안에서 print 로`, '']] };
+      }
+      const imp = `from ${PKG} import ${m.mod}\n`;
+      const only = runProject({ files: { ...p.files, [PROBE]: imp }, dirs: p.dirs, entry: PROBE });
+      if (!only.ok) return { state: 'part', pairs: [shadow ? [SHADOW_HINT, ''] : [` 를 불러오지 못했어요 (${only.errorType})`, fname(m)]] };
+      const r = runProject({ files: { ...p.files, [PROBE]: imp + `${m.mod}.${m.fn}()\n` }, dirs: p.dirs, entry: PROBE });
+      const before = lines(only);
+      const out = lines(r).slice(before.length);
+      const pairs = [];
+      if (before.length) pairs.push([' 는 불러오기만 해도 출력이 나와요 — 파일 맨 아래에서 함수를 부르고 있지 않나요? start.py 에서 두 번씩 나와요', fname(m)]);
+      if (!r.ok) pairs.push([`${m.mod}.${m.fn}( ) 에서 ${r.errorType} 가 나요`, '']);
+      else if (!out.length) pairs.push([`${m.mod}.${m.fn}( ) — 아무것도 출력하지 않아요. return 이 아니라 print 로`, '']);
+      else if (out.length > 1 || out[0] !== m.text) pairs.push([`${m.mod}.${m.fn}( ) → ${quote(out.join(' / '))} (띄어쓰기까지 ${quote(m.text)} 여야 해요)`, '']);
+      return { state: pairs.length ? 'part' : 'ok', pairs };
+    };
+    const each = MODULES.map((m) => ({ m, ...one(m) }));
+    const good = each.filter((x) => x.state === 'ok');
+    if (good.length === each.length) set('funcs', 'ok', MODULES.map((m) => `def ${m.fn}( ) → ${m.text}`).join(' · '));
+    else {
+      const why = [...new Set(grouped(each.flatMap((x) => x.pairs)))].join(' · ') + '.';
+      const done = good.length ? ` (${good.map((x) => fname(x.m)).join(' · ')} 는 됐어요)` : '';
+      set('funcs', each.every((x) => x.state === 'no') ? 'no' : 'part', why + done);
     }
-    if (!syntaxOk(src)) { set(m.mod, 'part', `${m.mod}.py 에 문법 오류가 있어요 — 그 파일을 열고 ▶ 로 실행해 보면 어디인지 알려 줘요.`); continue; }
-    const defs = defsOf(src);
-    if (!defs.includes(m.fn)) {
-      const twin = defs.find((d) => low(d) === m.fn);
-      const other = MODULES.find((o) => o !== m && defs.includes(o.fn));
-      if (twin) set(m.mod, 'part', `${twin} → ${m.fn} (함수 이름도 대소문자를 따져요).`);
-      else if (other) set(m.mod, 'part', `${m.mod}.py 의 함수 이름은 ${m.fn}( ) — 지금은 ${other.fn}( ).`);
-      else if (defs.length) set(m.mod, 'part', `${m.mod}.py 에 만들 것: def ${m.fn}( ) (지금은 ${defs.join(', ')} 만 있어요).`);
-      else set(m.mod, 'no', `${m.mod}.py 에 만들 것: def ${m.fn}( ) — 출력은 그 함수 안에서 print 로.`);
-      continue;
-    }
-    const imp = `from ${PKG} import ${m.mod}\n`;
-    const only = runProject({ files: { ...p.files, [PROBE]: imp }, dirs: p.dirs, entry: PROBE });
-    if (!only.ok) { set(m.mod, 'part', shadow ? `${SHADOW_HINT}.` : `${m.mod}.py 를 불러오지 못했어요 (${only.errorType}).`); continue; }
-    const r = runProject({ files: { ...p.files, [PROBE]: imp + `${m.mod}.${m.fn}()\n` }, dirs: p.dirs, entry: PROBE });
-    const before = lines(only);
-    const out = lines(r).slice(before.length);
-    const hints = [];
-    if (before.length) hints.push('불러오기만 해도 출력이 나와요 — 파일 맨 아래에서 함수를 부르고 있지 않나요? start.py 에서 두 번씩 나와요');
-    if (!r.ok) hints.push(`${m.mod}.${m.fn}( ) 에서 ${r.errorType} 가 나요`);
-    else if (!out.length) hints.push(`${m.mod}.${m.fn}( ) — 아무것도 출력하지 않아요. return 이 아니라 print 로`);
-    else if (out.length > 1 || out[0] !== m.text) hints.push(`${m.mod}.${m.fn}( ) → ${quote(out.join(' / '))} (띄어쓰기까지 ${quote(m.text)} 여야 해요)`);
-    if (hints.length) set(m.mod, 'part', hints.join(' · ') + '.');
-    else set(m.mod, 'ok', `def ${m.fn}( ) → ${m.text}`);
   }
 
-  // ④ start.py 실행
+  // ③ start.py 실행
   let r = null;
   {
     const main = p.files[ENTRY];
