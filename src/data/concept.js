@@ -226,7 +226,7 @@ export const SORT_HINTS = {
 /** 정답인가 — 부르는 관점에 따라 두 이름이 다 맞는 것이 있다 (2026-11-10 사용자 결정 「둘 다 정답으로」).
  *  matplotlib·pandas 는 라이브러리이면서 문법으로는 맨 위 패키지, math·random 같은 표준(내장) 라이브러리는 모듈이면서 라이브러리.
  *  ans 는 교과서가 부르는 이름(대표 정답), also 는 함께 받는 정답, whyAlso 는 also 를 골랐을 때의 풀이다.
- *  분류 카드·import 문 읽기 문항 모두 이것으로 채점한다 — 화면 · 탭 잠금(progress.js) · 활동 기록(report.js) */
+ *  분류 카드·import 문 읽기 문항 모두 이것으로 채점한다 — 화면 · 완료 판정(progress.js) */
 export const isAnswer = (item, pick) => pick != null && (pick === item.ans || (item.also || []).includes(pick));
 /** 맞힌 답에 붙일 풀이 */
 export const whyOf = (item, pick) => (pick !== item.ans && item.whyAlso ? item.whyAlso : item.why);
@@ -300,7 +300,7 @@ export const PIP_PROJECT = {
 
 /* ── 6. ⭐ 내 꾸러미도 pip 로 나눠 주기 (2026-11-05 사용자 요청 — 「아주 쉽게, 최대한 간단하게」) ──
  *  택배 보내기 비유로 네 걸음: 📦 꾸리기 → 🎁 포장 → 🚚 올리기 → 🙌 친구가 받기.
- *  교과서 밖 내용이라 ⭐ 더 알아보기 — 탭 잠금에 쓰지 않는다(progress.js 의 optional).
+ *  교과서 밖 내용이라 ⭐ 더 알아보기 — 필수 활동 수에 넣지 않는다(progress.js 의 optional).
  *  2026-11-05 파이썬 3.12.3 · setuptools 83 · build 로 실제로 포장하고 다른 환경에 설치해 확인했다:
  *    hong-mypackage/ (pyproject.toml + mypackage/) → py -m build
  *    → dist/hong_mypackage-0.1.0-py3-none-any.whl · dist/hong_mypackage-0.1.0.tar.gz
@@ -376,7 +376,7 @@ export const PUBLISH = {
       ] },
   ],
   /** 📝 한눈에 정리 (2026-11-10 사용자 요청) — 네 걸음 다음 칸. 헷갈리는 네 낱말을 「무엇을 보고 붙인 이름인가」 로 가른다.
-   *  ⚠ 걸음(steps)에 넣지 않는다 — 넣으면 이미 끝낸 학생의 ✔ 가 다시 사라지고, 활동 기록의 「넘겨 본 걸음」 도 바뀐다.
+   *  ⚠ 걸음(steps)에 넣지 않는다 — 넣으면 이미 끝낸 학생의 ✔ 가 다시 사라진다.
    *  예(ex)·도움말의 사실은 2026-11-10 파이썬 3.12.3 에서 확인 — type(random)·type(pandas) 모두 module 이고
    *  pandas 만 __path__ 가 있다(패키지) · random 은 Lib/random.py 파일 하나 · 설치한 pillow 는 import PIL 로 부른다. */
   summary: {

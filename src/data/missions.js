@@ -8,7 +8,7 @@
 import { defsOf, importsOf, allDirs, parse } from './_deps.js';
 import { importForms } from '../lib/checker.js';
 
-/** 단계 판정 — 앞 단계가 안 됐어도 뒤 단계가 되면 켠다(순서대로 안 해도 된다). 미션 화면과 활동 기록 HTML 이 함께 쓴다 */
+/** 단계 판정 — 앞 단계가 안 됐어도 뒤 단계가 되면 켠다(순서대로 안 해도 된다). 미션 화면이 쓴다 */
 export function stepsDone(m, p, runs) { return m.steps.map((s) => { try { return !!s.check(p, runs || {}); } catch (e) { return false; } }); }
 
 const has = (p, f) => p.files[f] !== undefined;

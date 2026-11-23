@@ -351,7 +351,7 @@ export function renderPublish(body, api) {
       h('button', { class: 'pub-step pub-sum' + (st.cur === 'sum' ? ' on' : ''), onClick: () => show('sum') },
         h('span', { class: 'ic' }, SUM.icon), h('span', { class: 't' }, SUM.title)));
   }
-  /** 📝 한눈에 정리 — 헷갈리는 네 낱말을 표 하나로. 이 칸을 봤는지는 기록하지 않는다(완료 조건·활동 기록과 무관) */
+  /** 📝 한눈에 정리 — 헷갈리는 네 낱말을 표 하나로. 이 칸을 봤는지는 기록하지 않는다(완료 조건과 무관) */
   function paintSummary() {
     fill(detail, h('div', { class: 'col grow', style: { gap: '10px', minWidth: 0 } },
       h('table', { class: 't pub-terms' },

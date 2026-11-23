@@ -47,6 +47,11 @@ for (const p of files) {
     // ⑤ 바깥 주소 — 인터넷 없는 교실에서 깨진다
     const urls = (src.match(/https?:\/\/[^\s'"`)<>]+/g) || []);
     if (urls.length) bad.push(`${name} — 바깥 주소가 있다: ${urls.join(', ')}`);
+    // ⑧ 「</script」·「<!--」 — 빌드하면 앱 코드가 HTML 의 <script> 안에 들어가, 그 글자가 앱을 중간에서 끊거나
+    //    (<!-- 다음에 <script 가 오면) 끝을 못 찾게 한다. /*! 주석은 빌드본에 남을 수 있어 주석까지 본다.
+    //    (💾 저장 파일에 활동을 심을 때 쓰는 태그는 lib/savefile.js 가 < 를 String.fromCharCode(60) 으로 만든다)
+    if (/<\/script/i.test(src)) bad.push(`${name} — 「</script」 글자가 있다(주석 포함) — 빌드본의 앱 스크립트를 끊는다`);
+    if (/<!--/.test(src)) bad.push(`${name} — 「<!--」 글자가 있다(주석 포함) — 빌드본의 앱 스크립트 끝을 흐린다`);
   }
   if (name.startsWith('src/screens/')) {
     // ⑥ 화면 수명 — 화면을 오가도 쌓이지 않게 ui/dom.js 를 거친다
@@ -65,4 +70,4 @@ if (bad.length) {
   for (const b of bad) console.log('    ' + b + '\n');
   process.exit(1);
 }
-console.log('  ✅ 문법 · 저작권 · 원문자 · 기본 대화상자 · 바깥 주소 · 화면 수명 · DOM 규칙 모두 통과\n');
+console.log('  ✅ 문법 · 저작권 · 원문자 · 기본 대화상자 · 바깥 주소 · script 태그 글자 · 화면 수명 · DOM 규칙 모두 통과\n');

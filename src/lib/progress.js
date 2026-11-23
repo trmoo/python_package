@@ -1,16 +1,15 @@
 /*! 📦 패키지 공작소 — © 2026 티쳐무 · 모든 권리 보유
- *  활동 완료 판정 · 탭 잠금 — 「앞에서부터 끝내지 않은 활동이 있으면 다음 탭으로 넘어갈 수 없다」 (2026-11-05 사용자 지시)
- *  화면마다 무엇을 하면 「완료」 인지를 한곳에 모아 둔다. 탭 잠금·알약의 ✔·활동 기록 HTML 이 모두 이것을 쓴다.
+ *  활동 완료 판정 — 화면마다 무엇을 하면 「완료」 인지를 한곳에 모아 둔다. 알약의 ✔ · 진행 정도가 이것을 쓴다.
+ *  ⚠ 「앞 탭의 활동을 다 끝내야 다음 탭이 열린다」 는 탭 잠금(2026-11-05)은 2026-11-23 사용자 지시로 없앴다 —
+ *    이제 어느 탭이든 바로 열린다. 선생님 코드(잠금 풀기)도 함께 없앴다.
  *  ⚠ node 로 불러다 시험하므로 DOM 을 만지지 말 것. S 는 store.js 의 기록 묶음(그대로 넘겨받는다).
  */
 import { SORT_CARDS, ANATOMY, LEVELS, PUBLISH, isAnswer } from '../data/concept.js';
 import { FIXES, QUIZ } from '../data/imports.js';
 
-export const TAB_ORDER = ['concept', 'import', 'build', 'assess'];
-
 /**
  * 화면 열쇠('탭/화면') → { title, how(완료 조건 설명), optional?, done(S) }
- * optional 은 잠금에 쓰지 않는다 — ⭐ 심화(미션 4)는 빨리 끝낸 학생용이라 막지 않는다.
+ * optional 은 필수 활동 수(진행 정도)에서 뺀다 — ⭐ 심화(미션 4)·⭐ 내 꾸러미도 pip 로 는 빨리 끝낸 학생용이다.
  * 설명만 읽는 화면(수행평가 문항·IDLE 따라 하기)은 여기에 없다.
  * ④ 연습 과제의 기록 칸은 'exam' — 2026-11-05 문항을 바꾸면서 예전 'practice'(mytools 연습) 기록은 쓰지 않는다.
  */
@@ -25,7 +24,7 @@ export const ACTIVITIES = {
     done: (S) => !!(S.anatomy && ANATOMY.every((a, i) => isAnswer(a, S.anatomy[i]))) },
   'concept/where': { title: '모듈은 어디서 올까? (pip)', how: 'pip install gtts 로 설치하고 main.py 를 실행해 hello.mp3 만들기',
     done: (S) => !!(S.pip && S.pip.ok) },
-  // ⭐ 교과서 밖이라 선택 — 이미 ② 탭으로 넘어간 학생이 이 화면 때문에 다시 잠기지 않게 (2026-11-05)
+  // ⭐ 교과서 밖이라 선택 (2026-11-05)
   'concept/publish': { title: '⭐ 내 꾸러미도 pip 로', how: `${PUBLISH.steps.length}걸음을 모두 넘겨 보고 확인 문제 ${PUBLISH.quiz.length}개 맞히기 (선택)`, optional: true,
     done: (S) => !!(S.publish && PUBLISH.steps.every((s) => S.publish.seen && S.publish.seen.includes(s.id))
       && PUBLISH.quiz.every((q, k) => S.publish.ans && S.publish.ans[k] === q.ans)) },
@@ -46,28 +45,8 @@ export const ACTIVITIES = {
 
 export const isDone = (key, S) => !!(ACTIVITIES[key] && ACTIVITIES[key].done(S));
 
-/** 이 탭을 열려면 먼저 끝내야 할 활동들 (앞 탭들의 필수 활동 가운데 안 끝낸 것) — 비어 있으면 열린다 */
-export function blockers(tab, S) {
-  if (S.unlock) return [];
-  const before = TAB_ORDER.slice(0, TAB_ORDER.indexOf(tab));
-  return Object.entries(ACTIVITIES)
-    .filter(([key, a]) => before.includes(key.split('/')[0]) && !a.optional && !a.done(S))
-    .map(([key, a]) => ({ key, title: a.title, how: a.how }));
-}
-
 /** 진행 정도 — 필수 활동 가운데 끝낸 수 */
 export function progressOf(S) {
   const req = Object.entries(ACTIVITIES).filter(([, a]) => !a.optional);
   return { done: req.filter(([, a]) => a.done(S)).length, total: req.length };
 }
-
-/* 선생님이 수업 시연용으로 모든 탭을 여는 코드 — 2026-11-05 사용자 지시로 원문 대신 해시(SHA-256)만 둔다.
- * 깃허브가 공개 저장소라 원문을 적으면 학생이 읽을 수 있기 때문이다. 코드가 필요한 선생님은 README 의 이메일로 문의한다.
- * 바꾸려면 `node tools/hash-code.mjs 새코드` 로 나온 줄을 아래에 붙인다. ⚠ 원문은 어디에도 적지 말 것.
- * (짧은 코드는 해시를 하나하나 맞춰 볼 수 있으므로 부정행위 방지가 아니라 학습 장치다) */
-import { sha256hex } from './sha256.js';
-const SALT = 'pkgws-teacher:';
-/** 대문자 잠금이 켜져 있어도 열리게 앞뒤 빈칸을 떼고 소문자로 맞춘 뒤 지문을 만든다 */
-export const teacherHash = (code) => sha256hex(SALT + String(code).trim().toLowerCase());
-export const TEACHER_HASH = '1d57748176a0718cee7dfff7302868400f96aab17cca49e369b9d405166402b3';
-export const teacherCodeOk = (code) => teacherHash(code) === TEACHER_HASH;

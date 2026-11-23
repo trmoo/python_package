@@ -1,12 +1,11 @@
 /*! 📦 패키지 공작소 — © 2026 티쳐무 · 모든 권리 보유
- *  📝 개념 정리 빈칸 (2026-11-10) — 자료 · 채점 · 힌트 · 활동 기록.
+ *  📝 개념 정리 빈칸 (2026-11-10) — 자료 · 채점 · 힌트 · 기록.
  */
 import { 묶음, 확인, 참 } from './harness.mjs';
 import { BLANKS } from '../src/data/blanks.js';
 import { parseLine, norm, isRight, isCode, hintOf, blankKey, blanksOfLine, blankStats, filledText, groupOf, lineById } from '../src/lib/blanks.js';
-import { ACTIVITIES, blockers, isDone, progressOf } from '../src/lib/progress.js';
+import { ACTIVITIES, isDone, progressOf } from '../src/lib/progress.js';
 import { MISSIONS } from '../src/data/missions.js';
-import { buildReport } from '../src/lib/report.js';
 
 const allLines = BLANKS.flatMap((g) => g.lines.map((l) => ({ ...l, screen: g.screen })));
 /** 모든 빈칸에 맨 앞 정답을 넣은 기록 */
@@ -92,27 +91,13 @@ const fullBlanks = () => Object.fromEntries(allLines.flatMap((l) => blanksOfLine
   참('패키지는 .py 파일이 아니다', !isRight(blanksOfLine(lineById('layers.pkg'))[0].answers, '.py'));
 }
 
-묶음('기록 · 잠금');
+묶음('기록 · 완료 판정');
 {
   const S = { blanks: fullBlanks() };
   확인('모두 채우면 36 / 36', blankStats(S), { right: 36, total: 36 });
   확인('화면 하나만', blankStats(S, 'concept/why'), { right: 5, total: 5 });
   const half = { blanks: { ...S.blanks, [blankKey('why.def', 0)]: '.txt' } };
   확인('하나 틀리면 그 화면만 줄어든다', [blankStats(half, 'concept/why').right, blankStats(half).right], [4, 35]);
-  참('빈칸은 탭 잠금에 들어가지 않는다 — 다 비워도 막는 활동이 늘지 않는다', blockers('assess', {}).length === blockers('assess', S).length);
   참('빈칸을 다 채워도 활동이 끝난 것이 되지 않는다', Object.keys(ACTIVITIES).every((k) => !isDone(k, S)) && progressOf(S).done === 0);
 }
 
-묶음('활동 기록 HTML — 개념 정리');
-{
-  const S = { blanks: { ...fullBlanks(), [blankKey('why.def', 0)]: '<b>.txt</b>', [blankKey('why.def', 1)]: '' } };
-  const html = buildReport(S, { id: '20101', name: '홍길동' });
-  참('개념 정리 절이 있다', html.includes('📝 개념 정리 빈칸'));
-  참('맞힌 수 34 / 36', html.includes('<b>34 / 36</b>칸 맞음') && html.includes('34 / 36칸 맞음'));
-  참('학생이 쓴 답은 글자 그대로(태그가 먹지 않게)', html.includes('&lt;b&gt;.txt&lt;/b&gt;'));
-  참('틀린 답은 w, 맞은 답은 r', html.includes('<span class="blank w">&lt;b&gt;') && html.includes('<span class="blank r">import</span>') === false && html.includes('<span class="blank r">재사용</span>'));
-  참('비운 칸은 빈 밑줄', html.includes('<span class="blank">　　　</span>'));
-  참('import 문이 문장 앞에 붙는다', html.includes('<code>from calc import add</code> →'));
-  참('화면 이름은 활동 제목', html.includes('왜 파일을 나눌까?') && html.includes('미션 4 · ⭐ 심화'));
-  참('빈 기록에서도 만들어진다', buildReport({}, { id: '1', name: 'x' }).includes('0 / 36'));
-}

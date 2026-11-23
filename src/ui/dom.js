@@ -64,17 +64,18 @@ export function onWindow(ev, fn) {
 
 // ── 알림창 ───────────────────────────────────────────────────
 // 브라우저 기본 alert·confirm 은 주소를 함께 보여 주어 교실 화면에 어울리지 않는다.
-export function modal(title, body, { ok = '확인', cancel = null, wide = false } = {}) {
+// dismiss: false — Esc·바깥 누르기로 닫히지 않는다(두 단추 가운데 하나를 꼭 고르게 할 때)
+export function modal(title, body, { ok = '확인', cancel = null, wide = false, dismiss = true } = {}) {
   return new Promise((resolve) => {
     const close = (v) => { cover.remove(); document.removeEventListener('keydown', onKey); resolve(v); };
-    const onKey = (e) => { if (e.key === 'Escape') close(false); };
+    const onKey = (e) => { if (e.key === 'Escape' && dismiss) close(false); };
     const btns = h('div', { class: 'modal-btns' },
       cancel && h('button', { class: 'btn', onClick: () => close(false) }, cancel),
       ok && h('button', { class: 'btn primary', onClick: () => close(true) }, ok),
     );
     const box = h('div', { class: 'modal' + (wide ? ' wide' : ''), role: 'dialog', 'aria-modal': 'true' },
       h('h3', {}, title), typeof body === 'string' ? h('p', {}, body) : body, btns);
-    const cover = h('div', { class: 'overlay', onClick: (e) => { if (e.target === cover) close(false); } }, box);
+    const cover = h('div', { class: 'overlay', onClick: (e) => { if (e.target === cover && dismiss) close(false); } }, box);
     document.body.appendChild(cover);
     document.addEventListener('keydown', onKey);
     const f = box.querySelector('.primary') || box.querySelector('button');

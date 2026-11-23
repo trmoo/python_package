@@ -3,16 +3,17 @@
  *
  *  탭 차례 = 수업 흐름
  *    ① 개념 잡기 → ② 불러오기(import) → ③ 패키지 만들기(가상 VS Code) → ④ 수행평가 준비
- *  ★ 앞 탭의 활동을 모두 끝내야 다음 탭이 열린다 (2026-11-05 사용자 지시). 완료 조건은 lib/progress.js 한곳에.
- *  ★ 오른쪽 위 「💾 지금까지 한 활동 HTML 로 저장」 — 바탕 화면에 「학번_이름_패키지 공작소.html」.
- *  주소 해시로 화면을 바로 연다 — 예) #build/m2 (잠긴 탭이면 끝내지 않은 첫 활동으로 간다)
+ *  어느 탭이든 바로 열린다 — 탭 잠금(2026-11-05)은 2026-11-23 사용자 지시로 없앴다. 알약의 ✔ 는 lib/progress.js 의 완료 조건.
+ *  ★ 오른쪽 위 「💾 지금까지 한 활동 HTML 로 저장」 — 이 앱 파일에 활동을 심어 바탕 화면에 「학번_이름_패키지 공작소.html」.
+ *    다음 시간에 그 파일을 열면 「본인 활동이 맞나요?」 를 묻고 이어서 한다 (ui/save.js · lib/store.js · lib/savefile.js).
+ *  주소 해시로 화면을 바로 연다 — 예) #build/m2 (해시가 없으면 지난번에 보던 화면)
  */
 import './style.css';
 import { h, modal, toast } from './ui/dom.js';
 import { createStage, createShell } from './ui/shell.js';
-import { openSaveDialog } from './ui/save.js';
-import { S, save, resetAll } from './lib/store.js';
-import { isDone, blockers, teacherCodeOk } from './lib/progress.js';
+import { openSaveDialog, confirmOwner } from './ui/save.js';
+import { S, save, resetAll, unsaved } from './lib/store.js';
+import { isDone } from './lib/progress.js';
 import { renderWhy, renderLayers, renderSort, renderAnatomy, renderWhere, renderPublish } from './screens/concept.js';
 import { renderForms, renderPkgForms, renderFix, renderQuiz } from './screens/imports.js';
 import { renderMission } from './screens/build.js';
@@ -42,40 +43,31 @@ const SCREENS = [
   { tab: 'assess', id: 'idle', title: 'IDLE 에서 만들고 제출하기', short: 'IDLE 에서', render: renderIDLE },
 ].map((s) => ({ ...s, done: () => isDone(`${s.tab}/${s.id}`, S) }));
 
-/** 잠긴 탭을 누르면 — 끝내지 않은 활동 목록(누르면 그리로 간다) + 선생님 열기 */
-function showBlocked(tabId, list, go) {
-  const tab = TABS.find((t) => t.id === tabId);
-  const code = h('input', { type: 'password', autocomplete: 'off', placeholder: '선생님 코드', style: { width: '130px', font: 'inherit', fontSize: '14px', padding: '3px 8px', border: '1px solid var(--line)', borderRadius: '8px' } });
-  const closeModal = () => { const b = document.querySelector('.overlay .modal-btns .btn'); if (b) b.click(); };
-  const body = h('div', {},
-    h('p', {}, `「${tab.label}」 탭은 앞의 활동을 모두 끝내야 열려요. 아직 남은 활동 ${list.length}가지 — 눌러서 바로 가 보세요.`),
-    h('div', { class: 'lock-list' }, list.slice(0, 8).map((x) => h('button', { class: 'lock-item', onClick: () => { closeModal(); go(x.key); } },
-      h('span', {}, '⬜'), h('span', {}, h('div', { class: 't' }, x.title), h('div', { class: 'w' }, x.how))))),
-    list.length > 8 ? h('p', { class: 'small muted' }, `… 그리고 ${list.length - 8}가지 더`) : null,
-    h('div', { class: 'row', style: { marginTop: '10px', justifyContent: 'flex-end' } },
-      h('span', { class: 'tiny muted' }, '수업 시연용 — '), code,
-      h('button', { class: 'btn small', onClick: () => {
-        // 코드 원문은 앱에 없다 — 넣은 글자의 지문(해시)이 맞는지만 본다 (대소문자는 가리지 않는다)
-        if (!teacherCodeOk(code.value)) { toast('코드가 맞지 않아요', 'bad'); return; }
-        S.unlock = true; save(); closeModal(); toast('🔓 모든 탭을 열었어요 (「내 기록 지우기」 를 누르면 다시 잠겨요)', 'good'); app.refreshNav();
-      } }, '🔓 모두 열기')));
-  modal('🔒 아직 열 수 없어요', body, { ok: null, cancel: '닫기' });
-}
+// 해시가 없으면 지난번에 보던 화면으로 (💾 저장한 파일을 열었을 때 이어서 하기 좋게)
+if (!location.hash && S._screen && SCREENS.some((x) => `${x.tab}/${x.id}` === S._screen)) history.replaceState(null, '', `#${S._screen}`);
+
+// 💾 저장한 파일로 이어 하는 중인데 저장하지 않고 창을 닫으려 하면 한 번 묻는다(브라우저 기본 물음)
+let leaving = false;
+window.addEventListener('beforeunload', (e) => { if (!leaving && unsaved()) { e.preventDefault(); e.returnValue = ''; } });
+/** 기록을 비우고 처음부터 — 새로 고칠 때 「저장하지 않았다」 고 묻지 않게 */
+const restart = () => { leaving = true; location.hash = ''; location.reload(); };
 
 const { holder, stage } = createStage();
 document.body.append(holder);
-const app = createShell(stage, {
+createShell(stage, {
   tabs: TABS, screens: SCREENS,
   logo: ['📦 패키지 공작소', h('small', {}, '모듈 · 패키지 · 라이브러리')],
-  gate: (tabId) => blockers(tabId, S),
-  onBlocked: showBlocked,
+  onShow: (key) => { if (S._screen !== key) { S._screen = key; save({ quiet: true }); } },
   tools: () => [
-    h('button', { class: 'save-btn', title: '바탕 화면에 「학번_이름_패키지 공작소.html」 로 저장합니다', onClick: openSaveDialog }, '💾 지금까지 한 활동 HTML 로 저장'),
+    h('button', { class: 'save-btn', title: '이 앱을 지금까지 한 활동과 함께 바탕 화면에 「학번_이름_패키지 공작소.html」 로 저장합니다 — 다음 시간에 그 파일을 열면 이어서 해요', onClick: openSaveDialog }, '💾 지금까지 한 활동 HTML 로 저장'),
     h('button', { class: 'reset-btn', title: '이 브라우저에 남은 기록(퀴즈 답·만든 코드)을 모두 지웁니다', onClick: async () => {
-      if (!(await modal('내 기록 지우기', '이 컴퓨터에 남은 퀴즈 답·미션·만든 코드를 모두 지울까요? 탭도 다시 잠겨요. (공용 컴퓨터라면 수업이 끝날 때 눌러 주세요)', { ok: '모두 지우기', cancel: '그만두기' }))) return;
+      if (!(await modal('내 기록 지우기', '이 컴퓨터에 남은 퀴즈 답·미션·만든 코드를 모두 지울까요? (공용 컴퓨터라면 수업이 끝날 때 눌러 주세요. 💾 저장해 둔 파일은 지워지지 않아요)', { ok: '모두 지우기', cancel: '그만두기' }))) return;
       resetAll();
       toast('기록을 모두 지웠어요');
-      setTimeout(() => { location.hash = ''; location.reload(); }, 600);
+      setTimeout(restart, 600);
     } }, '🧹 기록 지우기'),
   ],
 });
+
+// 💾 저장한 파일을 열었으면 — 본인 것이 맞는지 묻고, 아니면 처음부터
+confirmOwner().then((r) => { if (r === 'reset') restart(); });
